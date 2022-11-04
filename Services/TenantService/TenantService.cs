@@ -19,30 +19,24 @@ namespace CoreWebApi.Services.TenantService
             this._repository = repository;
         }
 
-        public IEnumerable<TenantDto> GetAllTenants()
+        public IEnumerable<TenantDto> GetAllTenants(int limit, int page, string search, string sort_field, string sort)
         {
-            //var tenants = new List<ITenant>()
-            //{
-            //    new Tenant{ Id = 1, FirstName= "Tom", LastName="Foster", Email="tf@gmail.com", Phone="123123123"},
-            //    new Tenant{ Id = 2, FirstName= "John", LastName="Done", Email="jd1@gmail.com", Phone="123123122"},
-            //    new Tenant{ Id = 3, FirstName= "Jane", LastName="Dane", Email="jd2@gmail.com", Phone="123123121"},
-            //};
-            //Expression<Func<Tenant, bool>> searchQuery = t => t.FirstName.Contains("J");
-            Expression<Func<Tenant, bool>> searchQuery = t => t.FirstName.Contains("e") || t.LastName.Contains("e");
-            //Func<IQueryable<Tenant>, IOrderedQueryable<Tenant>> orderBy = q => q.OrderBy(s => s.FirstName);
-            Func<IQueryable<Tenant>, IOrderedQueryable<Tenant>> orderBy;
-            if (searchQuery != null)
+            // search by FirstName or LastName
+            Expression<Func<Tenant, bool>> searchQuery = null;
+            if (search.Trim().Length > 0) searchQuery = t => t.FirstName.Contains(search) || t.LastName.Contains(search);
+
+            // sorting - newest first
+            Func<IQueryable<Tenant>, IOrderedQueryable<Tenant>> orderBy = null;
+            if (sort == "asc")
             {
-                orderBy = q => q.OrderBy(s => s.FirstName);
+                orderBy = q => q.OrderBy(s => s.Id);
             }
             else
             {
-                orderBy = q => q.OrderBy(s => s.LastName);
+                orderBy = q => q.OrderByDescending(s => s.Id);
             }
 
-            var tenantDtos = _repository.GetAll(searchQuery, orderBy);
-
-            return _mapper.Map<IEnumerable<TenantDto>>(tenantDtos);
+            return _mapper.Map<IEnumerable<TenantDto>>(_repository.GetAll(limit, page, searchQuery, orderBy));
         }
 
         public TenantDto GetTenantById(int id)

@@ -115,25 +115,22 @@ namespace CoreWebApi.Data
             }
         }
 
-        public IEnumerable<TModel> GetAll(Expression<Func<TModel, bool>> query = null, Func<IQueryable<TModel>, IOrderedQueryable<TModel>> orderBy = null)
+        public IEnumerable<TModel> GetAll(
+            int limit,
+            int page,
+            Expression<Func<TModel, 
+            bool>> query = null, 
+            Func<IQueryable<TModel>, IOrderedQueryable<TModel>> orderBy = null)
         {
             try
             {
                 IQueryable<TModel> dbSet = _set;
 
-                if (query != null)
-                {
-                    dbSet = dbSet.Where(query);
-                }
+                if (query != null) dbSet = dbSet.Where(query);
+                if (orderBy != null) dbSet = orderBy(dbSet);
+                dbSet = dbSet.Skip((page - 1) * limit).Take(limit);
 
-                if (orderBy != null)
-                {
-                    return orderBy(dbSet).ToList();
-                }
-                else
-                {
-                    return dbSet.ToList();
-                }
+                return dbSet.ToList();
             }
             catch (Exception ex)
             {

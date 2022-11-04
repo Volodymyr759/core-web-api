@@ -4,7 +4,7 @@ namespace CoreWebApi.Services.TenantService
 {
     public interface ITenantService
     {
-        IEnumerable<TenantDto> GetAllTenants();
+        IEnumerable<TenantDto> GetAllTenants(int limit, int page, string search, string sort_field, string sort);
         TenantDto GetTenantById(int id);
         TenantDto CreateTenant(CreateTenantDto createTenantDto);
         TenantDto UpdateTenant(TenantDto tenantDto);

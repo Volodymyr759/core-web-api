@@ -19,10 +19,28 @@ namespace CoreWebApi.Controllers
             _tenantService = tenantService;
         }
 
+        /// <summary>
+        /// Gets a list of TenantDto's with pagination params and values for search and sorting.
+        /// </summary>
+        /// <param name="limit">number of items per page</param>
+        /// <param name="page" default="10">requested page</param>
+        /// <param name="search">part of first or last name for searching</param>
+        /// <param name="sort_field">field name for sorting</param>
+        /// <param name="sort">sort direction: asc or desc</param>
+        /// <returns>Status 200 and list of TenantDto's</returns>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET /api/tenant/GetAllTenants/?limit=10&amp;page=1&amp;search=j&amp;sort_field=Id&amp;sort=desc
+        ///     
+        /// </remarks>
+        /// <response code="200">Returns the newly created TenantDto item</response>
         [HttpGet]
-        public IActionResult GetAllTenants()
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult GetAllTenants(int limit = 10, int page = 1, string search = "", string sort_field = "Id", string sort = "desc")
         {
-            return Ok(_tenantService.GetAllTenants());
+            return Ok(_tenantService.GetAllTenants(limit, page, search, sort_field, sort));
         }
 
         /// <summary>
