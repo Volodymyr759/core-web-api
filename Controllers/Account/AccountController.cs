@@ -99,6 +99,19 @@ namespace CoreWebApi.Controllers
             });
         }
 
+        /// <summary>
+        /// Login endpoint.
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///     
+        ///     POST /api/account/login
+        ///     {
+        ///         "email": "vvv@gmail.com",
+        ///         "password": "Password1."
+        ///     }
+        ///     
+        /// </remarks>
         [HttpPost]
         public async Task<IActionResult> Login(LoginModel loginModel)
         {

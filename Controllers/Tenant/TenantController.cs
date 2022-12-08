@@ -22,11 +22,11 @@ namespace CoreWebApi.Controllers
         /// <summary>
         /// Gets a list of TenantDto's with pagination params and values for search and sorting.
         /// </summary>
-        /// <param name="limit">number of items per page</param>
-        /// <param name="page" default="10">requested page</param>
+        /// <param name="limit" default="10">number of items per page</param>
+        /// <param name="page" default="1">requested page</param>
         /// <param name="search">part of first or last name for searching</param>
-        /// <param name="sort_field">field name for sorting</param>
-        /// <param name="sort">sort direction: asc or desc</param>
+        /// <param name="sort_field" default="id">field name for sorting</param>
+        /// <param name="sort" default="desc">sort direction: asc or desc</param>
         /// <returns>Status 200 and list of TenantDto's</returns>
         /// <remarks>
         /// Sample request:
@@ -65,7 +65,6 @@ namespace CoreWebApi.Controllers
         /// <summary>
         /// Creates a new Tenant Item.
         /// </summary>
-        /// <param name="createTenantDto">json object from body</param>
         /// <returns>Status 201 and created TenantDto object</returns>
         /// <remarks>
         /// Sample request:
@@ -99,7 +98,6 @@ namespace CoreWebApi.Controllers
         /// <summary>
         /// Updates an existing Tenant Item.
         /// </summary>
-        /// <param name="tenantDto">json object from body</param>
         /// <returns>Status 200 and updated TenantDto object</returns>
         /// <remarks>
         /// Sample request:
@@ -154,7 +152,7 @@ namespace CoreWebApi.Controllers
         /// Partly updates an existing Tenant Item.
         /// </summary>
         /// <param name="id">Identifier int id</param>
-        /// <param name="patchDocument">json object from body</param>
+        /// <param name="patchDocument">Json Patch Document</param>
         /// <returns>Status 200 and updated TenantDto object</returns>
         /// <remarks>
         /// Sample request:

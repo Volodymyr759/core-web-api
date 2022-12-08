@@ -118,8 +118,7 @@ namespace CoreWebApi.Data
         public IEnumerable<TModel> GetAll(
             int limit,
             int page,
-            Expression<Func<TModel, 
-            bool>> query = null, 
+            Expression<Func<TModel, bool>> query = null,
             Func<IQueryable<TModel>, IOrderedQueryable<TModel>> orderBy = null)
         {
             try

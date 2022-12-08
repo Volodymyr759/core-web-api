@@ -8,6 +8,33 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="bin\**" />
+    <Compile Remove="obj\**" />
+    <Compile Remove="Tests1\**" />
+    <Compile Remove="Tests\**" />
+    <Compile Remove="UnitTests\**" />
+    <Content Remove="bin\**" />
+    <Content Remove="obj\**" />
+    <Content Remove="Tests1\**" />
+    <Content Remove="Tests\**" />
+    <Content Remove="UnitTests\**" />
+    <EmbeddedResource Remove="bin\**" />
+    <EmbeddedResource Remove="obj\**" />
+    <EmbeddedResource Remove="Tests1\**" />
+    <EmbeddedResource Remove="Tests\**" />
+    <EmbeddedResource Remove="UnitTests\**" />
+    <None Remove="bin\**" />
+    <None Remove="obj\**" />
+    <None Remove="Tests1\**" />
+    <None Remove="Tests\**" />
+    <None Remove="UnitTests\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="CoreWebApi.sln" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.13" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="3.1.13" />
@@ -20,7 +47,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Moq" Version="4.18.2" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
     <PackageReference Include="xunit.assert" Version="2.4.2" />
     <PackageReference Include="xunit.extensibility.core" Version="2.4.2" />
