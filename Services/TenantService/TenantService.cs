@@ -15,8 +15,8 @@ namespace CoreWebApi.Services.TenantService
 
         public TenantService(IMapper mapper, IRepository<Tenant> repository)
         {
-            this._mapper = mapper;
-            this._repository = repository;
+            _mapper = mapper;
+            _repository = repository;
         }
 
         public IEnumerable<TenantDto> GetAllTenants(int limit, int page, string search, string sort_field, string sort)

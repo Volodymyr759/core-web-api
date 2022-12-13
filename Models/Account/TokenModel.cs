@@ -1,8 +1,13 @@
-﻿namespace CoreWebApi.Models.Account
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace CoreWebApi.Models.Account
 {
     public class TokenModel
     {
-        public string AuthenticationToken { get; set; }
-        public string RefreshToken { get; set; }
+        [Required]
+        public string accessToken { get; set; }
+
+        [Required]
+        public string refreshToken { get; set; }
     }
 }

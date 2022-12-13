@@ -63,7 +63,7 @@ namespace CoreWebApi.Controllers
         }
 
         /// <summary>
-        /// Creates a new Tenant Item.
+        /// Creates a new Tenant item.
         /// </summary>
         /// <returns>Status 201 and created TenantDto object</returns>
         /// <remarks>
@@ -80,29 +80,26 @@ namespace CoreWebApi.Controllers
         /// </remarks>
         /// <response code="201">Returns the newly created TenantDto item</response>
         /// <response code="400">If the argument is not valid</response>
+        /// <response code="401">If the user is not logged in</response>
         [HttpPost]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult Create(CreateTenantDto createTenantDto)
         {
-            if (ModelState.IsValid)
-            {
-                var tenantDto = _tenantService.CreateTenant(createTenantDto);
-                return Created("/api/tenant", tenantDto);
-            }
+            if (!ModelState.IsValid) return BadRequest();
 
-            return BadRequest();
+            return Created("/api/tenant", _tenantService.CreateTenant(createTenantDto));
         }
 
         /// <summary>
-        /// Updates an existing Tenant Item.
+        /// Updates an existing Tenant item.
         /// </summary>
         /// <returns>Status 200 and updated TenantDto object</returns>
         /// <remarks>
         /// Sample request:
         ///
-        ///     PUT /api/tenant/create
+        ///     PUT /api/tenant/update
         ///     {
         ///        "Id": "4",
         ///        "FirstName": "New First Name",
@@ -122,8 +119,8 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Update(TenantDto tenantDto)
         {
-            if (_tenantService.GetTenantById(tenantDto.Id) == null) return NotFound();
             if (!ModelState.IsValid) return BadRequest();
+            if (_tenantService.GetTenantById(tenantDto.Id) == null) return NotFound();
 
             return Ok(_tenantService.UpdateTenant(tenantDto));
         }

@@ -1,5 +1,4 @@
-﻿using CoreWebApi.Models.Account;
-using CoreWebApi.Models.Tenant;
+﻿using CoreWebApi.Models.Tenant;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,8 +10,6 @@ namespace CoreWebApi.Data
             : base(options)
         {
         }
-
-        public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
 
         public DbSet<Tenant> Tenants { get; set; }
     }

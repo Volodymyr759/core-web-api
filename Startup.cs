@@ -39,13 +39,20 @@ namespace CoreWebApi
 
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-            services.AddIdentity<IdentityUser, IdentityRole>()
-                .AddEntityFrameworkStores<SeerDbContext>();
-            services.AddSingleton<IConfiguration>(provider => Configuration);
+            services.AddIdentity<IdentityUser, IdentityRole>(opt =>
+            {
+                opt.Password.RequiredLength = 7;
+                opt.Password.RequireDigit = false;
+                opt.Password.RequireUppercase = false;
+                opt.User.RequireUniqueEmail = true;
+                opt.SignIn.RequireConfirmedEmail = true;
+                opt.Tokens.EmailConfirmationTokenProvider = "emailconfirmation";
+            }).AddEntityFrameworkStores<SeerDbContext>().AddDefaultTokenProviders()
+            .AddTokenProvider<EmailConfirmationTokenProvider<IdentityUser>>("emailconfirmation");
+
+            services.AddSingleton(provider => Configuration);
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddTransient<ITokenService, TokenService>();
-            services.AddTransient<IPasswordHasher, PasswordHasher>();
-
             services.AddTransient<ITenantService, TenantService>();
 
             services.AddAuthentication(options =>
@@ -150,7 +157,7 @@ namespace CoreWebApi
                 app.UseSwaggerUI(options =>
                 {
                     options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
-                    options.RoutePrefix = string.Empty;
+                    options.RoutePrefix = String.Empty; //Starts on https://localhost:<port>/swagger. To start Swagger UI in the root ( https://localhost:<port>/) - set string.Empty
                     options.InjectStylesheet("/swagger-ui/custom.css");//some styling can be added
                 });
             }

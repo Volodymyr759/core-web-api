@@ -7,6 +7,6 @@ namespace CoreWebApi.Services.AccountService
     {
         string GenerateAccessToken(IEnumerable<Claim> claims);
         string GenerateRefreshToken();
-        ClaimsPrincipal GetPrincipalFromExpiredToken(string token);
+        string GetUserEmailFromExpiredToken(string token);
     }
 }
