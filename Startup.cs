@@ -46,9 +46,7 @@ namespace CoreWebApi
                 opt.Password.RequireUppercase = false;
                 opt.User.RequireUniqueEmail = true;
                 opt.SignIn.RequireConfirmedEmail = true;
-                opt.Tokens.EmailConfirmationTokenProvider = "emailconfirmation";
-            }).AddEntityFrameworkStores<SeerDbContext>().AddDefaultTokenProviders()
-            .AddTokenProvider<EmailConfirmationTokenProvider<IdentityUser>>("emailconfirmation");
+            }).AddEntityFrameworkStores<SeerDbContext>();
 
             services.AddSingleton(provider => Configuration);
             services.AddTransient<IEmailSender, EmailSender>();

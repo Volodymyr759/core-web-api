@@ -18,7 +18,7 @@ namespace CoreWebApi.Services.AccountService
             _configuration = configuration;
         }
 
-        public string GenerateAccessToken(IEnumerable<Claim> claims)
+        public string GenerateAccessToken(IEnumerable<Claim> claims, double period)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Tokens:Key"]));
 
@@ -27,12 +27,12 @@ namespace CoreWebApi.Services.AccountService
                 audience: _configuration["Tokens:Issuer"],
                 claims: claims,
                 notBefore: DateTime.UtcNow,
-                expires: DateTime.UtcNow.AddSeconds(60 * 1),
+                expires: DateTime.UtcNow.AddMinutes(period),
                 signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
             ));
         }
 
-        public string GenerateRefreshToken()
+        public string GenerateRandomToken()
         {
             var randomNumber = new byte[32];
             using var rng = RandomNumberGenerator.Create();
@@ -58,6 +58,23 @@ namespace CoreWebApi.Services.AccountService
                 throw new SecurityTokenException("Invalid token");
 
             return jwtSecurityToken.Payload.Sub;
+        }
+
+        public bool IsTokenExpired(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            tokenHandler.ValidateToken(
+                token,
+                new TokenValidationParameters
+                {
+                    ValidateAudience = false,
+                    ValidateIssuer = false,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Tokens:Key"])),
+                    ValidateLifetime = true
+                },
+                out SecurityToken securityToken);
+            return securityToken.ValidTo < DateTime.UtcNow;
         }
     }
 }

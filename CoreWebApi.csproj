@@ -33,6 +33,7 @@
   <ItemGroup>
     <Compile Remove="Data\Migrations\20221211142202_UpdeteAspNetUsers.cs" />
     <Compile Remove="Data\Migrations\20221211142202_UpdeteAspNetUsers.Designer.cs" />
+    <Compile Remove="Services\AccountService\EmailConfirmationTokenProvider.cs" />
   </ItemGroup>
 
   <ItemGroup>

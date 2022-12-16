@@ -5,8 +5,9 @@ namespace CoreWebApi.Services.AccountService
 {
     public interface ITokenService
     {
-        string GenerateAccessToken(IEnumerable<Claim> claims);
-        string GenerateRefreshToken();
+        bool IsTokenExpired(string token);
+        string GenerateAccessToken(IEnumerable<Claim> claims, double period);
+        string GenerateRandomToken();
         string GetUserEmailFromExpiredToken(string token);
     }
 }

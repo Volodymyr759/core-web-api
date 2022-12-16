@@ -5,10 +5,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace CoreWebApi.Controllers
 {
@@ -73,9 +77,10 @@ namespace CoreWebApi.Controllers
             if (!ModelState.IsValid || !(await _userManager.CreateAsync(user, registerUserDto.Password)).Succeeded)
                 return BadRequest("Could not register user.");
             await _userManager.AddToRoleAsync(user, nameof(AppRoles.Registered));
-            var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var code = _tokenService.GenerateRandomToken();
+            await _userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation", code);
             await _emailSender.SendEmailAsync($"{user.Email}", "Confirmation email link",
-                $"Confirmation email link: /Account/ConfirmEmail/?token={emailConfirmationToken}&email={user.Email}");
+                $"Confirmation email link: /Account/ConfirmEmail/?token={code}&email={user.Email}");
 
             return Created("/register", user.Id);
         }
@@ -83,21 +88,25 @@ namespace CoreWebApi.Controllers
         /// <summary>
         /// Changes User.EmailConfirmed property
         /// </summary>
-        /// <param name="token">Token from confirmation email</param>
+        /// <param name="code">Code from confirmation email</param>
         /// <param name="email">Users email</param>
         /// <returns>Ok("Email confirmed.")</returns>
         /// <response code="200">Returns the confirmation of success</response>
         /// <response code="404">If the tenant with given email is not found</response>
         /// <response code="400">If the token has expired</response>
-        [HttpGet("{token, email}")]
+        [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> ConfirmEmail(string token, string email)
+        public async Task<IActionResult> ConfirmEmail(string code, string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null) return NotFound("User with given email not found.");
-            if (!(await _userManager.ConfirmEmailAsync(user, token)).Succeeded) return BadRequest("Could not confirm email.");
+            var result = await _userManager.GetAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation");
+            if (result == null || result != code) return BadRequest("Could not confirm email.");
+            user.EmailConfirmed = true;
+            await _userManager.UpdateAsync(user);
+            await _userManager.RemoveAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation");
 
             return Ok("Email confirmed.");
         }
@@ -119,7 +128,6 @@ namespace CoreWebApi.Controllers
         /// <response code="201">Returns the newly created tokens</response>
         /// <response code="400">If the argument is not valid</response>
         [HttpPost]
-        [Authorize(Roles = "Admin, Manager, Registered")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -127,12 +135,13 @@ namespace CoreWebApi.Controllers
         {
             var userEmail = _tokenService.GetUserEmailFromExpiredToken(tokenModel.accessToken);
             var user = await _userManager.FindByEmailAsync(userEmail);
+            if (_tokenService.IsTokenExpired(tokenModel.refreshToken)) return Forbid(); // refresh token has expired - so user should log in
             if (user == null || (await _userManager.GetAuthenticationTokenAsync(user, "CoreWebApi", "refresh"))
                 != tokenModel.refreshToken) return BadRequest("Could not update tokens.");
-            var newTokenModel = await CreateTokenModel(user);
-            await SaveTokens(user, newTokenModel);
+            var authModel = await CreateAuthModelAsync(user);
+            await SaveTokens(user, authModel.Tokens);
 
-            return Created("/account/refresh", newTokenModel);
+            return Created("/account/refresh", authModel);
         }
 
         /// <summary>
@@ -153,30 +162,39 @@ namespace CoreWebApi.Controllers
         /// <response code="404">If the user is not found</response>
         /// <response code="400">If the arguments are wrong</response>
         [HttpPost]
-        public async Task<IActionResult> Login(LoginUserDto loginUserDto)
+        public async Task<IActionResult> Login([FromBody] LoginUserDto loginUserDto)
         {
             var user = await _userManager.FindByEmailAsync(loginUserDto.Email);
             if (user == null) return NotFound("User not Found.");
             if (!ModelState.IsValid || !(await _signInManager.CheckPasswordSignInAsync(user, loginUserDto.Password, false)).Succeeded)
                 return BadRequest("Could not login user.");
-            var tokenModel = await CreateTokenModel(user);
-            await SaveTokens(user, tokenModel);
+            var authModel = await CreateAuthModelAsync(user);
+            await SaveTokens(user, authModel.Tokens);
 
-            return Ok(tokenModel);
+            return Ok(authModel);
         }
 
-        private async Task<TokenModel> CreateTokenModel(IdentityUser user) => new TokenModel()
+        private async Task<AuthModel> CreateAuthModelAsync(IdentityUser user)
         {
-            accessToken = _tokenService.GenerateAccessToken(new[]
+            var roles = await _userManager.GetRolesAsync(user);
+            var tokenClaims = new List<Claim>
                 {
                     new Claim(JwtRegisteredClaimNames.Sub, user.Email),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                    new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                    new Claim(ClaimTypes.Name, user.Email),
-                    new Claim("role", (await _userManager.GetRolesAsync(user))[0])
-                }),
-            refreshToken = _tokenService.GenerateRefreshToken()
-        };
+                };
+            foreach (var role in roles) tokenClaims.Add(new Claim("role", role));
+
+            return new AuthModel()
+            {
+                Email = user.Email,
+                Roles = roles,
+                Tokens = new TokenModel()
+                {
+                    accessToken = _tokenService.GenerateAccessToken(tokenClaims, 15),
+                    refreshToken = _tokenService.GenerateAccessToken(tokenClaims, 60 * 24 * 14)
+                }
+            };
+        }
 
         private async Task SaveTokens(IdentityUser user, TokenModel tokenModel)
         {
