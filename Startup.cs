@@ -40,7 +40,7 @@ namespace CoreWebApi
 
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             
-            services.AddIdentity<IdentityUser, IdentityRole>(opt =>
+            services.AddIdentity<ApplicationUser, IdentityRole>(opt =>
             {
                 opt.Password.RequiredLength = 7;
                 opt.Password.RequireDigit = false;

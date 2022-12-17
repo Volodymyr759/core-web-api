@@ -20,16 +20,16 @@ namespace CoreWebApi.Controllers
     [Route("api/[controller]/[action]")]
     public class AccountController : ControllerBase
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IEmailSender _emailSender;
         private readonly ITokenService _tokenService;
 
         public AccountController(
-            UserManager<IdentityUser> userManager,
+            UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager,
-            SignInManager<IdentityUser> signInManager,
+            SignInManager<ApplicationUser> signInManager,
             IEmailSender emailSender,
             ITokenService tokenService)
         {
@@ -140,10 +140,10 @@ namespace CoreWebApi.Controllers
             throw new Exception();
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetUserById([FromQuery] string Id)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetUserById([FromRoute] string id)
         {
-            var user = await _userManager.FindByIdAsync(Id);//(AppUser)
+            var user = await _userManager.FindByIdAsync(id);
             if (user == null) return NotFound("User Not Found.");
 
             return Ok(user);
@@ -153,7 +153,7 @@ namespace CoreWebApi.Controllers
         public async Task<IActionResult> UpdateUser([FromBody] EditUserDto editUserDto)
         {
             if (!ModelState.IsValid) return BadRequest("Could not update user's data.");
-            AppUser user = (AppUser)await _userManager.FindByEmailAsync(editUserDto.Email);
+            ApplicationUser user = (ApplicationUser)await _userManager.FindByEmailAsync(editUserDto.Email);
             if (user == null) return NotFound("User Not Found.");
 
             user.PhoneNumber = editUserDto.Phone;
@@ -186,7 +186,7 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Register(RegisterUserDto registerUserDto)
         {
-            var user = new AppUser { UserName = registerUserDto.Email, Email = registerUserDto.Email };
+            var user = new ApplicationUser { UserName = registerUserDto.Email, Email = registerUserDto.Email };
             if (!ModelState.IsValid || !(await _userManager.CreateAsync(user, registerUserDto.Password)).Succeeded)
                 return BadRequest("Could not register user.");
             await _userManager.AddToRoleAsync(user, nameof(AppRoles.Registered));
@@ -303,7 +303,7 @@ namespace CoreWebApi.Controllers
             return Ok("User logged out.");
         }
 
-        private async Task<AuthModel> CreateAuthModelAsync(IdentityUser user)
+        private async Task<AuthModel> CreateAuthModelAsync(ApplicationUser user)
         {
             var roles = await _userManager.GetRolesAsync(user);
             var tokenClaims = new List<Claim>
@@ -325,13 +325,13 @@ namespace CoreWebApi.Controllers
             };
         }
 
-        private async Task SaveTokens(IdentityUser user, TokenModel tokenModel)
+        private async Task SaveTokens(ApplicationUser user, TokenModel tokenModel)
         {
             await _userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "access", tokenModel.AccessToken);
             await _userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "refresh", tokenModel.RefreshToken);
         }
 
-        private async Task RemoveTokens(IdentityUser user)
+        private async Task RemoveTokens(ApplicationUser user)
         {
             await _userManager.RemoveAuthenticationTokenAsync(user, "CoreWebApi", "access");
             await _userManager.RemoveAuthenticationTokenAsync(user, "CoreWebApi", "refresh");

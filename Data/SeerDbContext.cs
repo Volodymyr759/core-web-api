@@ -7,7 +7,7 @@ using System;
 
 namespace CoreWebApi.Data
 {
-    public class SeerDbContext : IdentityDbContext
+    public class SeerDbContext : IdentityDbContext<ApplicationUser>
     {
         public SeerDbContext(DbContextOptions<SeerDbContext> options)
             : base(options)
