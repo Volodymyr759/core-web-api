@@ -5,9 +5,9 @@ namespace CoreWebApi.Models.Account
     public class TokenModel
     {
         [Required]
-        public string accessToken { get; set; }
+        public string AccessToken { get; set; }
 
         [Required]
-        public string refreshToken { get; set; }
+        public string RefreshToken { get; set; }
     }
 }

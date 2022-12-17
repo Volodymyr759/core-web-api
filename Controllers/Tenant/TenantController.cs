@@ -36,7 +36,6 @@ namespace CoreWebApi.Controllers
         /// </remarks>
         /// <response code="200">list of TenantDto's</response>
         [HttpGet]
-        [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult GetAllTenants(int limit = 10, int page = 1, string search = "", string sort_field = "Id", string sort = "desc")
         {
@@ -51,7 +50,6 @@ namespace CoreWebApi.Controllers
         /// <response code="200">Returns the requested TenantDto item</response>
         /// <response code="404">If the tenant with given id not found</response>
         [HttpGet("{id}")]
-        [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult GetById(int id)
@@ -82,7 +80,6 @@ namespace CoreWebApi.Controllers
         /// <response code="400">If the argument is not valid</response>
         /// <response code="401">If the user is not logged in</response>
         [HttpPost]
-        [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult Create(CreateTenantDto createTenantDto)
@@ -113,7 +110,6 @@ namespace CoreWebApi.Controllers
         /// <response code="400">If the argument is not valid</response>
         /// <response code="404">If the tenant with given id not found</response>
         [HttpPut]
-        [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -133,7 +129,6 @@ namespace CoreWebApi.Controllers
         /// <response code="200">Returns the deleted TenantDto item</response>
         /// <response code="404">If the tenant with given id not found</response>
         [HttpDelete("{id}")]
-        [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Delete(int id)
@@ -166,7 +161,6 @@ namespace CoreWebApi.Controllers
         /// <response code="400">If the argument is not valid</response>
         /// <response code="404">If the tenant with given id not found</response>
         [HttpPatch("{id}")]
-        [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

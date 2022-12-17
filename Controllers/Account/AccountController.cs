@@ -51,6 +51,119 @@ namespace CoreWebApi.Controllers
         }
 
         /// <summary>
+        /// Replaces a user's email by new email. Sends new confirmation letter and removes existing tokens. 
+        /// </summary>
+        /// <returns>Status 200 and message</returns>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     POST /api/account/changeemail
+        ///     {
+        ///        "ExistingEmail": "test@gmail.com",
+        ///        "NewEmail": "newtest@gmail.com",
+        ///        "Password": "Password."
+        ///     }
+        ///     
+        /// </remarks>
+        /// <response code="200">Returns status 200 and message</response>
+        /// <response code="404">If the user not found</response>
+        /// <response code="400">If the argument is not valid</response>
+        [HttpPost]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ChangeEmail([FromBody] ChangeEmailDto changeEmailDto)
+        {
+            var user = await _userManager.FindByEmailAsync(changeEmailDto.ExistingEmail);
+            if (user == null) return NotFound("User Not Found.");
+            if (!ModelState.IsValid ||
+                !(await _signInManager.CheckPasswordSignInAsync(user, changeEmailDto.Password, false)).Succeeded ||
+                (await _userManager.FindByEmailAsync(changeEmailDto.NewEmail) != null)) // is new email unique
+                return BadRequest("Could not change user's email.");
+            await RemoveTokens(user);
+            // Update user
+            user.Email = changeEmailDto.NewEmail;
+            user.UserName = changeEmailDto.NewEmail;
+            user.EmailConfirmed = false;
+            await _userManager.UpdateAsync(user);
+            // Send new confirmation letter at new email
+            var code = _tokenService.GenerateRandomToken();
+            await _userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation", code);
+            await _emailSender.SendEmailAsync($"{changeEmailDto.NewEmail}", "Confirmation email link",
+                $"Confirmation email link: /Account/ConfirmEmail/?token={code}&email={changeEmailDto.NewEmail}");
+
+            return Ok("Email has been changed successfully.");
+        }
+
+        /// <summary>
+        /// Replaces a user's password by new password. Sends new letter with new password. 
+        /// </summary>
+        /// <returns>Status 200 and message</returns>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     POST /api/account/changeemail
+        ///     {
+        ///        "Email": "test@gmail.com",
+        ///        "OldPassword": "Password.",
+        ///        "NewPassword": "NewPassword."
+        ///        "ConfirmNewPassword": "NewPassword."
+        ///     }
+        ///     
+        /// </remarks>
+        /// <response code="200">Returns status 200 and message</response>
+        /// <response code="404">If the user not found</response>
+        /// <response code="400">If the argument is not valid</response>
+        [HttpPost]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
+        {
+            var user = await _userManager.FindByEmailAsync(changePasswordDto.Email);
+            if (user == null) return NotFound("User Not Found.");
+            if (!ModelState.IsValid || !(await _signInManager.CheckPasswordSignInAsync(user, changePasswordDto.OldPassword, false)).Succeeded)
+                return BadRequest("Could not change user's password.");
+            await RemoveTokens(user);
+            await _userManager.ChangePasswordAsync(user, changePasswordDto.OldPassword, changePasswordDto.NewPassword);
+            await _emailSender.SendEmailAsync($"{changePasswordDto.Email}", "Reset Password",
+                $"Your password has been changed, use the new password {changePasswordDto.NewPassword} next login.");
+
+            return Ok("Password has been changed successfully.");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangeRole()
+        {
+            throw new Exception();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetUserById([FromQuery] string Id)
+        {
+            var user = await _userManager.FindByIdAsync(Id);//(AppUser)
+            if (user == null) return NotFound("User Not Found.");
+
+            return Ok(user);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateUser([FromBody] EditUserDto editUserDto)
+        {
+            if (!ModelState.IsValid) return BadRequest("Could not update user's data.");
+            AppUser user = (AppUser)await _userManager.FindByEmailAsync(editUserDto.Email);
+            if (user == null) return NotFound("User Not Found.");
+
+            user.PhoneNumber = editUserDto.Phone;
+            user.AvatarUrl = editUserDto.Avatar;
+            await _userManager.UpdateAsync(user);
+
+            return Ok(user);
+        }
+
+        /// <summary>
         /// Creates a new User.
         /// </summary>
         /// <returns>Status 201 and created User.Id</returns>
@@ -133,11 +246,11 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> RefreshToken(TokenModel tokenModel)
         {
-            var userEmail = _tokenService.GetUserEmailFromExpiredToken(tokenModel.accessToken);
+            var userEmail = _tokenService.GetUserEmailFromExpiredToken(tokenModel.AccessToken);
             var user = await _userManager.FindByEmailAsync(userEmail);
-            if (_tokenService.IsTokenExpired(tokenModel.refreshToken)) return Forbid(); // refresh token has expired - so user should log in
+            if (_tokenService.IsTokenExpired(tokenModel.RefreshToken)) return Forbid(); // refresh token has expired - so user should log in
             if (user == null || (await _userManager.GetAuthenticationTokenAsync(user, "CoreWebApi", "refresh"))
-                != tokenModel.refreshToken) return BadRequest("Could not update tokens.");
+                != tokenModel.RefreshToken) return BadRequest("Could not update tokens.");
             var authModel = await CreateAuthModelAsync(user);
             await SaveTokens(user, authModel.Tokens);
 
@@ -160,18 +273,34 @@ namespace CoreWebApi.Controllers
         /// </remarks>
         /// <response code="200">Returns the newly created access / refresh tokens</response>
         /// <response code="404">If the user is not found</response>
-        /// <response code="400">If the arguments are wrong</response>
+        /// <response code="400">If the arguments / password are wrong or email is not confirmed</response>
         [HttpPost]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Login([FromBody] LoginUserDto loginUserDto)
         {
             var user = await _userManager.FindByEmailAsync(loginUserDto.Email);
-            if (user == null) return NotFound("User not Found.");
-            if (!ModelState.IsValid || !(await _signInManager.CheckPasswordSignInAsync(user, loginUserDto.Password, false)).Succeeded)
+            if (user == null) return NotFound("User Not Found.");
+            if (!ModelState.IsValid ||
+                !(await _signInManager.CheckPasswordSignInAsync(user, loginUserDto.Password, false)).Succeeded ||
+                !user.EmailConfirmed)
                 return BadRequest("Could not login user.");
             var authModel = await CreateAuthModelAsync(user);
             await SaveTokens(user, authModel.Tokens);
 
             return Ok(authModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Logout([FromRoute] string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null) return NotFound("User Not Found.");
+            await RemoveTokens(user);
+
+            return Ok("User logged out.");
         }
 
         private async Task<AuthModel> CreateAuthModelAsync(IdentityUser user)
@@ -190,16 +319,22 @@ namespace CoreWebApi.Controllers
                 Roles = roles,
                 Tokens = new TokenModel()
                 {
-                    accessToken = _tokenService.GenerateAccessToken(tokenClaims, 15),
-                    refreshToken = _tokenService.GenerateAccessToken(tokenClaims, 60 * 24 * 14)
+                    AccessToken = _tokenService.GenerateAccessToken(tokenClaims, 15),
+                    RefreshToken = _tokenService.GenerateAccessToken(tokenClaims, 60 * 24 * 14)
                 }
             };
         }
 
         private async Task SaveTokens(IdentityUser user, TokenModel tokenModel)
         {
-            await _userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "access", tokenModel.accessToken);
-            await _userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "refresh", tokenModel.refreshToken);
+            await _userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "access", tokenModel.AccessToken);
+            await _userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "refresh", tokenModel.RefreshToken);
+        }
+
+        private async Task RemoveTokens(IdentityUser user)
+        {
+            await _userManager.RemoveAuthenticationTokenAsync(user, "CoreWebApi", "access");
+            await _userManager.RemoveAuthenticationTokenAsync(user, "CoreWebApi", "refresh");
         }
     }
 }

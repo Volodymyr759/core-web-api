@@ -1,4 +1,5 @@
 using CoreWebApi.Data;
+using CoreWebApi.Models.Account;
 using CoreWebApi.Services;
 using CoreWebApi.Services.AccountService;
 using CoreWebApi.Services.TenantService;
@@ -38,7 +39,7 @@ namespace CoreWebApi
             services.AddScoped(typeof(IRepository<>), typeof(EFRepository<>));
 
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-
+            
             services.AddIdentity<IdentityUser, IdentityRole>(opt =>
             {
                 opt.Password.RequiredLength = 7;
