@@ -9,21 +9,25 @@
 
   <ItemGroup>
     <Compile Remove="bin\**" />
+    <Compile Remove="Data\Migrations\**" />
     <Compile Remove="obj\**" />
     <Compile Remove="Tests1\**" />
     <Compile Remove="Tests\**" />
     <Compile Remove="UnitTests\**" />
     <Content Remove="bin\**" />
+    <Content Remove="Data\Migrations\**" />
     <Content Remove="obj\**" />
     <Content Remove="Tests1\**" />
     <Content Remove="Tests\**" />
     <Content Remove="UnitTests\**" />
     <EmbeddedResource Remove="bin\**" />
+    <EmbeddedResource Remove="Data\Migrations\**" />
     <EmbeddedResource Remove="obj\**" />
     <EmbeddedResource Remove="Tests1\**" />
     <EmbeddedResource Remove="Tests\**" />
     <EmbeddedResource Remove="UnitTests\**" />
     <None Remove="bin\**" />
+    <None Remove="Data\Migrations\**" />
     <None Remove="obj\**" />
     <None Remove="Tests1\**" />
     <None Remove="Tests\**" />
@@ -31,9 +35,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="Data\Migrations\20221211142202_UpdeteAspNetUsers.cs" />
-    <Compile Remove="Data\Migrations\20221211142202_UpdeteAspNetUsers.Designer.cs" />
     <Compile Remove="Services\AccountService\EmailConfirmationTokenProvider.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Data\Migrations\20221220145914_CreateIdentity.cs" />
+    <Compile Include="Data\Migrations\20221220145914_CreateIdentity.Designer.cs" />
+    <Compile Include="Data\Migrations\SeerDbContextModelSnapshot.cs" />
   </ItemGroup>
 
   <ItemGroup>
