@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -134,10 +135,70 @@ namespace CoreWebApi.Controllers
             return Ok("Password has been changed successfully.");
         }
 
-        [HttpPost]
-        public async Task<IActionResult> ChangeRole()
+        /// <summary>
+        /// Gets all existing user's roles from db. 
+        /// </summary>
+        /// <returns>Status 200 and list of existing roles</returns>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     Get /api/account/getallexistingroles
+        ///     
+        /// </remarks>
+        /// <response code="200">Returns status 200 and list of actual roles</response>
+        [HttpGet]
+        [Produces("application/json")]
+        public IActionResult GetAllExistingRoles()
         {
-            throw new Exception();
+            return Ok(_roleManager.Roles.Select(x => x.Name).ToList());
+        }
+
+        /// <summary>
+        /// Changes user's roles. 
+        /// </summary>
+        /// <returns>Status 200 and list of actual user's roles</returns>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     POST /api/account/changeuserroles
+        ///     {
+        ///        "UserId": "808f4f76-6dd3-4183-9e26-5ac696b9327a",
+        ///        "NeededRoles": ["Admin", "Manager"]
+        ///     }
+        ///     
+        /// </remarks>
+        /// <response code="200">Returns status 200 and list of actual user's roles</response>
+        /// <response code="404">If the user not found</response>
+        /// <response code="400">If the argument is not valid</response>
+        [HttpPost]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ChangeUserRoles([FromBody] ChangeRolesDto changeRolesDto)
+        {
+            var user = await _userManager.FindByIdAsync(changeRolesDto.UserId);
+            if (user == null) return NotFound("User Not Found.");
+
+            foreach (var role in _roleManager.Roles.Select(x => x.Name).ToList())
+            {
+                if (changeRolesDto.NeededRoles.Contains(role) && !(await _userManager.IsInRoleAsync(user, role)))
+                {
+                    await _userManager.AddToRoleAsync(user, role);
+                }
+                else if (!changeRolesDto.NeededRoles.Contains(role) && (await _userManager.IsInRoleAsync(user, role)))
+                {
+                    await _userManager.RemoveFromRoleAsync(user, role);
+                }
+                else
+                {
+                    continue;
+                }
+            }
+
+            await RemoveTokens(user);
+
+            return Ok(await _userManager.GetRolesAsync(user));
         }
 
         [HttpGet("{id}")]
@@ -153,7 +214,7 @@ namespace CoreWebApi.Controllers
         public async Task<IActionResult> UpdateUser([FromBody] EditUserDto editUserDto)
         {
             if (!ModelState.IsValid) return BadRequest("Could not update user's data.");
-            ApplicationUser user = (ApplicationUser)await _userManager.FindByEmailAsync(editUserDto.Email);
+            var user = await _userManager.FindByEmailAsync(editUserDto.Email);
             if (user == null) return NotFound("User Not Found.");
 
             user.PhoneNumber = editUserDto.Phone;
