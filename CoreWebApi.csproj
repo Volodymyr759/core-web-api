@@ -41,6 +41,8 @@
   <ItemGroup>
     <Compile Include="Data\Migrations\20221220145914_CreateIdentity.cs" />
     <Compile Include="Data\Migrations\20221220145914_CreateIdentity.Designer.cs" />
+    <Compile Include="Data\Migrations\20221221045824_SeedRolesToDb.cs" />
+    <Compile Include="Data\Migrations\20221221045824_SeedRolesToDb.Designer.cs" />
     <Compile Include="Data\Migrations\SeerDbContextModelSnapshot.cs" />
   </ItemGroup>
 

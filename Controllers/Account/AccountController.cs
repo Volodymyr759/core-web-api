@@ -15,7 +15,10 @@ using System.Threading.Tasks;
 namespace CoreWebApi.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/[controller]/[action]")]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public class AccountController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -38,14 +41,38 @@ namespace CoreWebApi.Controllers
             _tokenService = tokenService;
         }
 
-        [HttpPost]
+        /// <summary>
+        /// Creates the new IdentityRole in db by given unique parameter.
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET /api/Account/CreateRole/Test
+        ///
+        /// Returns object like this:
+        ///      {
+        ///        "id": "2194ad72-81db-410b-9bdd-d172732e3338",
+        ///        "name": "Test",
+        ///        "normalizedName": "TEST",
+        ///        "concurrencyStamp": "f8bf512d-5213-4f0a-a774-4f0f70547a7c"
+        ///      }
+        ///     
+        /// </remarks>
+        /// <param name="role">Role name</param>
+        /// <returns>Created IdentityRole object</returns>
+        /// <response code="201">Returns the created IdentityRole object</response>
+        /// <response code="400">If the argument is not unique</response>
+        /// <response code="401">If the user is not in Admin-role</response>
+        [HttpGet("{role}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> CreateRole(string role)
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> CreateRole([FromRoute] string role)
         {
             var roleToSave = new IdentityRole { Name = role };
             if (!(await _roleManager.CreateAsync(roleToSave)).Succeeded) return BadRequest($"Could not add role {role}.");
 
-            return Ok(roleToSave);
+            return Created("/api/Account/CreateRole/Test", roleToSave);
         }
 
         /// <summary>
@@ -66,8 +93,8 @@ namespace CoreWebApi.Controllers
         /// <response code="200">Returns status 200 and message</response>
         /// <response code="404">If the user not found</response>
         /// <response code="400">If the argument is not valid</response>
+        /// <response code="401">If the user is not authorized</response>
         [HttpPost]
-        [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -113,8 +140,8 @@ namespace CoreWebApi.Controllers
         /// <response code="200">Returns status 200 and message</response>
         /// <response code="404">If the user not found</response>
         /// <response code="400">If the argument is not valid</response>
+        /// <response code="401">If the user is not authorized</response>
         [HttpPost]
-        [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -139,12 +166,13 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     Get /api/account/getallexistingroles
+        ///     GET /api/account/getallexistingroles
         ///     
         /// </remarks>
         /// <response code="200">Returns status 200 and list of actual roles</response>
+        /// <response code="401">If the user is not authorized</response>
         [HttpGet]
-        [Produces("application/json")]
+        [Authorize(Roles = "Admin")]
         public IActionResult GetAllExistingRoles()
         {
             return Ok(_roleManager.Roles.Select(x => x.Name).ToList());
@@ -167,8 +195,8 @@ namespace CoreWebApi.Controllers
         /// <response code="200">Returns status 200 and list of actual user's roles</response>
         /// <response code="404">If the user not found</response>
         /// <response code="400">If the argument is not valid</response>
+        /// <response code="401">If the user is not authorized</response>
         [HttpPost]
-        [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -198,7 +226,22 @@ namespace CoreWebApi.Controllers
             return Ok(await _userManager.GetRolesAsync(user));
         }
 
+        /// <summary>
+        /// Gets user by given id. 
+        /// </summary>
+        /// <returns>Status 200 and user-object</returns>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET /api/account/GetUserById/{id}
+        ///     
+        /// </remarks>
+        /// <response code="200">Returns status 200 and list of actual roles</response>
+        /// <response code="404">If the user not found</response>
+        /// <response code="401">If the user is not authorized</response>
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetUserById([FromRoute] string id)
         {
             var user = await _userManager.FindByIdAsync(id);
@@ -207,7 +250,29 @@ namespace CoreWebApi.Controllers
             return Ok(user);
         }
 
+        /// <summary>
+        /// Updates an existing user.
+        /// </summary>
+        /// <returns>Status 200 and updated user</returns>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     POST /api/account/UpdateUser
+        ///     {
+        ///        "Email": "test@gmail.com",
+        ///        "Phone": "+380961111111",
+        ///        "Avatar": "https://somewhere.com/?userphoto=asdasdas"
+        ///     }
+        ///     
+        /// </remarks>
+        /// <response code="200">Returns status 200 and updated user</response>
+        /// <response code="404">If the user not found</response>
+        /// <response code="400">If the argument is not valid</response>
+        /// <response code="401">If the user is not authorized</response>
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> UpdateUser([FromBody] EditUserDto editUserDto)
         {
             if (!ModelState.IsValid) return BadRequest("Could not update user's data.");
@@ -239,7 +304,7 @@ namespace CoreWebApi.Controllers
         /// <response code="201">Returns the newly created User.Id</response>
         /// <response code="400">If the argument is not valid</response>
         [HttpPost]
-        [Produces("application/json")]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Register(RegisterUserDto registerUserDto)
@@ -266,6 +331,7 @@ namespace CoreWebApi.Controllers
         /// <response code="404">If the tenant with given email is not found</response>
         /// <response code="400">If the token has expired</response>
         [HttpGet]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -299,7 +365,7 @@ namespace CoreWebApi.Controllers
         /// <response code="201">Returns the newly created tokens</response>
         /// <response code="400">If the argument is not valid</response>
         [HttpPost]
-        [Produces("application/json")]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> RefreshToken(TokenModel tokenModel)
@@ -333,7 +399,7 @@ namespace CoreWebApi.Controllers
         /// <response code="404">If the user is not found</response>
         /// <response code="400">If the arguments / password are wrong or email is not confirmed</response>
         [HttpPost]
-        [Produces("application/json")]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -351,7 +417,23 @@ namespace CoreWebApi.Controllers
             return Ok(authModel);
         }
 
-        [HttpGet]
+        /// <summary>
+        /// Makes user logged out - deletes access and refresh tokens from db
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET /api/account/Logout
+        ///     
+        /// </remarks>
+        /// <param name="email">Users email</param>
+        /// <returns>Ok("User logged out.")</returns>
+        /// <response code="200">Returns the confirmation of success</response>
+        /// <response code="404">If the tenant with given email is not found</response>
+        /// <response code="401">If the user is not authorized</response>
+        [HttpGet("{email}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Logout([FromRoute] string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
