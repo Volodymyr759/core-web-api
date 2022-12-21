@@ -21,12 +21,15 @@ namespace CoreWebApi.Controllers
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public class AccountController : ControllerBase
     {
+        #region private members
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IEmailSender _emailSender;
         private readonly ITokenService _tokenService;
+        #endregion
 
+        #region ctor
         public AccountController(
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager,
@@ -40,6 +43,7 @@ namespace CoreWebApi.Controllers
             _emailSender = emailSender;
             _tokenService = tokenService;
         }
+        #endregion
 
         /// <summary>
         /// Creates the new IdentityRole in db by given unique parameter.
@@ -114,9 +118,9 @@ namespace CoreWebApi.Controllers
             await _userManager.UpdateAsync(user);
             // Send new confirmation letter at new email
             var code = _tokenService.GenerateRandomToken();
-            await _userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation", code);
-            await _emailSender.SendEmailAsync($"{changeEmailDto.NewEmail}", "Confirmation email link",
-                $"Confirmation email link: /Account/ConfirmEmail/?token={code}&email={changeEmailDto.NewEmail}");
+            await Task.WhenAll(_userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation", code),
+                _emailSender.SendEmailAsync($"{changeEmailDto.NewEmail}", "Confirmation email link",
+                    $"Confirmation email link: /Account/ConfirmEmail/?token={code}&email={changeEmailDto.NewEmail}"));
 
             return Ok("Email has been changed successfully.");
         }
@@ -151,10 +155,10 @@ namespace CoreWebApi.Controllers
             if (user == null) return NotFound("User Not Found.");
             if (!ModelState.IsValid || !(await _signInManager.CheckPasswordSignInAsync(user, changePasswordDto.OldPassword, false)).Succeeded)
                 return BadRequest("Could not change user's password.");
-            await RemoveTokens(user);
-            await _userManager.ChangePasswordAsync(user, changePasswordDto.OldPassword, changePasswordDto.NewPassword);
-            await _emailSender.SendEmailAsync($"{changePasswordDto.Email}", "Reset Password",
-                $"Your password has been changed, use the new password {changePasswordDto.NewPassword} next login.");
+            await Task.WhenAll(RemoveTokens(user),
+                _userManager.ChangePasswordAsync(user, changePasswordDto.OldPassword, changePasswordDto.NewPassword),
+                _emailSender.SendEmailAsync($"{changePasswordDto.Email}", "Reset Password",
+                $"Your password has been changed, use the new password {changePasswordDto.NewPassword} next login."));
 
             return Ok("Password has been changed successfully.");
         }
@@ -173,10 +177,8 @@ namespace CoreWebApi.Controllers
         /// <response code="401">If the user is not authorized</response>
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public IActionResult GetAllExistingRoles()
-        {
-            return Ok(_roleManager.Roles.Select(x => x.Name).ToList());
-        }
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult GetAllExistingRoles() => Ok(_roleManager.Roles.Select(x => x.Name).ToList());
 
         /// <summary>
         /// Changes user's roles. 
@@ -312,11 +314,11 @@ namespace CoreWebApi.Controllers
             var user = new ApplicationUser { UserName = registerUserDto.Email, Email = registerUserDto.Email };
             if (!ModelState.IsValid || !(await _userManager.CreateAsync(user, registerUserDto.Password)).Succeeded)
                 return BadRequest("Could not register user.");
-            await _userManager.AddToRoleAsync(user, nameof(AppRoles.Registered));
             var code = _tokenService.GenerateRandomToken();
-            await _userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation", code);
-            await _emailSender.SendEmailAsync($"{user.Email}", "Confirmation email link",
-                $"Confirmation email link: /Account/ConfirmEmail/?token={code}&email={user.Email}");
+            await Task.WhenAll(_userManager.AddToRoleAsync(user, nameof(AppRoles.Registered)),
+                _userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation", code),
+                _emailSender.SendEmailAsync($"{user.Email}", "Confirmation email link",
+                $"Confirmation email link: /Account/ConfirmEmail/?token={code}&email={user.Email}"));
 
             return Created("/register", user.Id);
         }
@@ -342,8 +344,8 @@ namespace CoreWebApi.Controllers
             var result = await _userManager.GetAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation");
             if (result == null || result != code) return BadRequest("Could not confirm email.");
             user.EmailConfirmed = true;
-            await _userManager.UpdateAsync(user);
-            await _userManager.RemoveAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation");
+            await Task.WhenAll(_userManager.UpdateAsync(user), 
+                _userManager.RemoveAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation"));
 
             return Ok("Email confirmed.");
         }
@@ -465,16 +467,12 @@ namespace CoreWebApi.Controllers
             };
         }
 
-        private async Task SaveTokens(ApplicationUser user, TokenModel tokenModel)
-        {
-            await _userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "access", tokenModel.AccessToken);
-            await _userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "refresh", tokenModel.RefreshToken);
-        }
+        private async Task SaveTokens(ApplicationUser user, TokenModel tokenModel) =>
+            await Task.WhenAll(_userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "access", tokenModel.AccessToken),
+                _userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "refresh", tokenModel.RefreshToken));
 
-        private async Task RemoveTokens(ApplicationUser user)
-        {
-            await _userManager.RemoveAuthenticationTokenAsync(user, "CoreWebApi", "access");
-            await _userManager.RemoveAuthenticationTokenAsync(user, "CoreWebApi", "refresh");
-        }
+        private async Task RemoveTokens(ApplicationUser user) =>
+            await Task.WhenAll(_userManager.RemoveAuthenticationTokenAsync(user, "CoreWebApi", "access"),
+                _userManager.RemoveAuthenticationTokenAsync(user, "CoreWebApi", "refresh"));
     }
 }
