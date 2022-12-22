@@ -51,7 +51,7 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/Account/CreateRole/Test
+        ///     GET /api/Account/CreateRoleAsync/Test
         ///
         /// Returns object like this:
         ///      {
@@ -71,7 +71,7 @@ namespace CoreWebApi.Controllers
         [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> CreateRole([FromRoute] string role)
+        public async Task<IActionResult> CreateRoleAsync([FromRoute] string role)
         {
             var roleToSave = new IdentityRole { Name = role };
             if (!(await _roleManager.CreateAsync(roleToSave)).Succeeded) return BadRequest($"Could not add role {role}.");
@@ -86,7 +86,7 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     POST /api/account/changeemail
+        ///     POST /api/account/ChangeEmailAsync
         ///     {
         ///        "ExistingEmail": "test@gmail.com",
         ///        "NewEmail": "newtest@gmail.com",
@@ -102,7 +102,7 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> ChangeEmail([FromBody] ChangeEmailDto changeEmailDto)
+        public async Task<IActionResult> ChangeEmailAsync([FromBody] ChangeEmailDto changeEmailDto)
         {
             var user = await _userManager.FindByEmailAsync(changeEmailDto.ExistingEmail);
             if (user == null) return NotFound("User Not Found.");
@@ -132,7 +132,7 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     POST /api/account/changeemail
+        ///     POST /api/account/ChangePasswordAsync
         ///     {
         ///        "Email": "test@gmail.com",
         ///        "OldPassword": "Password.",
@@ -149,16 +149,16 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
+        public async Task<IActionResult> ChangePasswordAsync([FromBody] ChangePasswordDto changePasswordDto)
         {
             var user = await _userManager.FindByEmailAsync(changePasswordDto.Email);
             if (user == null) return NotFound("User Not Found.");
             if (!ModelState.IsValid || !(await _signInManager.CheckPasswordSignInAsync(user, changePasswordDto.OldPassword, false)).Succeeded)
                 return BadRequest("Could not change user's password.");
-            await Task.WhenAll(RemoveTokens(user),
-                _userManager.ChangePasswordAsync(user, changePasswordDto.OldPassword, changePasswordDto.NewPassword),
-                _emailSender.SendEmailAsync($"{changePasswordDto.Email}", "Reset Password",
-                $"Your password has been changed, use the new password {changePasswordDto.NewPassword} next login."));
+            await RemoveTokens(user);
+            await _userManager.ChangePasswordAsync(user, changePasswordDto.OldPassword, changePasswordDto.NewPassword);
+            await _emailSender.SendEmailAsync($"{changePasswordDto.Email}", "Reset Password",
+                $"Your password has been changed, use the new password {changePasswordDto.NewPassword} next login.");
 
             return Ok("Password has been changed successfully.");
         }
@@ -187,7 +187,7 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     POST /api/account/changeuserroles
+        ///     POST /api/account/ChangeUserRolesAsync
         ///     {
         ///        "UserId": "808f4f76-6dd3-4183-9e26-5ac696b9327a",
         ///        "NeededRoles": ["Admin", "Manager"]
@@ -202,7 +202,7 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> ChangeUserRoles([FromBody] ChangeRolesDto changeRolesDto)
+        public async Task<IActionResult> ChangeUserRolesAsync([FromBody] ChangeRolesDto changeRolesDto)
         {
             var user = await _userManager.FindByIdAsync(changeRolesDto.UserId);
             if (user == null) return NotFound("User Not Found.");
@@ -235,7 +235,7 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/account/GetUserById/{id}
+        ///     GET /api/account/GetUserByIdAsync/{id}
         ///     
         /// </remarks>
         /// <response code="200">Returns status 200 and list of actual roles</response>
@@ -244,7 +244,7 @@ namespace CoreWebApi.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetUserById([FromRoute] string id)
+        public async Task<IActionResult> GetUserByIdAsync([FromRoute] string id)
         {
             var user = await _userManager.FindByIdAsync(id);
             if (user == null) return NotFound("User Not Found.");
@@ -259,7 +259,7 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     POST /api/account/UpdateUser
+        ///     POST /api/account/UpdateUserAsync
         ///     {
         ///        "Email": "test@gmail.com",
         ///        "Phone": "+380961111111",
@@ -275,7 +275,7 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> UpdateUser([FromBody] EditUserDto editUserDto)
+        public async Task<IActionResult> UpdateUserAsync([FromBody] EditUserDto editUserDto)
         {
             if (!ModelState.IsValid) return BadRequest("Could not update user's data.");
             var user = await _userManager.FindByEmailAsync(editUserDto.Email);
@@ -295,7 +295,7 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     POST /api/account/register
+        ///     POST /api/account/RegisterAsync
         ///     {
         ///        "Email": "test@gmail.com",
         ///        "Password": "Password.",
@@ -309,16 +309,16 @@ namespace CoreWebApi.Controllers
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Register(RegisterUserDto registerUserDto)
+        public async Task<IActionResult> RegisterAsync(RegisterUserDto registerUserDto)
         {
             var user = new ApplicationUser { UserName = registerUserDto.Email, Email = registerUserDto.Email };
             if (!ModelState.IsValid || !(await _userManager.CreateAsync(user, registerUserDto.Password)).Succeeded)
                 return BadRequest("Could not register user.");
             var code = _tokenService.GenerateRandomToken();
-            await Task.WhenAll(_userManager.AddToRoleAsync(user, nameof(AppRoles.Registered)),
-                _userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation", code),
-                _emailSender.SendEmailAsync($"{user.Email}", "Confirmation email link",
-                $"Confirmation email link: /Account/ConfirmEmail/?token={code}&email={user.Email}"));
+            await _userManager.AddToRoleAsync(user, nameof(AppRoles.Registered));
+            await _userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation", code);
+            await _emailSender.SendEmailAsync($"{user.Email}", "Confirmation email link",
+                $"Confirmation email link: /Account/ConfirmEmail/?token={code}&email={user.Email}");
 
             return Created("/register", user.Id);
         }
@@ -337,15 +337,15 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> ConfirmEmail(string code, string email)
+        public async Task<IActionResult> ConfirmEmailAsync(string code, string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null) return NotFound("User with given email not found.");
             var result = await _userManager.GetAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation");
             if (result == null || result != code) return BadRequest("Could not confirm email.");
             user.EmailConfirmed = true;
-            await Task.WhenAll(_userManager.UpdateAsync(user), 
-                _userManager.RemoveAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation"));
+            await _userManager.UpdateAsync(user);
+            await _userManager.RemoveAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation");
 
             return Ok("Email confirmed.");
         }
@@ -357,7 +357,7 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     POST /api/account/refreshtoken
+        ///     POST /api/account/RefreshTokenAsync
         ///     {
         ///        "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWI...",
         ///        "refreshToken": "PFYIdnb0vMvz0FcV/jKKgbpT3MEA0FNGAPegBkWXr00=",
@@ -370,7 +370,7 @@ namespace CoreWebApi.Controllers
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> RefreshToken(TokenModel tokenModel)
+        public async Task<IActionResult> RefreshTokenAsync(TokenModel tokenModel)
         {
             var userEmail = _tokenService.GetUserEmailFromExpiredToken(tokenModel.AccessToken);
             var user = await _userManager.FindByEmailAsync(userEmail);
@@ -378,7 +378,7 @@ namespace CoreWebApi.Controllers
             if (user == null || (await _userManager.GetAuthenticationTokenAsync(user, "CoreWebApi", "refresh"))
                 != tokenModel.RefreshToken) return BadRequest("Could not update tokens.");
             var authModel = await CreateAuthModelAsync(user);
-            await SaveTokens(user, authModel.Tokens);
+            await SaveTokensAsync(user, authModel.Tokens);
 
             return Created("/account/refresh", authModel);
         }
@@ -390,7 +390,7 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///     
-        ///     POST /api/account/login
+        ///     POST /api/account/LoginAsync
         ///     {
         ///         "email": "vvv@gmail.com",
         ///         "password": "Password1."
@@ -405,7 +405,7 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Login([FromBody] LoginUserDto loginUserDto)
+        public async Task<IActionResult> LoginAsync([FromBody] LoginUserDto loginUserDto)
         {
             var user = await _userManager.FindByEmailAsync(loginUserDto.Email);
             if (user == null) return NotFound("User Not Found.");
@@ -414,7 +414,7 @@ namespace CoreWebApi.Controllers
                 !user.EmailConfirmed)
                 return BadRequest("Could not login user.");
             var authModel = await CreateAuthModelAsync(user);
-            await SaveTokens(user, authModel.Tokens);
+            await SaveTokensAsync(user, authModel.Tokens);
 
             return Ok(authModel);
         }
@@ -425,7 +425,7 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/account/Logout
+        ///     GET /api/account/LogoutAsync
         ///     
         /// </remarks>
         /// <param name="email">Users email</param>
@@ -436,7 +436,7 @@ namespace CoreWebApi.Controllers
         [HttpGet("{email}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Logout([FromRoute] string email)
+        public async Task<IActionResult> LogoutAsync([FromRoute] string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null) return NotFound("User Not Found.");
@@ -467,12 +467,16 @@ namespace CoreWebApi.Controllers
             };
         }
 
-        private async Task SaveTokens(ApplicationUser user, TokenModel tokenModel) =>
-            await Task.WhenAll(_userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "access", tokenModel.AccessToken),
-                _userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "refresh", tokenModel.RefreshToken));
+        private async Task SaveTokensAsync(ApplicationUser user, TokenModel tokenModel)
+        {
+            await _userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "access", tokenModel.AccessToken);
+            await _userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "refresh", tokenModel.RefreshToken);
+        }
 
-        private async Task RemoveTokens(ApplicationUser user) =>
-            await Task.WhenAll(_userManager.RemoveAuthenticationTokenAsync(user, "CoreWebApi", "access"),
-                _userManager.RemoveAuthenticationTokenAsync(user, "CoreWebApi", "refresh"));
+        private async Task RemoveTokens(ApplicationUser user)
+        {
+            await _userManager.RemoveAuthenticationTokenAsync(user, "CoreWebApi", "access");
+            await _userManager.RemoveAuthenticationTokenAsync(user, "CoreWebApi", "refresh");
+        }
     }
 }
