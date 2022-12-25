@@ -43,6 +43,18 @@
     <Compile Include="Data\Migrations\20221220145914_CreateIdentity.Designer.cs" />
     <Compile Include="Data\Migrations\20221221045824_SeedRolesToDb.cs" />
     <Compile Include="Data\Migrations\20221221045824_SeedRolesToDb.Designer.cs" />
+    <Compile Include="Data\Migrations\20221225051426_CreateCompanyService.cs" />
+    <Compile Include="Data\Migrations\20221225051426_CreateCompanyService.Designer.cs" />
+    <Compile Include="Data\Migrations\20221225063309_CreateMailSubscriptionsAndSubscribers.cs" />
+    <Compile Include="Data\Migrations\20221225063309_CreateMailSubscriptionsAndSubscribers.Designer.cs" />
+    <Compile Include="Data\Migrations\20221225085739_CreateCoutryAndOffice.cs" />
+    <Compile Include="Data\Migrations\20221225085739_CreateCoutryAndOffice.Designer.cs" />
+    <Compile Include="Data\Migrations\20221225103351_CreateEmployees.cs" />
+    <Compile Include="Data\Migrations\20221225103351_CreateEmployees.Designer.cs" />
+    <Compile Include="Data\Migrations\20221225112028_CreateVacancies.cs" />
+    <Compile Include="Data\Migrations\20221225112028_CreateVacancies.Designer.cs" />
+    <Compile Include="Data\Migrations\20221225113412_CreateCandidates.cs" />
+    <Compile Include="Data\Migrations\20221225113412_CreateCandidates.Designer.cs" />
     <Compile Include="Data\Migrations\SeerDbContextModelSnapshot.cs" />
   </ItemGroup>
 

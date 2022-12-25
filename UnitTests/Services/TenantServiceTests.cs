@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
-using CoreWebApi.Models.Tenant;
+using CoreWebApi.Models;
 using CoreWebApi.Services.TenantService;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;

@@ -1,5 +1,5 @@
 ﻿using CoreWebApi.Models.Account;
-using CoreWebApi.Models.Tenant;
+using CoreWebApi.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -9,11 +9,23 @@ namespace CoreWebApi.Data
     public class SeerDbContext : IdentityDbContext<ApplicationUser>
     {
         public SeerDbContext(DbContextOptions<SeerDbContext> options)
-            : base(options)
-        {
-        }
+            : base(options) { }
+
+        public DbSet<Candidate> Candidates { get; set; }
+
+        public DbSet<CompanyService> CompanyServices { get; set; }
+
+        public DbSet<Country> Countries { get; set; }
 
         public DbSet<Tenant> Tenants { get; set; }
+
+        public DbSet<MailSubscriber> MailSubscribers { get; set; }
+
+        public DbSet<MailSubscription> MailSubscriptions { get; set; }
+
+        public DbSet<Office> Offices { get; set; }
+
+        public DbSet<Vacancy> Vacancies { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

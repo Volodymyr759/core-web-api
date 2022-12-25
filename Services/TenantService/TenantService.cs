@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
-using CoreWebApi.Models.Tenant;
+using CoreWebApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using CoreWebApi.Models.Tenant;
+using CoreWebApi.Models;
 using CoreWebApi.Services.TenantService;
 
 namespace CoreWebApi.Services

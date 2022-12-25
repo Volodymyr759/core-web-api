@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace CoreWebApi.Models.Tenant
+namespace CoreWebApi.Models
 {
-    public class Tenant : ITenant
+    public class Tenant
     {
         [Key]
         public int Id { get; set; }
