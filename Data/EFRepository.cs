@@ -40,7 +40,6 @@ namespace CoreWebApi.Data
             {
                 _set.Add(model);
                 await _context.SaveChangesAsync();
-
             }
             catch (Exception ex)
             {
@@ -61,9 +60,23 @@ namespace CoreWebApi.Data
             }
         }
 
-        public void Delete(int id)
+        public TModel Delete(int id)
         {
-            throw new NotImplementedException();
+            TModel model = _set.Find(id);
+            try
+            {
+                if (model != null)
+                {
+                    _set.Remove(model);
+                    _context.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new DeleteEntityFailedException(typeof(TModel), ex);
+            }
+
+            return model;
         }
 
         public async void DeleteAsync(TModel model)

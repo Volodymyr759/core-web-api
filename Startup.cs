@@ -50,6 +50,7 @@ namespace CoreWebApi
             }).AddEntityFrameworkStores<SeerDbContext>();
 
             services.AddSingleton(provider => Configuration);
+            services.AddTransient<ICountryService, CountryService>();
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddTransient<ITokenService, TokenService>();
             services.AddTransient<ITenantService, TenantService>();

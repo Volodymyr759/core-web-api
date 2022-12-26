@@ -11,7 +11,7 @@ namespace CoreWebApi.Data
         TModel Create(TModel model);
         Task CreateAsync(TModel model);
         void Delete(TModel model);
-        void Delete(int id);
+        TModel Delete(int id);
         void DeleteAsync(TModel model);
         TModel Get(int id);
         TModel Get(Expression<Func<TModel, bool>> query);

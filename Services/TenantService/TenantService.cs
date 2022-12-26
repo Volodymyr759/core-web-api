@@ -27,14 +27,7 @@ namespace CoreWebApi.Services.TenantService
 
             // sorting - newest first
             Func<IQueryable<Tenant>, IOrderedQueryable<Tenant>> orderBy = null;
-            if (sort == "asc")
-            {
-                orderBy = q => q.OrderBy(s => s.Id);
-            }
-            else
-            {
-                orderBy = q => q.OrderByDescending(s => s.Id);
-            }
+            orderBy = sort == "asc" ? q => q.OrderBy(s => s.Id) : orderBy = q => q.OrderByDescending(s => s.Id);
 
             return _mapper.Map<IEnumerable<TenantDto>>(_repository.GetAll(limit, page, searchQuery, orderBy));
         }
