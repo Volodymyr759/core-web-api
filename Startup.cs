@@ -2,6 +2,10 @@ using CoreWebApi.Data;
 using CoreWebApi.Models.Account;
 using CoreWebApi.Services;
 using CoreWebApi.Services.AccountService;
+using CoreWebApi.Services.CompanyServiceBL;
+using CoreWebApi.Services.CountryService;
+using CoreWebApi.Services.MailSubscriberService;
+using CoreWebApi.Services.MailSubscriptionService;
 using CoreWebApi.Services.TenantService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -39,7 +43,7 @@ namespace CoreWebApi
             services.AddScoped(typeof(IRepository<>), typeof(EFRepository<>));
 
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-            
+
             services.AddIdentity<ApplicationUser, IdentityRole>(opt =>
             {
                 opt.Password.RequiredLength = 7;
@@ -50,16 +54,21 @@ namespace CoreWebApi
             }).AddEntityFrameworkStores<SeerDbContext>();
 
             services.AddSingleton(provider => Configuration);
+            services.AddTransient<ICompanyServiceBL, CompanyServiceBL>();
             services.AddTransient<ICountryService, CountryService>();
             services.AddTransient<IEmailSender, EmailSender>();
-            services.AddTransient<ITokenService, TokenService>();
+            services.AddTransient<IMailSubscriberService, MailSubscriberService>();
+            services.AddTransient<IMailSubscriptionService, MailSubscriptionService>();
             services.AddTransient<ITenantService, TenantService>();
+            services.AddTransient<ITokenService, TokenService>();
 
-            services.AddAuthentication(options =>
+            services.AddAuthentication(
+                options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(options =>
+            }).AddJwtBearer(
+                options =>
             {
                 options.RequireHttpsMetadata = false;
                 options.SaveToken = true;
@@ -145,7 +154,6 @@ namespace CoreWebApi
                 var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
             });
-
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -164,12 +172,9 @@ namespace CoreWebApi
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
             app.UseRouting();
-
             app.UseAuthentication();
             app.UseAuthorization();
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

@@ -167,7 +167,7 @@ namespace UnitTests.Services
             // the same scenario like in 'Create' method
             var companyServiceDtoToUpdate = new CompanyServiceDto() { Title = "Testing service", Description = "Test description", ImageUrl = "https://somewhere/111", IsActive = true };
             mockMapper.Setup(x => x.Map<CompanyService>(It.IsAny<CompanyServiceDto>())).Returns(new CompanyService());
-            mockCompanyServiceRepository.Setup(r => r.Create(new CompanyService())).Returns(new CompanyService()
+            mockCompanyServiceRepository.Setup(r => r.Update(new CompanyService())).Returns(new CompanyService()
             {
                 Id = int.MaxValue,
                 Title = companyServiceDtoToUpdate.Title,
@@ -202,7 +202,7 @@ namespace UnitTests.Services
         }
 
         [TestMethod]
-        public void DeleteCompanyServiceById_ReturnsId()
+        public void DeleteCompanyServiceById_ReturnsCompanyServiceDto()
         {
             // Arrange
             // scenario:
@@ -232,20 +232,20 @@ namespace UnitTests.Services
         private IEnumerable<CompanyService> GetTestCompanyServices()
         {
             return new List<CompanyService>() {
-                new CompanyService { Id = 1, Title ="Lorem Ipsum", Description ="Voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi", ImageUrl="https://somewhere/1", IsActive=true },
-                new CompanyService { Id = 2, Title ="Sed ut perspiciatis", Description ="Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore", ImageUrl="https://somewhere/2", IsActive=true },
-                new CompanyService { Id = 3, Title ="Magni Dolores", Description ="Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia", ImageUrl="https://somewhere/3", IsActive=true },
-                new CompanyService { Id = 4, Title ="Nemo Enim", Description ="At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis", ImageUrl="https://somewhere/4", IsActive=true }
+                new CompanyService { Id = 1, Title ="Lorem Ipsum", Description ="Voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi", ImageUrl="https://somewhere.com/1", IsActive=true },
+                new CompanyService { Id = 2, Title ="Sed ut perspiciatis", Description ="Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore", ImageUrl="https://somewhere.com/2", IsActive=true },
+                new CompanyService { Id = 3, Title ="Magni Dolores", Description ="Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia", ImageUrl="https://somewhere.com/3", IsActive=true },
+                new CompanyService { Id = 4, Title ="Nemo Enim", Description ="At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis", ImageUrl="https://somewhere.com/4", IsActive=true }
             };
         }
 
         private IEnumerable<CompanyServiceDto> GetTestCompanyServiceDtos()
         {
             return new List<CompanyServiceDto>() {
-                new CompanyServiceDto { Id = 1, Title ="Lorem Ipsum", Description ="Voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi", ImageUrl="https://somewhere/1", IsActive=true },
-                new CompanyServiceDto { Id = 2, Title ="Sed ut perspiciatis", Description ="Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore", ImageUrl="https://somewhere/2", IsActive=true },
-                new CompanyServiceDto { Id = 3, Title ="Magni Dolores", Description ="Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia", ImageUrl="https://somewhere/3", IsActive=true },
-                new CompanyServiceDto { Id = 4, Title ="Nemo Enim", Description ="At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis", ImageUrl="https://somewhere/4", IsActive=true }
+                new CompanyServiceDto { Id = 1, Title ="Lorem Ipsum", Description ="Voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi", ImageUrl="https://somewhere.com/1", IsActive=true },
+                new CompanyServiceDto { Id = 2, Title ="Sed ut perspiciatis", Description ="Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore", ImageUrl="https://somewhere.com/2", IsActive=true },
+                new CompanyServiceDto { Id = 3, Title ="Magni Dolores", Description ="Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia", ImageUrl="https://somewhere.com/3", IsActive=true },
+                new CompanyServiceDto { Id = 4, Title ="Nemo Enim", Description ="At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis", ImageUrl="https://somewhere.com/4", IsActive=true }
             };
         }
 

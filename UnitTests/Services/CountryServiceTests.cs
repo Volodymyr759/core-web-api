@@ -164,7 +164,7 @@ namespace UnitTests.Services
             // the same scenario like in 'Create' method
             var countryDtoToUpdate = new CountryDto() { Id = 1, Name = "Bulgary", Code = "BUL" };
             mockMapper.Setup(x => x.Map<Country>(It.IsAny<CountryDto>())).Returns(new Country());
-            mockCountryRepository.Setup(r => r.Create(new Country())).Returns(new Country()
+            mockCountryRepository.Setup(r => r.Update(new Country())).Returns(new Country()
             {
                 Id = countryDtoToUpdate.Id,
                 Name = countryDtoToUpdate.Name,
@@ -195,7 +195,7 @@ namespace UnitTests.Services
         }
 
         [TestMethod]
-        public void DeleteCountryById_ReturnsId()
+        public void DeleteCountryById_ReturnsCountryDto()
         {
             // Arrange
             // scenario:

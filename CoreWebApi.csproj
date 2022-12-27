@@ -55,6 +55,10 @@
     <Compile Include="Data\Migrations\20221225112028_CreateVacancies.Designer.cs" />
     <Compile Include="Data\Migrations\20221225113412_CreateCandidates.cs" />
     <Compile Include="Data\Migrations\20221225113412_CreateCandidates.Designer.cs" />
+    <Compile Include="Data\Migrations\20221227040847_SeedMailSubscriptions.cs" />
+    <Compile Include="Data\Migrations\20221227040847_SeedMailSubscriptions.Designer.cs" />
+    <Compile Include="Data\Migrations\20221227041312_SeedMailSubscribers.cs" />
+    <Compile Include="Data\Migrations\20221227041312_SeedMailSubscribers.Designer.cs" />
     <Compile Include="Data\Migrations\SeerDbContextModelSnapshot.cs" />
   </ItemGroup>
 

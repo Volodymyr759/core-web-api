@@ -10,13 +10,13 @@ namespace CoreWebApi.Services.TenantService
 {
     public class TenantService : ITenantService
     {
-        private readonly IMapper _mapper;
-        private readonly IRepository<Tenant> _repository;
+        private readonly IMapper mapper;
+        private readonly IRepository<Tenant> repository;
 
         public TenantService(IMapper mapper, IRepository<Tenant> repository)
         {
-            _mapper = mapper;
-            _repository = repository;
+            this.mapper = mapper;
+            this.repository = repository;
         }
 
         public IEnumerable<TenantDto> GetAllTenants(int limit, int page, string search, string sort_field, string sort)
@@ -29,31 +29,31 @@ namespace CoreWebApi.Services.TenantService
             Func<IQueryable<Tenant>, IOrderedQueryable<Tenant>> orderBy = null;
             orderBy = sort == "asc" ? q => q.OrderBy(s => s.Id) : orderBy = q => q.OrderByDescending(s => s.Id);
 
-            return _mapper.Map<IEnumerable<TenantDto>>(_repository.GetAll(limit, page, searchQuery, orderBy));
+            return mapper.Map<IEnumerable<TenantDto>>(repository.GetAll(limit, page, searchQuery, orderBy));
         }
 
         public TenantDto GetTenantById(int id)
         {
-            return _mapper.Map<TenantDto>(_repository.Get(t => t.Id == id));
+            return mapper.Map<TenantDto>(repository.Get(t => t.Id == id));
         }
 
         public TenantDto CreateTenant(CreateTenantDto createTenantDto)
         {
-            var tenant = _mapper.Map<Tenant>(createTenantDto);
+            var tenant = mapper.Map<Tenant>(createTenantDto);
 
-            return _mapper.Map<TenantDto>(_repository.Create(tenant));
+            return mapper.Map<TenantDto>(repository.Create(tenant));
         }
 
         public void DeleteTenant(TenantDto tenantDto)
         {
-            _repository.Delete(_mapper.Map<Tenant>(tenantDto));
+            repository.Delete(mapper.Map<Tenant>(tenantDto));
         }
 
         public TenantDto UpdateTenant(TenantDto tenantDto)
         {
-            var tenant = _mapper.Map<Tenant>(tenantDto);
+            var tenant = mapper.Map<Tenant>(tenantDto);
 
-            return _mapper.Map<TenantDto>(_repository.Update(tenant));
+            return mapper.Map<TenantDto>(repository.Update(tenant));
         }
     }
 }
