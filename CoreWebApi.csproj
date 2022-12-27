@@ -11,24 +11,28 @@
     <Compile Remove="bin\**" />
     <Compile Remove="Data\Migrations\**" />
     <Compile Remove="obj\**" />
+    <Compile Remove="packages\**" />
     <Compile Remove="Tests1\**" />
     <Compile Remove="Tests\**" />
     <Compile Remove="UnitTests\**" />
     <Content Remove="bin\**" />
     <Content Remove="Data\Migrations\**" />
     <Content Remove="obj\**" />
+    <Content Remove="packages\**" />
     <Content Remove="Tests1\**" />
     <Content Remove="Tests\**" />
     <Content Remove="UnitTests\**" />
     <EmbeddedResource Remove="bin\**" />
     <EmbeddedResource Remove="Data\Migrations\**" />
     <EmbeddedResource Remove="obj\**" />
+    <EmbeddedResource Remove="packages\**" />
     <EmbeddedResource Remove="Tests1\**" />
     <EmbeddedResource Remove="Tests\**" />
     <EmbeddedResource Remove="UnitTests\**" />
     <None Remove="bin\**" />
     <None Remove="Data\Migrations\**" />
     <None Remove="obj\**" />
+    <None Remove="packages\**" />
     <None Remove="Tests1\**" />
     <None Remove="Tests\**" />
     <None Remove="UnitTests\**" />
@@ -36,6 +40,11 @@
 
   <ItemGroup>
     <Compile Remove="Services\AccountService\EmailConfirmationTokenProvider.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove=".%24DB_Schema.drawio.bkp" />
+    <None Remove="DB_Schema.drawio" />
   </ItemGroup>
 
   <ItemGroup>
@@ -80,8 +89,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
-    <PackageReference Include="xunit.assert" Version="2.4.2" />
-    <PackageReference Include="xunit.extensibility.core" Version="2.4.2" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties properties_4launchsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>

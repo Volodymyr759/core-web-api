@@ -16,11 +16,9 @@ namespace UnitTests.Services
         #region Private Members
 
         private string errorMessage;
-
         private Mock<IRepository<MailSubscriber>> mockMailSubscriberRepository;
-
+        private Mock<IRepository<MailSubscription>> mockMailSubscriptionRepository;
         private Mock<IMapper> mockMapper;
-
         private MailSubscriberService mailSubscriberService;
 
         #endregion
@@ -32,14 +30,43 @@ namespace UnitTests.Services
         {
             errorMessage = "";
             mockMailSubscriberRepository = new Mock<IRepository<MailSubscriber>>();
+            mockMailSubscriptionRepository = new Mock<IRepository<MailSubscription>>();
             mockMapper = new Mock<IMapper>();
-            mailSubscriberService = new MailSubscriberService(mockMapper.Object, mockMailSubscriberRepository.Object);
+            mailSubscriberService = new MailSubscriberService(
+                mockMapper.Object, 
+                mockMailSubscriberRepository.Object,
+                mockMailSubscriptionRepository.Object);
         }
 
         [TestCleanup()]
         public void CountryServiceTestsCleanup()
         {
             mailSubscriberService = null;
+        }
+
+        private IEnumerable<MailSubscriber> GetTestMailSubscribers()
+        {
+            return new List<MailSubscriber>() {
+                new MailSubscriber { Id = 1, Email = "test1@gmail.com", IsSubscribed = true, MailSubscriptionId = 1 },
+                new MailSubscriber { Id = 2, Email = "test2@gmail.com", IsSubscribed = true, MailSubscriptionId = 1 },
+                new MailSubscriber { Id = 3, Email = "test31@gmail.com", IsSubscribed = true, MailSubscriptionId = 1 }
+            };
+        }
+
+        private IEnumerable<MailSubscriberDto> GetTestMailSubscriberDtos()
+        {
+            return new List<MailSubscriberDto>() {
+                new MailSubscriberDto {
+                    Id = 1, Email = "test1@gmail.com",
+                    IsSubscribed = true,
+                    MailSubscriptionId = 1,
+                    MailSubscriptionDto = new MailSubscriptionDto {
+                        Id = 1,
+                        Title = "Test subscription",
+                        Content = "Test content" } },
+                new MailSubscriberDto { Id = 2, Email = "test2@gmail.com", IsSubscribed = true, MailSubscriptionId = 1 },
+                new MailSubscriberDto { Id = 3, Email = "test3@gmail.com", IsSubscribed = true, MailSubscriptionId = 1 }
+            };
         }
 
         #endregion
@@ -186,31 +213,6 @@ namespace UnitTests.Services
             //Assert
             Assert.IsNotNull(mailSubscriberDto, errorMessage);
             Assert.IsInstanceOfType(mailSubscriberDto, typeof(MailSubscriberDto), errorMessage);
-        }
-
-        private IEnumerable<MailSubscriber> GetTestMailSubscribers()
-        {
-            return new List<MailSubscriber>() {
-                new MailSubscriber { Id = 1, Email = "test1@gmail.com", IsSubscribed = true, MailSubscriptionId = 1 },
-                new MailSubscriber { Id = 2, Email = "test2@gmail.com", IsSubscribed = true, MailSubscriptionId = 1 },
-                new MailSubscriber { Id = 3, Email = "test31@gmail.com", IsSubscribed = true, MailSubscriptionId = 1 }
-            };
-        }
-
-        private IEnumerable<MailSubscriberDto> GetTestMailSubscriberDtos()
-        {
-            return new List<MailSubscriberDto>() {
-                new MailSubscriberDto {
-                    Id = 1, Email = "test1@gmail.com",
-                    IsSubscribed = true,
-                    MailSubscriptionId = 1,
-                    MailSubscriptionDto = new MailSubscriptionDto {
-                        Id = 1,
-                        Title = "Test subscription",
-                        Content = "Test content" } },
-                new MailSubscriberDto { Id = 2, Email = "test2@gmail.com", IsSubscribed = true, MailSubscriptionId = 1 },
-                new MailSubscriberDto { Id = 3, Email = "test3@gmail.com", IsSubscribed = true, MailSubscriptionId = 1 }
-            };
         }
     }
 }
