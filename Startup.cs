@@ -4,9 +4,12 @@ using CoreWebApi.Services;
 using CoreWebApi.Services.AccountService;
 using CoreWebApi.Services.CompanyServiceBL;
 using CoreWebApi.Services.CountryService;
+using CoreWebApi.Services.EmployeeService;
 using CoreWebApi.Services.MailSubscriberService;
 using CoreWebApi.Services.MailSubscriptionService;
+using CoreWebApi.Services.OfficeService;
 using CoreWebApi.Services.TenantService;
+using CoreWebApi.Services.VacancyService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -57,10 +60,13 @@ namespace CoreWebApi
             services.AddTransient<ICompanyServiceBL, CompanyServiceBL>();
             services.AddTransient<ICountryService, CountryService>();
             services.AddTransient<IEmailSender, EmailSender>();
+            services.AddTransient<IEmployeeService, EmployeeService>();
             services.AddTransient<IMailSubscriberService, MailSubscriberService>();
             services.AddTransient<IMailSubscriptionService, MailSubscriptionService>();
+            services.AddTransient<IOfficeService, OfficeService>();
             services.AddTransient<ITenantService, TenantService>();
             services.AddTransient<ITokenService, TokenService>();
+            services.AddTransient<IVacancyService, VacancyService>();
 
             services.AddAuthentication(
                 options =>

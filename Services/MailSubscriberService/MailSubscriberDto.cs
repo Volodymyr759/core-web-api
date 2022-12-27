@@ -16,7 +16,6 @@ namespace CoreWebApi.Services.MailSubscriberService
 
         [Required]
         public int MailSubscriptionId { get; set; }
-
         public MailSubscriptionDto MailSubscriptionDto { get; set; }
     }
 }

@@ -18,11 +18,7 @@ namespace CoreWebApi.Controllers.MailSubscriber
         [HttpGet]
         public IActionResult GetMailSubscribers(int page, string sort, int limit)
         {
-            //return Ok(mailSubscriberService.GetAllMailSubscribers(page, sort, limit));
-            var subscribers = mailSubscriberService.GetAllMailSubscribers(page, sort, limit);
-
-            return Ok(subscribers);
-
+            return Ok(mailSubscriberService.GetAllMailSubscribers(page, sort, limit));
         }
 
     }

@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using CoreWebApi.Services.OfficeService;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace CoreWebApi.Services.CountryService
 {
@@ -13,5 +15,7 @@ namespace CoreWebApi.Services.CountryService
         [Required(ErrorMessage = "International code (3 characters) is required.")]
         [StringLength(3)]
         public string Code { get; set; }
+
+        public ICollection<OfficeDto> OfficeDtos { get; set; }
     }
 }
