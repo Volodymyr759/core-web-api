@@ -204,12 +204,12 @@ namespace UnitTests.Services
                 IsActive = companyServiceDtoToUpdate.IsActive
             });
 
-            CompanyServiceDto createdCompanyServiceDto = null;
+            CompanyServiceDto updatedCompanyServiceDto = null;
 
             try
             {
                 // Act
-                createdCompanyServiceDto = companyServiceBL.UpdateCompanyService(companyServiceDtoToUpdate);
+                updatedCompanyServiceDto = companyServiceBL.UpdateCompanyService(companyServiceDtoToUpdate);
             }
             catch (Exception ex)
             {
@@ -217,8 +217,8 @@ namespace UnitTests.Services
             }
 
             //Assert
-            Assert.IsNotNull(createdCompanyServiceDto, errorMessage);
-            Assert.IsInstanceOfType(createdCompanyServiceDto, typeof(CompanyServiceDto), errorMessage);
+            Assert.IsNotNull(updatedCompanyServiceDto, errorMessage);
+            Assert.IsInstanceOfType(updatedCompanyServiceDto, typeof(CompanyServiceDto), errorMessage);
         }
 
         [TestMethod]

@@ -200,12 +200,12 @@ namespace UnitTests.Services
                 Content = mailSubscriptionDtoToUpdate.Content
             });
 
-            MailSubscriptionDto createdMailSubscriptionDto = null;
+            MailSubscriptionDto updatedMailSubscriptionDto = null;
 
             try
             {
                 // Act
-                createdMailSubscriptionDto = mailSubscriptionService.UpdateMailSubscription(mailSubscriptionDtoToUpdate);
+                updatedMailSubscriptionDto = mailSubscriptionService.UpdateMailSubscription(mailSubscriptionDtoToUpdate);
             }
             catch (Exception ex)
             {
@@ -213,8 +213,8 @@ namespace UnitTests.Services
             }
 
             //Assert
-            Assert.IsNotNull(createdMailSubscriptionDto, errorMessage);
-            Assert.IsInstanceOfType(createdMailSubscriptionDto, typeof(MailSubscriptionDto), errorMessage);
+            Assert.IsNotNull(updatedMailSubscriptionDto, errorMessage);
+            Assert.IsInstanceOfType(updatedMailSubscriptionDto, typeof(MailSubscriptionDto), errorMessage);
         }
 
         [TestMethod]

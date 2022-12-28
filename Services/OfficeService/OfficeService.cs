@@ -1,4 +1,7 @@
-﻿using System;
+﻿using AutoMapper;
+using CoreWebApi.Data;
+using CoreWebApi.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,14 +10,13 @@ namespace CoreWebApi.Services.OfficeService
 {
     public class OfficeService : IOfficeService
     {
-        public OfficeDto CreateOffice(OfficeDto officeDto)
-        {
-            throw new NotImplementedException();
-        }
+        private readonly IMapper mapper;
+        private readonly IRepository<Office> repository;
 
-        public void DeleteOffice(OfficeDto officeDto)
+        public OfficeService(IMapper mapper, IRepository<Office> repository)
         {
-            throw new NotImplementedException();
+            this.mapper = mapper;
+            this.repository = repository;
         }
 
         public IEnumerable<OfficeDto> GetAllOffices(int limit, int page, string search, string sort_field, string sort)
@@ -27,7 +29,17 @@ namespace CoreWebApi.Services.OfficeService
             throw new NotImplementedException();
         }
 
+        public OfficeDto CreateOffice(OfficeDto officeDto)
+        {
+            throw new NotImplementedException();
+        }
+
         public OfficeDto UpdateOffice(OfficeDto officeDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public OfficeDto DeleteOffice(int id)
         {
             throw new NotImplementedException();
         }

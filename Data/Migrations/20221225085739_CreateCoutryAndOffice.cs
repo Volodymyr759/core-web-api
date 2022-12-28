@@ -29,9 +29,9 @@ namespace CoreWebApi.Data.Migrations
                     Name = table.Column<string>(maxLength: 100, nullable: false),
                     Description = table.Column<string>(nullable: false),
                     Address = table.Column<string>(nullable: false),
-                    Latitude = table.Column<string>(type: "decimal(18,6)", nullable: false),
+                    Latitude = table.Column<decimal>(type: "decimal(18,6)", nullable: false),
                     Longitude = table.Column<decimal>(type: "decimal(18,6)", nullable: false),
-                    CountryId = table.Column<decimal>(nullable: false)
+                    CountryId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {

@@ -20,11 +20,11 @@ namespace CoreWebApi.Models
 
         [Required(ErrorMessage = "Latitude is required.")]
         [DataType("decimal(18,6)")]
-        public string Latitude { get; set; }
+        public decimal Latitude { get; set; }
 
         [Required(ErrorMessage = "Longitude is required.")]
         [DataType("decimal(18,6)")]
-        public string Longitude { get; set; }
+        public decimal Longitude { get; set; }
 
         [Required]
         public int CountryId { get; set; }

@@ -11,6 +11,6 @@ namespace CoreWebApi.Services.OfficeService
         OfficeDto GetOfficeById(int id);
         OfficeDto CreateOffice(OfficeDto officeDto);
         OfficeDto UpdateOffice(OfficeDto officeDto);
-        void DeleteOffice(OfficeDto officeDto);
+        OfficeDto DeleteOffice(int id);
     }
 }

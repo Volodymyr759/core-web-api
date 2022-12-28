@@ -41,21 +41,21 @@ namespace UnitTests.Services
             countryService = null;
         }
 
-        private IEnumerable<Country> GetTestCountries()
+        private List<Country> GetTestCountries()
         {
             return new List<Country>() {
                 new Country { Id = 1, Name = "Australia", Code = "AUS" },
                 new Country { Id = 2, Name = "Ukraine", Code = "UKR" },
-                new Country { Id = 3, Name = "UnitedStates of America", Code = "USA" }
+                new Country { Id = 3, Name = "United States of America", Code = "USA" }
             };
         }
 
-        private IEnumerable<CountryDto> GetTestCountryDtos()
+        private List<CountryDto> GetTestCountryDtos()
         {
             return new List<CountryDto>() {
                 new CountryDto { Id = 1, Name = "Australia", Code = "AUS" },
                 new CountryDto { Id = 2, Name = "Ukraine", Code = "UKR" },
-                new CountryDto { Id = 3, Name = "UnitedStates of America", Code = "USA" }
+                new CountryDto { Id = 3, Name = "United States of America", Code = "USA" }
             };
         }
 
@@ -92,10 +92,10 @@ namespace UnitTests.Services
         {
             //Arrange
             int id = 1;// correct id
-            var existingCountry = ((List<Country>)GetTestCountries()).Find(c => c.Id == id);
+            var existingCountry = GetTestCountries().Find(c => c.Id == id);
             mockCountryRepository.Setup(r => r.Get(t => t.Id == id)).Returns(existingCountry);
             mockMapper.Setup(x => x.Map<CountryDto>(It.IsAny<Country>()))
-                .Returns(((List<CountryDto>)GetTestCountryDtos()).Find(c => c.Id == id));
+                .Returns(GetTestCountryDtos().Find(c => c.Id == id));
             CountryDto countryDto = null;
 
             try
@@ -138,8 +138,7 @@ namespace UnitTests.Services
         [TestMethod]
         public void CreateCountry_ReturnsCountryDto()
         {
-            // Arrange 
-            // scenario:
+            // Arrange scenario:
             // service recievs dto model and should map it to instance of domain type;
             var newCountryDto = new CountryDto() { Name = "France", Code = "FRA" };
             mockMapper.Setup(x => x.Map<Country>(It.IsAny<CountryDto>())).Returns(new Country());
@@ -195,12 +194,12 @@ namespace UnitTests.Services
                 Code = countryDtoToUpdate.Code
             });
 
-            CountryDto createdCountryDto = null;
+            CountryDto updatedCountryDto = null;
 
             try
             {
                 // Act
-                createdCountryDto = countryService.UpdateCountry(countryDtoToUpdate);
+                updatedCountryDto = countryService.UpdateCountry(countryDtoToUpdate);
             }
             catch (Exception ex)
             {
@@ -208,20 +207,19 @@ namespace UnitTests.Services
             }
 
             //Assert
-            Assert.IsNotNull(createdCountryDto, errorMessage);
-            Assert.IsInstanceOfType(createdCountryDto, typeof(CountryDto), errorMessage);
+            Assert.IsNotNull(updatedCountryDto, errorMessage);
+            Assert.IsInstanceOfType(updatedCountryDto, typeof(CountryDto), errorMessage);
         }
 
         [TestMethod]
         public void DeleteCountryById_ReturnsCountryDto()
         {
-            // Arrange
-            // scenario:
+            // Arrange scenario:
             // service gets id and passes it to the repo:
             int id = 3;
-            mockCountryRepository.Setup(r => r.Delete(id)).Returns(((List<Country>)GetTestCountries()).Find(c => c.Id == id));
+            mockCountryRepository.Setup(r => r.Delete(id)).Returns(GetTestCountries().Find(c => c.Id == id));
             // since repo.delete(int id) returns origin Country-object - possible to map it to dto object and give it back:
-            mockMapper.Setup(x => x.Map<CountryDto>(It.IsAny<Country>())).Returns(((List<CountryDto>)GetTestCountryDtos()).Find(c => c.Id == id));
+            mockMapper.Setup(x => x.Map<CountryDto>(It.IsAny<Country>())).Returns(GetTestCountryDtos().Find(c => c.Id == id));
 
             CountryDto countryDto = null;
 
