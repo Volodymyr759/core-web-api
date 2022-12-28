@@ -15,11 +15,9 @@ namespace UnitTests.Services
         #region Private Members
 
         private string errorMessage;
-
         private Mock<IRepository<MailSubscription>> mockMailSubscriptionRepository;
-
+        private Mock<IRepository<MailSubscriber>> mockMailSubscriberRepository;
         private Mock<IMapper> mockMapper;
-
         private MailSubscriptionService mailSubscriptionService;
 
         #endregion
@@ -31,14 +29,36 @@ namespace UnitTests.Services
         {
             errorMessage = "";
             mockMailSubscriptionRepository = new Mock<IRepository<MailSubscription>>();
+            mockMailSubscriberRepository = new Mock<IRepository<MailSubscriber>>();
             mockMapper = new Mock<IMapper>();
-            mailSubscriptionService = new MailSubscriptionService(mockMapper.Object, mockMailSubscriptionRepository.Object);
+            mailSubscriptionService = new MailSubscriptionService(
+                mockMapper.Object, 
+                mockMailSubscriptionRepository.Object,
+                mockMailSubscriberRepository.Object);
         }
 
         [TestCleanup()]
         public void MailSubscriptionServiceTestsCleanup()
         {
             mailSubscriptionService = null;
+        }
+
+        private IEnumerable<MailSubscription> GetTestMailSubscriptions()
+        {
+            return new List<MailSubscription>() {
+                new MailSubscription { Id = 1, Title = "Company News", Content = "Test conyent 1" },
+                new MailSubscription { Id = 2, Title = "Our Vacancies", Content = "Test conyent 2" },
+                new MailSubscription { Id = 3, Title = "Other test subscription", Content = "Test conyent 3" }
+            };
+        }
+
+        private IEnumerable<MailSubscriptionDto> GetTestMailSubscriptionDtos()
+        {
+            return new List<MailSubscriptionDto>() {
+                new MailSubscriptionDto { Id = 1, Title = "Company News", Content = "Test conyent 1" },
+                new MailSubscriptionDto { Id = 2, Title = "Our Vacancies", Content = "Test conyent 2" },
+                new MailSubscriptionDto { Id = 3, Title = "Other test subscription", Content = "Test conyent 3" }
+            };
         }
 
         #endregion
@@ -70,14 +90,16 @@ namespace UnitTests.Services
         }
 
         [TestMethod]
-        public void GetCountryById_ReturnsCountryDtoByCorrectId()
+        public void GetMailSubscriptionById_ReturnsMailSubscriptionDtoByCorrectId()
         {
-            //Arrange
+            // Arrange
+            // The method should return MailSubscription (choosed by id) with list of subscribers (if any).
             int id = 1;// correct id
             var existingMailSubscription = ((List<MailSubscription>)GetTestMailSubscriptions()).Find(c => c.Id == id);
             mockMailSubscriptionRepository.Setup(r => r.Get(t => t.Id == id)).Returns(existingMailSubscription);
             mockMapper.Setup(x => x.Map<MailSubscriptionDto>(It.IsAny<MailSubscription>()))
                 .Returns(((List<MailSubscriptionDto>)GetTestMailSubscriptionDtos()).Find(c => c.Id == id));
+
             MailSubscriptionDto mailSubscriptionDto = null;
 
             try
@@ -93,6 +115,7 @@ namespace UnitTests.Services
             //Assert
             Assert.IsNotNull(mailSubscriptionDto, errorMessage);
             Assert.IsInstanceOfType(mailSubscriptionDto, typeof(MailSubscriptionDto), errorMessage);
+            Assert.IsNotNull(mailSubscriptionDto.MailSubscriberDtos, errorMessage);
         }
 
         [TestMethod]
@@ -219,24 +242,6 @@ namespace UnitTests.Services
             //Assert
             Assert.IsNotNull(mailSubscriptionDto, errorMessage);
             Assert.IsInstanceOfType(mailSubscriptionDto, typeof(MailSubscriptionDto), errorMessage);
-        }
-
-        private IEnumerable<MailSubscription> GetTestMailSubscriptions()
-        {
-            return new List<MailSubscription>() {
-                new MailSubscription { Id = 1, Title = "Company News", Content = "Test conyent 1" },
-                new MailSubscription { Id = 2, Title = "Our Vacancies", Content = "Test conyent 2" },
-                new MailSubscription { Id = 3, Title = "Other test subscription", Content = "Test conyent 3" }
-            };
-        }
-
-        private IEnumerable<MailSubscriptionDto> GetTestMailSubscriptionDtos()
-        {
-            return new List<MailSubscriptionDto>() {
-                new MailSubscriptionDto { Id = 1, Title = "Company News", Content = "Test conyent 1" },
-                new MailSubscriptionDto { Id = 2, Title = "Our Vacancies", Content = "Test conyent 2" },
-                new MailSubscriptionDto { Id = 3, Title = "Other test subscription", Content = "Test conyent 3" }
-            };
         }
     }
 }

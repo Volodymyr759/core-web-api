@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using CoreWebApi.Models;
+using CoreWebApi.Services.CandidateService;
 using CoreWebApi.Services.CompanyServiceBL;
 using CoreWebApi.Services.CountryService;
 using CoreWebApi.Services.EmployeeService;
@@ -15,6 +16,7 @@ namespace CoreWebApi.Services
     {
         public AutoMapperProfile()
         {
+            CreateMap<Candidate, CandidateDto>().ReverseMap();
             CreateMap<CompanyService, CompanyServiceDto>().ReverseMap();
             CreateMap<Country, CountryDto>().ReverseMap();
             CreateMap<Employee, EmployeeDto>().ReverseMap();

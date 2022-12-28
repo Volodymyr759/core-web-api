@@ -29,35 +29,51 @@ namespace CoreWebApi.Services.MailSubscriberService
             // sorting only by Email
             Func<IQueryable<MailSubscriber>, IOrderedQueryable<MailSubscriber>> orderBy = null;
             orderBy = sort == "asc" ? q => q.OrderBy(s => s.Email) : orderBy = q => q.OrderByDescending(s => s.Email);
-            var mappedSubscriberDtos = mapper.Map<IEnumerable<MailSubscriberDto>>(subscriberRepository.GetAll(limit, page, null, orderBy));
+            var subscriberDtos = mapper.Map<IEnumerable<MailSubscriberDto>>(subscriberRepository.GetAll(limit, page, null, orderBy));
 
-            if (((List<MailSubscriberDto>)mappedSubscriberDtos).Count > 0)
-            {
-                foreach (var ms in mappedSubscriberDtos)
+            if (((List<MailSubscriberDto>)subscriberDtos).Count > 0)
+                foreach (var ms in subscriberDtos)
                     ms.MailSubscriptionDto = mapper.Map<MailSubscriptionDto>(subscriptionRepository.Get(ms.MailSubscriptionId));
-            }
 
-            return mappedSubscriberDtos;
+            return subscriberDtos;
         }
 
         public MailSubscriberDto GetMailSubscriberById(int id)
         {
-            throw new System.NotImplementedException();
+            var subscriber = mapper.Map<MailSubscriberDto>(subscriberRepository.Get(id));
+            subscriber.MailSubscriptionDto = mapper.Map<MailSubscriptionDto>(subscriptionRepository.Get(subscriber.MailSubscriptionId));
+
+            return subscriber;
         }
 
         public MailSubscriberDto Subscribe(MailSubscriberDto mailSubscriberDto)
         {
-            throw new System.NotImplementedException();
+            var subscriber = mapper.Map<MailSubscriber>(mailSubscriberDto);
+
+            return mapper.Map<MailSubscriberDto>(subscriberRepository.Create(subscriber));
         }
 
-        public MailSubscriberDto Unsubscribe(int id, bool isSubscribed)
+        public MailSubscriberDto Unsubscribe(int id)
         {
-            throw new System.NotImplementedException();
+            var subscriber = subscriberRepository.Get(id);
+            if (subscriber != null && subscriber.IsSubscribed)
+            {
+                subscriber.IsSubscribed = false;
+                subscriberRepository.Update(subscriber);
+            }
+
+            return mapper.Map<MailSubscriberDto>(subscriber);
         }
 
         public MailSubscriberDto DeleteMailSubsriber(int id)
         {
-            throw new System.NotImplementedException();
+            return mapper.Map<MailSubscriberDto>(subscriberRepository.Delete(id));
+        }
+
+        public IEnumerable<MailSubscriptionDto> GetSubscriptionsBySubscribersEmail(int page, string sort, int limit)
+        {
+            // Idea is to get all subscription by email since subscriber in fact is anonimoous user
+            throw new NotImplementedException();
         }
     }
 }

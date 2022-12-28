@@ -2,6 +2,7 @@ using CoreWebApi.Data;
 using CoreWebApi.Models.Account;
 using CoreWebApi.Services;
 using CoreWebApi.Services.AccountService;
+using CoreWebApi.Services.CandidateService;
 using CoreWebApi.Services.CompanyServiceBL;
 using CoreWebApi.Services.CountryService;
 using CoreWebApi.Services.EmployeeService;
@@ -57,6 +58,7 @@ namespace CoreWebApi
             }).AddEntityFrameworkStores<SeerDbContext>();
 
             services.AddSingleton(provider => Configuration);
+            services.AddTransient<ICandidateService, CandidateService>();
             services.AddTransient<ICompanyServiceBL, CompanyServiceBL>();
             services.AddTransient<ICountryService, CountryService>();
             services.AddTransient<IEmailSender, EmailSender>();

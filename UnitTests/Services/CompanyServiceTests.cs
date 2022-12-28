@@ -40,6 +40,26 @@ namespace UnitTests.Services
             companyServiceBL = null;
         }
 
+        private IEnumerable<CompanyService> GetTestCompanyServices()
+        {
+            return new List<CompanyService>() {
+                new CompanyService { Id = 1, Title ="Lorem Ipsum", Description ="Voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi", ImageUrl="https://somewhere.com/1", IsActive=true },
+                new CompanyService { Id = 2, Title ="Sed ut perspiciatis", Description ="Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore", ImageUrl="https://somewhere.com/2", IsActive=true },
+                new CompanyService { Id = 3, Title ="Magni Dolores", Description ="Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia", ImageUrl="https://somewhere.com/3", IsActive=true },
+                new CompanyService { Id = 4, Title ="Nemo Enim", Description ="At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis", ImageUrl="https://somewhere.com/4", IsActive=true }
+            };
+        }
+
+        private IEnumerable<CompanyServiceDto> GetTestCompanyServiceDtos()
+        {
+            return new List<CompanyServiceDto>() {
+                new CompanyServiceDto { Id = 1, Title ="Lorem Ipsum", Description ="Voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi", ImageUrl="https://somewhere.com/1", IsActive=true },
+                new CompanyServiceDto { Id = 2, Title ="Sed ut perspiciatis", Description ="Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore", ImageUrl="https://somewhere.com/2", IsActive=true },
+                new CompanyServiceDto { Id = 3, Title ="Magni Dolores", Description ="Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia", ImageUrl="https://somewhere.com/3", IsActive=true },
+                new CompanyServiceDto { Id = 4, Title ="Nemo Enim", Description ="At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis", ImageUrl="https://somewhere.com/4", IsActive=true }
+            };
+        }
+
         #endregion
 
         [TestMethod]
@@ -228,26 +248,5 @@ namespace UnitTests.Services
             Assert.IsNotNull(companyServiceDto, errorMessage);
             Assert.IsInstanceOfType(companyServiceDto, typeof(CompanyServiceDto), errorMessage);
         }
-
-        private IEnumerable<CompanyService> GetTestCompanyServices()
-        {
-            return new List<CompanyService>() {
-                new CompanyService { Id = 1, Title ="Lorem Ipsum", Description ="Voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi", ImageUrl="https://somewhere.com/1", IsActive=true },
-                new CompanyService { Id = 2, Title ="Sed ut perspiciatis", Description ="Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore", ImageUrl="https://somewhere.com/2", IsActive=true },
-                new CompanyService { Id = 3, Title ="Magni Dolores", Description ="Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia", ImageUrl="https://somewhere.com/3", IsActive=true },
-                new CompanyService { Id = 4, Title ="Nemo Enim", Description ="At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis", ImageUrl="https://somewhere.com/4", IsActive=true }
-            };
-        }
-
-        private IEnumerable<CompanyServiceDto> GetTestCompanyServiceDtos()
-        {
-            return new List<CompanyServiceDto>() {
-                new CompanyServiceDto { Id = 1, Title ="Lorem Ipsum", Description ="Voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi", ImageUrl="https://somewhere.com/1", IsActive=true },
-                new CompanyServiceDto { Id = 2, Title ="Sed ut perspiciatis", Description ="Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore", ImageUrl="https://somewhere.com/2", IsActive=true },
-                new CompanyServiceDto { Id = 3, Title ="Magni Dolores", Description ="Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia", ImageUrl="https://somewhere.com/3", IsActive=true },
-                new CompanyServiceDto { Id = 4, Title ="Nemo Enim", Description ="At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis", ImageUrl="https://somewhere.com/4", IsActive=true }
-            };
-        }
-
     }
 }

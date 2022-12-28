@@ -41,6 +41,24 @@ namespace UnitTests.Services
             countryService = null;
         }
 
+        private IEnumerable<Country> GetTestCountries()
+        {
+            return new List<Country>() {
+                new Country { Id = 1, Name = "Australia", Code = "AUS" },
+                new Country { Id = 2, Name = "Ukraine", Code = "UKR" },
+                new Country { Id = 3, Name = "UnitedStates of America", Code = "USA" }
+            };
+        }
+
+        private IEnumerable<CountryDto> GetTestCountryDtos()
+        {
+            return new List<CountryDto>() {
+                new CountryDto { Id = 1, Name = "Australia", Code = "AUS" },
+                new CountryDto { Id = 2, Name = "Ukraine", Code = "UKR" },
+                new CountryDto { Id = 3, Name = "UnitedStates of America", Code = "USA" }
+            };
+        }
+
         #endregion
 
         [TestMethod]
@@ -220,24 +238,6 @@ namespace UnitTests.Services
             //Assert
             Assert.IsNotNull(countryDto, errorMessage);
             Assert.IsInstanceOfType(countryDto, typeof(CountryDto), errorMessage);
-        }
-
-        private IEnumerable<Country> GetTestCountries()
-        {
-            return new List<Country>() {
-                new Country { Id = 1, Name = "Australia", Code = "AUS" },
-                new Country { Id = 2, Name = "Ukraine", Code = "UKR" },
-                new Country { Id = 3, Name = "UnitedStates of America", Code = "USA" }
-            };
-        }
-
-        private IEnumerable<CountryDto> GetTestCountryDtos()
-        {
-            return new List<CountryDto>() {
-                new CountryDto { Id = 1, Name = "Australia", Code = "AUS" },
-                new CountryDto { Id = 2, Name = "Ukraine", Code = "UKR" },
-                new CountryDto { Id = 3, Name = "UnitedStates of America", Code = "USA" }
-            };
         }
     }
 }

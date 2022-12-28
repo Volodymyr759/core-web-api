@@ -40,6 +40,12 @@ namespace UnitTests.Services
             tenantServise = null;
         }
 
+        private Tenant GetTestTenantById(int id)
+        {
+            var tenant = (id != 0) ? new Tenant { Id = id, FirstName = "First Name", LastName = "Last Name", Email = "email@gmail.com", Phone = "+123123123" } : null;
+            return tenant;
+        }
+
         #endregion
 
         [TestMethod]
@@ -141,12 +147,6 @@ namespace UnitTests.Services
             //Assert
             Assert.IsNotNull(tenantDto, errorMessage);
             Assert.IsInstanceOfType(tenantDto, typeof(TenantDto), errorMessage);
-        }
-
-        private Tenant GetTestTenantById(int id)
-        {
-            var tenant = (id != 0) ? new Tenant { Id = id, FirstName = "First Name", LastName = "Last Name", Email = "email@gmail.com", Phone = "+123123123" } : null;
-            return tenant;
         }
     }
 }

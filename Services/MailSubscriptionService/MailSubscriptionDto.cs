@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using CoreWebApi.Services.MailSubscriberService;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace CoreWebApi.Services.MailSubscriptionService
 {
@@ -12,5 +14,7 @@ namespace CoreWebApi.Services.MailSubscriptionService
 
         [Required(ErrorMessage = "Content is required.")]
         public string Content { get; set; }
+
+        public IEnumerable<MailSubscriberDto> MailSubscriberDtos { get; set; }
     }
 }
