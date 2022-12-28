@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace CoreWebApi.Services.OfficeService
 {
     public interface IOfficeService
     {
-        IEnumerable<OfficeDto> GetAllOffices(int limit, int page, string search, string sort_field, string sort);
+        IEnumerable<OfficeDto> GetAllOffices(int page, string sort, int limit);
         OfficeDto GetOfficeById(int id);
         OfficeDto CreateOffice(OfficeDto officeDto);
         OfficeDto UpdateOffice(OfficeDto officeDto);

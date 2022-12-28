@@ -1,11 +1,8 @@
 ﻿using CoreWebApi.Services.CountryService;
 using CoreWebApi.Services.EmployeeService;
 using CoreWebApi.Services.VacancyService;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace CoreWebApi.Services.OfficeService
 {
@@ -35,7 +32,7 @@ namespace CoreWebApi.Services.OfficeService
         public int CountryId { get; set; }
         public CountryDto CountryDto { get; set; }
 
-        public ICollection<EmployeeDto> EmployeeDtos { get; set; }
-        public ICollection<VacancyDto> VacancyDtos { get; set; }
+        public IEnumerable<EmployeeDto> EmployeeDtos { get; set; }
+        public IEnumerable<VacancyDto> VacancyDtos { get; set; }
     }
 }

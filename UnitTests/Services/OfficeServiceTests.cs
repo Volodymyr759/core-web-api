@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
 using CoreWebApi.Models;
+using CoreWebApi.Services.EmployeeService;
 using CoreWebApi.Services.OfficeService;
+using CoreWebApi.Services.VacancyService;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
@@ -15,11 +17,10 @@ namespace UnitTests.Services
         #region Private Members
 
         private string errorMessage;
-
         private Mock<IRepository<Office>> mockOfficeRepository;
-
+        private Mock<IRepository<Employee>> mockEmployeeRepository;
+        private Mock<IRepository<Vacancy>> mockVacancyRepository;
         private Mock<IMapper> mockMapper;
-
         private OfficeService officeService;
 
         #endregion
@@ -31,8 +32,14 @@ namespace UnitTests.Services
         {
             errorMessage = "";
             mockOfficeRepository = new Mock<IRepository<Office>>();
+            mockEmployeeRepository = new Mock<IRepository<Employee>>();
+            mockVacancyRepository = new Mock<IRepository<Vacancy>>();
             mockMapper = new Mock<IMapper>();
-            officeService = new OfficeService(mockMapper.Object, mockOfficeRepository.Object);
+            officeService = new OfficeService(
+                mockMapper.Object,
+                mockOfficeRepository.Object,
+                mockEmployeeRepository.Object,
+                mockVacancyRepository.Object);
         }
 
         [TestCleanup()]
@@ -45,8 +52,8 @@ namespace UnitTests.Services
         {
             return new List<Office>() {
                 new Office { Id = 1, Name = "Main office", Description = "Test description 1", Address = "Test address 1", Latitude = 1.111111m, Longitude = 2.22222m, CountryId = 1 },
-                new Office { Id = 1, Name = "Dev office 1", Description = "Test description 2", Address = "Test address 2", Latitude = 1.111112m, Longitude = 2.222222m, CountryId = 1 },
-                new Office { Id = 1, Name = "Dev office 2", Description = "Test description 3", Address = "Test address 3", Latitude = 1.111115m, Longitude = 2.222225m, CountryId = 1 }
+                new Office { Id = 2, Name = "Dev office 1", Description = "Test description 2", Address = "Test address 2", Latitude = 1.111112m, Longitude = 2.222222m, CountryId = 1 },
+                new Office { Id = 3, Name = "Dev office 2", Description = "Test description 3", Address = "Test address 3", Latitude = 1.111115m, Longitude = 2.222225m, CountryId = 1 }
             };
         }
 
@@ -54,9 +61,9 @@ namespace UnitTests.Services
         {
             return new List<OfficeDto>()
             {
-                //new OfficeDto { Id = 1, Name = "Australia", Code = "AUS" },
-                //new OfficeDto { Id = 2, Name = "Ukraine", Code = "UKR" },
-                //new OfficeDto { Id = 3, Name = "UnitedStates of America", Code = "USA" }
+                new OfficeDto { Id = 1, Name = "Main office", Description = "Test description 1", Address = "Test address 1", Latitude = 1.111111m, Longitude = 2.22222m, CountryId = 1 },
+                new OfficeDto { Id = 2, Name = "Dev office 1", Description = "Test description 2", Address = "Test address 2", Latitude = 1.111112m, Longitude = 2.222222m, CountryId = 1 },
+                new OfficeDto { Id = 3, Name = "Dev office 2", Description = "Test description 3", Address = "Test address 3", Latitude = 1.111115m, Longitude = 2.222225m, CountryId = 1 }
             };
         }
 
@@ -70,12 +77,12 @@ namespace UnitTests.Services
             int page = 1;
             int limit = 3;
             mockOfficeRepository.Setup(repo => repo.GetAll()).Returns(GetTestOffices());
-            mockMapper.Setup(x => x.Map<List<OfficeDto>>(It.IsAny<List<Office>>())).Returns(GetTestOfficeDtos());
+            mockMapper.Setup(x => x.Map<IEnumerable<OfficeDto>>(It.IsAny<IEnumerable<Office>>())).Returns(GetTestOfficeDtos());
 
             try
             {
                 // Act
-                officeDtos = officeService.GetAllOffices(10, page, "", "name", "asc");
+                officeDtos = officeService.GetAllOffices(page, "asc", limit);
             }
             catch (Exception ex)
             {
@@ -85,7 +92,7 @@ namespace UnitTests.Services
             //Assert
             Assert.IsNotNull(officeDtos, errorMessage);
             Assert.IsTrue(((List<OfficeDto>)officeDtos).Count == limit, errorMessage);
-            Assert.IsInstanceOfType(officeDtos, typeof(List<OfficeDto>), errorMessage);
+            Assert.IsInstanceOfType(officeDtos, typeof(IEnumerable<OfficeDto>), errorMessage);
         }
 
         [TestMethod]
@@ -95,8 +102,13 @@ namespace UnitTests.Services
             int id = 1;// correct id
             var existingOffice = GetTestOffices().Find(c => c.Id == id);
             mockOfficeRepository.Setup(r => r.Get(t => t.Id == id)).Returns(existingOffice);
-            mockMapper.Setup(x => x.Map<OfficeDto>(It.IsAny<Office>()))
-                .Returns(GetTestOfficeDtos().Find(c => c.Id == id));
+            mockMapper.Setup(x => x.Map<OfficeDto>(It.IsAny<Office>())).Returns(GetTestOfficeDtos().Find(c => c.Id == id));
+
+            mockEmployeeRepository.Setup(e => e.GetAll()).Returns(new List<Employee>());
+            mockMapper.Setup(x => x.Map<List<EmployeeDto>>(It.IsAny<List<Employee>>())).Returns(new List<EmployeeDto>());
+            mockVacancyRepository.Setup(v => v.GetAll()).Returns(new List<Vacancy>());
+            mockMapper.Setup(x => x.Map<List<VacancyDto>>(It.IsAny<List<Vacancy>>())).Returns(new List<VacancyDto>());
+
             OfficeDto officeDto = null;
 
             try
@@ -112,6 +124,8 @@ namespace UnitTests.Services
             //Assert
             Assert.IsNotNull(officeDto, errorMessage);
             Assert.IsInstanceOfType(officeDto, typeof(OfficeDto), errorMessage);
+            Assert.IsNotNull(officeDto.EmployeeDtos, errorMessage);
+            Assert.IsNotNull(officeDto.VacancyDtos, errorMessage);
         }
 
         [TestMethod]
@@ -141,21 +155,28 @@ namespace UnitTests.Services
         {
             // Arrange scenario:
             // service recievs dto model and should map it to instance of domain type;
-            var newOfficeDto = new OfficeDto();
+            var newOfficeDto = new OfficeDto() { Name = "New Main office", Description = "Test description 1", Address = "Test address 1", Latitude = 1.111111m, Longitude = 2.22222m, CountryId = 1 }; ;
             mockMapper.Setup(x => x.Map<Office>(It.IsAny<OfficeDto>())).Returns(new Office());
             // pass the instance to repo, which should return model with created id:
             mockOfficeRepository.Setup(r => r.Create(new Office())).Returns(new Office()
             {
-                //Id = int.MaxValue,
-                //Name = newOfficeDto.Name,
-                //Code = newOfficeDto.Code
+                Name = newOfficeDto.Name,
+                Description = newOfficeDto.Description,
+                Address = newOfficeDto.Address,
+                Latitude = newOfficeDto.Latitude,
+                Longitude = newOfficeDto.Longitude,
+                CountryId = newOfficeDto.CountryId
             });
             // service maps object from db back to dto type:
             mockMapper.Setup(x => x.Map<OfficeDto>(It.IsAny<Office>())).Returns(new OfficeDto()
             {
-                //Id = int.MaxValue,
-                //Name = newOfficeDto.Name,
-                //Code = newOfficeDto.Code
+                Id = int.MaxValue,
+                Name = newOfficeDto.Name,
+                Description = newOfficeDto.Description,
+                Address = newOfficeDto.Address,
+                Latitude = newOfficeDto.Latitude,
+                Longitude = newOfficeDto.Longitude,
+                CountryId = newOfficeDto.CountryId
             });
 
             OfficeDto createdOfficeDto = null;
@@ -179,19 +200,27 @@ namespace UnitTests.Services
         public void UpdateOffice_ReturnsUpdatedOfficeDto()
         {
             //Arrange the same scenario like in 'Create' method
-            var officeDtoToUpdate = new OfficeDto();// { Id = 1, Name = "Bulgary", Code = "BUL" };
+            var officeDtoToUpdate = new OfficeDto() { Id = 1, Name = "Main office", Description = "Test description 1", Address = "Test address 1", Latitude = 1.111111m, Longitude = 2.22222m, CountryId = 1 };
             mockMapper.Setup(x => x.Map<Office>(It.IsAny<OfficeDto>())).Returns(new Office());
             mockOfficeRepository.Setup(r => r.Update(new Office())).Returns(new Office()
             {
-                //Id = officeDtoToUpdate.Id,
-                //Name = officeDtoToUpdate.Name,
-                //Code = officeDtoToUpdate.Code
+                Id = int.MaxValue,
+                Name = officeDtoToUpdate.Name,
+                Description = officeDtoToUpdate.Description,
+                Address = officeDtoToUpdate.Address,
+                Latitude = officeDtoToUpdate.Latitude,
+                Longitude = officeDtoToUpdate.Longitude,
+                CountryId = officeDtoToUpdate.CountryId
             });
             mockMapper.Setup(x => x.Map<OfficeDto>(It.IsAny<Office>())).Returns(new OfficeDto()
             {
-                //Id = officeDtoToUpdate.Id,
-                //Name = officeDtoToUpdate.Name,
-                //Code = officeDtoToUpdate.Code
+                Id = int.MaxValue,
+                Name = officeDtoToUpdate.Name,
+                Description = officeDtoToUpdate.Description,
+                Address = officeDtoToUpdate.Address,
+                Latitude = officeDtoToUpdate.Latitude,
+                Longitude = officeDtoToUpdate.Longitude,
+                CountryId = officeDtoToUpdate.CountryId
             });
 
             OfficeDto updatedOfficeDto = null;
@@ -218,7 +247,7 @@ namespace UnitTests.Services
             // service gets id and passes it to the repo:
             int id = 3;
             mockOfficeRepository.Setup(r => r.Delete(id)).Returns(GetTestOffices().Find(c => c.Id == id));
-            // since repo.delete(int id) returns origin Office-object - possible to map it to dto object and give it back:
+            // since repo.delete(int id) returns origin Office-object - possible to map it to dto and give it back:
             mockMapper.Setup(x => x.Map<OfficeDto>(It.IsAny<Office>())).Returns(GetTestOfficeDtos().Find(c => c.Id == id));
 
             OfficeDto officeDto = null;
