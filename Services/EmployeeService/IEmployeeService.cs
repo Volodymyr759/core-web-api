@@ -8,6 +8,6 @@ namespace CoreWebApi.Services.EmployeeService
         EmployeeDto GetEmployeeById(int id);
         EmployeeDto CreateEmployee(EmployeeDto employeeDto);
         EmployeeDto UpdateEmployee(EmployeeDto employeeDto);
-        void DeleteEmployee(EmployeeDto employeeDto);
+        EmployeeDto DeleteEmployee(int id);
     }
 }
