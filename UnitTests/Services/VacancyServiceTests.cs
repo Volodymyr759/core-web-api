@@ -101,7 +101,7 @@ namespace UnitTests.Services
             //Arrange
             int id = 1;// correct id
             var existingVacancy = GetTestVacancies().Find(c => c.Id == id);
-            mockVacancyRepository.Setup(r => r.Get(t => t.Id == id)).Returns(existingVacancy);
+            mockVacancyRepository.Setup(r => r.Get(id)).Returns(existingVacancy);
             mockMapper.Setup(x => x.Map<VacancyDto>(It.IsAny<Vacancy>())).Returns(GetTestVacancyDtos().Find(c => c.Id == id));
 
             mockOfficeRepository.Setup(e => e.Get(existingVacancy.OfficeId)).Returns(new Office());
@@ -134,7 +134,7 @@ namespace UnitTests.Services
         {
             //Arrange
             int id = int.MaxValue - 1;// wrong id
-            mockVacancyRepository.Setup(r => r.Get(t => t.Id == id)).Returns(value: null);
+            mockVacancyRepository.Setup(r => r.Get(id)).Returns(value: null);
             VacancyDto vacancyDto = null;
 
             try
