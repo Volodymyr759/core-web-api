@@ -21,7 +21,7 @@ namespace CoreWebApi.Services.VacancyService
 
         public Boolean IsActive { get; set; } = true;
 
-        public ICollection<CandidateDto> CandidateDtos { get; set; }
+        public IEnumerable<CandidateDto> CandidateDtos { get; set; }
 
         [Required]
         public int OfficeId { get; set; }

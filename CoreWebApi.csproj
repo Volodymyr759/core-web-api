@@ -74,6 +74,8 @@
     <Compile Include="Data\Migrations\20221228090752_SeedOffices.Designer.cs" />
     <Compile Include="Data\Migrations\20221229135022_SeedEmployees.cs" />
     <Compile Include="Data\Migrations\20221229135022_SeedEmployees.Designer.cs" />
+    <Compile Include="Data\Migrations\20221230074658_SeedVacancies.cs" />
+    <Compile Include="Data\Migrations\20221230074658_SeedVacancies.Designer.cs" />
     <Compile Include="Data\Migrations\SeerDbContextModelSnapshot.cs" />
   </ItemGroup>
 

@@ -8,6 +8,6 @@ namespace CoreWebApi.Services.VacancyService
         VacancyDto GetVacancyById(int id);
         VacancyDto CreateVacancy(VacancyDto vacancyDto);
         VacancyDto UpdateVacancy(VacancyDto vacancyDto);
-        void DeleteVacancy(VacancyDto vacancyDto);
+        VacancyDto DeleteVacancy(int id);
     }
 }

@@ -155,11 +155,12 @@ namespace UnitTests.Services
         {
             // Arrange scenario:
             // service recievs dto model and should map it to instance of domain type;
-            var newOfficeDto = new OfficeDto() { Name = "New Main office", Description = "Test description 1", Address = "Test address 1", Latitude = 1.111111m, Longitude = 2.22222m, CountryId = 1 }; ;
+            var newOfficeDto = new OfficeDto() { Name = "New Main office", Description = "Test description 1", Address = "Test address 1", Latitude = 1.111111m, Longitude = 2.22222m, CountryId = 1 };
             mockMapper.Setup(x => x.Map<Office>(It.IsAny<OfficeDto>())).Returns(new Office());
             // pass the instance to repo, which should return model with created id:
             mockOfficeRepository.Setup(r => r.Create(new Office())).Returns(new Office()
             {
+                Id = int.MaxValue,
                 Name = newOfficeDto.Name,
                 Description = newOfficeDto.Description,
                 Address = newOfficeDto.Address,
