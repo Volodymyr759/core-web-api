@@ -7,7 +7,7 @@ namespace CoreWebApi.Services.CompanyServiceBL
     {
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Title is required.")]
+        [Required(ErrorMessage = "Title (1 - 100 characters) is required.")]
         [StringLength(100)]
         public string Title { get; set; }
 

@@ -281,6 +281,5 @@ namespace UnitTests.Controllers
             var tenantDto = (id != 0) ? new TenantDto { Id = id, FirstName = "First Name", LastName = "Last Name", Email = "email@gmail.com", Phone = "+123123123" } : null;
             return tenantDto;
         }
-
     }
 }
