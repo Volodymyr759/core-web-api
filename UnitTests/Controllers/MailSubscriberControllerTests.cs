@@ -1,0 +1,266 @@
+﻿using CoreWebApi.Controllers;
+using CoreWebApi.Controllers.MailSubscriber;
+using CoreWebApi.Services.MailSubscriberService;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using System;
+using System.Collections.Generic;
+
+namespace UnitTests.Controllers
+{
+    [TestClass]
+    public class MailSubscriberControllerTests
+    {
+        #region Private Members
+
+        private string errorMessage;
+        private MailSubscriberController mailSubscriberController;
+        private Mock<IMailSubscriberService> mockMailSubscriberService;
+
+        #endregion
+
+        #region Utilities
+
+        [TestInitialize()]
+        public void MailSubscriberControllerTestInitialize()
+        {
+            errorMessage = "";
+            mockMailSubscriberService = new Mock<IMailSubscriberService>();
+            mailSubscriberController = new MailSubscriberController(mockMailSubscriberService.Object);
+        }
+
+        [TestCleanup()]
+        public void MailSubscriberControllerTestsCleanup()
+        {
+            mockMailSubscriberService = null;
+        }
+
+        private MailSubscriberDto GetTestMailSubscriberDtoById(int id)
+        {
+            return new MailSubscriberDto { Id = 1, Email = "test1@gmail.com", IsSubscribed = true, MailSubscriptionId = 1 };
+        }
+
+        private IEnumerable<MailSubscriberDto> GetTestMailSubscriberDtos()
+        {
+            return new List<MailSubscriberDto>() {
+                new MailSubscriberDto { Id = 1, Email = "test1@gmail.com", IsSubscribed = true, MailSubscriptionId = 1 },
+                new MailSubscriberDto { Id = 2, Email = "test2@gmail.com", IsSubscribed = true, MailSubscriptionId = 1 },
+                new MailSubscriberDto { Id = 3, Email = "test31@gmail.com", IsSubscribed = true, MailSubscriptionId = 1 }
+            };
+        }
+
+        #endregion
+
+        #region Tests
+
+        [TestMethod]
+        public void GetAll_ReturnsListOfMailSubscribers()
+        {
+            //Arrange
+            int page = 1;
+            string sort = "asc";
+            int limit = 10;
+            mockMailSubscriberService.Setup(r => r.GetAllMailSubscribers(page, sort, limit)).Returns(GetTestMailSubscriberDtos());
+            OkObjectResult result = null;
+
+            try
+            {
+                // Act
+                result = mailSubscriberController.GetAll() as OkObjectResult;
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + " | " + ex.StackTrace;
+            }
+
+            //Assert
+            Assert.IsNotNull(result, errorMessage);
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
+            Assert.IsNotNull(result.Value, errorMessage);
+            Assert.IsInstanceOfType(result.Value, typeof(IEnumerable<MailSubscriberDto>), errorMessage);
+            mockMailSubscriberService.Verify(r => r.GetAllMailSubscribers(page, sort, limit));
+        }
+
+        [TestMethod]
+        public void GetById_ReturnsOkWithMailSubscriberDtoByCorrectId()
+        {
+            //Arrange
+            int id = 1;// correct id
+            mockMailSubscriberService.Setup(r => r.GetMailSubscriberById(id)).Returns(GetTestMailSubscriberDtoById(id));
+            OkObjectResult result = null;
+
+            try
+            {
+                // Act
+                result = mailSubscriberController.GetById(id) as OkObjectResult;
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + " | " + ex.StackTrace;
+            }
+
+            //Assert
+            Assert.IsNotNull(result, errorMessage);
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
+            Assert.IsNotNull(result.Value, errorMessage);
+            Assert.IsInstanceOfType(result.Value, typeof(MailSubscriberDto), errorMessage);
+            mockMailSubscriberService.Verify(r => r.GetMailSubscriberById(id));
+        }
+
+        [TestMethod]
+        public void GetById_ReturnsNotFoundByWrongId()
+        {
+            //Arrange
+            int id = int.MaxValue - 1;// wrong id
+            mockMailSubscriberService.Setup(r => r.GetMailSubscriberById(id)).Returns(value: null);
+            NotFoundResult result = null;
+
+            try
+            {
+                // Act
+                result = mailSubscriberController.GetById(id) as NotFoundResult;
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + " | " + ex.StackTrace;
+            }
+
+            //Assert
+            Assert.IsNotNull(result, errorMessage);
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
+            mockMailSubscriberService.Verify(r => r.GetMailSubscriberById(id));
+        }
+
+        [TestMethod]
+        public void Subscribe_ReturnsCreatedMailSubscriberDtoByValidArg()
+        {
+            //Arrange
+            var createMailSubscriberDto = GetTestMailSubscriberDtoById(1);
+            mockMailSubscriberService.Setup(r => r.CreateMailSubscriber(createMailSubscriberDto)).Returns(GetTestMailSubscriberDtoById(1));
+            CreatedResult result = null;
+
+            try
+            {
+                // Act
+                result = mailSubscriberController.Subscribe(createMailSubscriberDto) as CreatedResult;
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + " | " + ex.StackTrace;
+            }
+
+            //Assert
+            Assert.IsNotNull(result, errorMessage);
+            Assert.IsInstanceOfType(result, typeof(CreatedResult), errorMessage);
+            Assert.IsNotNull(result.Value, errorMessage);
+            Assert.IsInstanceOfType(result.Value, typeof(MailSubscriberDto), errorMessage);
+            mockMailSubscriberService.Verify(r => r.CreateMailSubscriber(createMailSubscriberDto));
+        }
+
+        [TestMethod]
+        public void Unsubscribe_ReturnsMailSubscriberDtoByValidArg()
+        {
+            //Arrange
+            var mailSubscriberDtoToUpdate = GetTestMailSubscriberDtoById(1);
+            mockMailSubscriberService.Setup(r => r.GetMailSubscriberById(mailSubscriberDtoToUpdate.Id)).Returns(mailSubscriberDtoToUpdate);
+            mockMailSubscriberService.Setup(r => r.UpdateMailSubscriber(mailSubscriberDtoToUpdate)).Returns(mailSubscriberDtoToUpdate);
+            OkObjectResult result = null;
+
+            try
+            {
+                // Act
+                result = mailSubscriberController.Unsubscribe(
+                    mailSubscriberDtoToUpdate.Id, 
+                    new Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<MailSubscriberDto>()) as OkObjectResult;
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + " | " + ex.StackTrace;
+            }
+
+            //Assert
+            Assert.IsNotNull(result, errorMessage);
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
+            Assert.IsNotNull(result.Value, errorMessage);
+            Assert.IsInstanceOfType(result.Value, typeof(MailSubscriberDto), errorMessage);
+            mockMailSubscriberService.Verify(r => r.UpdateMailSubscriber(mailSubscriberDtoToUpdate));
+        }
+
+        [TestMethod]
+        public void Unsubscribe_ReturnsNotFoundByWrongIdInArg()
+        {
+            //Arrange
+            var mailSubscriberDtoToUpdate = GetTestMailSubscriberDtoById(1);
+            mailSubscriberDtoToUpdate.Id = 0; // wrong id
+            NotFoundResult result = null;
+
+            try
+            {
+                // Act
+                result = mailSubscriberController.Unsubscribe(mailSubscriberDtoToUpdate.Id, null) as NotFoundResult;
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + " | " + ex.StackTrace;
+            }
+
+            //Assert
+            Assert.IsNotNull(result, errorMessage);
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
+        }
+
+        [TestMethod]
+        public void Delete_ReturnsOkWithMailSubscriberDtoByCorrectId()
+        {
+            //Arrange
+            int id = 1;// correct id
+            var mailSubscriberToDelete = GetTestMailSubscriberDtoById(id);
+            mockMailSubscriberService.Setup(r => r.GetMailSubscriberById(id)).Returns(mailSubscriberToDelete);
+            OkObjectResult result = null;
+
+            try
+            {
+                // Act
+                result = mailSubscriberController.Delete(id) as OkObjectResult;
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + " | " + ex.StackTrace;
+            }
+
+            //Assert
+            Assert.IsNotNull(result, errorMessage);
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
+            Assert.IsNotNull(result.Value, errorMessage);
+            Assert.IsInstanceOfType(result.Value, typeof(MailSubscriberDto), errorMessage);
+            mockMailSubscriberService.Verify(r => r.GetMailSubscriberById(id));
+        }
+
+        [TestMethod]
+        public void Delete_ReturnsNotFoundByWrongId()
+        {
+            //Arrange
+            int id = 0;// wrong id
+            mockMailSubscriberService.Setup(r => r.GetMailSubscriberById(id)).Returns(value: null);
+            NotFoundResult result = null;
+
+            try
+            {
+                // Act
+                result = mailSubscriberController.Delete(id) as NotFoundResult;
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + " | " + ex.StackTrace;
+            }
+
+            //Assert
+            Assert.IsNotNull(result, errorMessage);
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
+            mockMailSubscriberService.Verify(r => r.GetMailSubscriberById(id));
+        }
+
+        #endregion
+    }
+}

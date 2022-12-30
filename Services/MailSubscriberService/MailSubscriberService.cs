@@ -46,23 +46,18 @@ namespace CoreWebApi.Services.MailSubscriberService
             return subscriber;
         }
 
-        public MailSubscriberDto Subscribe(MailSubscriberDto mailSubscriberDto)
+        public MailSubscriberDto CreateMailSubscriber(MailSubscriberDto mailSubscriberDto)
         {
             var subscriber = mapper.Map<MailSubscriber>(mailSubscriberDto);
 
             return mapper.Map<MailSubscriberDto>(subscriberRepository.Create(subscriber));
         }
 
-        public MailSubscriberDto Unsubscribe(int id)
+        public MailSubscriberDto UpdateMailSubscriber(MailSubscriberDto mailSubscriberDto)
         {
-            var subscriber = subscriberRepository.Get(id);
-            if (subscriber != null && subscriber.IsSubscribed)
-            {
-                subscriber.IsSubscribed = false;
-                subscriberRepository.Update(subscriber);
-            }
+            var subscriber = mapper.Map<MailSubscriber>(mailSubscriberDto);
 
-            return mapper.Map<MailSubscriberDto>(subscriber);
+            return mapper.Map<MailSubscriberDto>(subscriberRepository.Update(subscriber));
         }
 
         public MailSubscriberDto DeleteMailSubsriber(int id)

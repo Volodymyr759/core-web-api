@@ -8,8 +8,8 @@ namespace CoreWebApi.Services.MailSubscriberService
         IEnumerable<MailSubscriberDto> GetAllMailSubscribers(int page, string sort, int limit);
         MailSubscriberDto GetMailSubscriberById(int id);
         IEnumerable<MailSubscriptionDto> GetSubscriptionsBySubscribersEmail(int page, string sort, int limit);
-        MailSubscriberDto Subscribe(MailSubscriberDto mailSubscriberDto);
-        MailSubscriberDto Unsubscribe(int id);
+        MailSubscriberDto CreateMailSubscriber(MailSubscriberDto mailSubscriberDto);
+        MailSubscriberDto UpdateMailSubscriber(MailSubscriberDto mailSubscriberDto);
         MailSubscriberDto DeleteMailSubsriber(int id);
     }
 }

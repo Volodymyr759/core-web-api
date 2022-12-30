@@ -33,7 +33,7 @@ namespace UnitTests.Services
             mockMailSubscriptionRepository = new Mock<IRepository<MailSubscription>>();
             mockMapper = new Mock<IMapper>();
             mailSubscriberService = new MailSubscriberService(
-                mockMapper.Object, 
+                mockMapper.Object,
                 mockMailSubscriberRepository.Object,
                 mockMailSubscriptionRepository.Object);
         }
@@ -177,7 +177,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                createdMailSubscriberDto = mailSubscriberService.Subscribe(newMailSubscriberDto);
+                createdMailSubscriberDto = mailSubscriberService.CreateMailSubscriber(newMailSubscriberDto);
             }
             catch (Exception ex)
             {
@@ -203,7 +203,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                mailSubscriberDto = mailSubscriberService.Unsubscribe(id);
+                mailSubscriberDto = mailSubscriberService.UpdateMailSubscriber(GetTestMailSubscriberDtos().Find(ms => ms.Id == id));
             }
             catch (Exception ex)
             {

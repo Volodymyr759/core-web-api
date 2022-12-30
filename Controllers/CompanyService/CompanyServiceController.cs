@@ -30,7 +30,7 @@ namespace CoreWebApi.Controllers.CompanyService
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/CompanyService/GetAllCompanyServices/?page=1&sort=asc&limit=3
+        ///     GET /api/CompanyService/GetAll;page=1;sort=asc;limit=3
         ///     
         /// </remarks>
         /// <response code="200">list of CompanyServiceDto's</response>
@@ -45,7 +45,7 @@ namespace CoreWebApi.Controllers.CompanyService
         /// Gets a specific CompanySeviceDto Item.
         /// </summary>
         /// <param name="id">Identifier int id</param>
-        /// <returns>OK & CompanySeviceDto</returns>
+        /// <returns>OK and CompanySeviceDto</returns>
         /// <response code="200">Returns the requested CompanySeviceDto item</response>
         /// <response code="404">If the company service with given id not found</response>
         [HttpGet("{id}")]
