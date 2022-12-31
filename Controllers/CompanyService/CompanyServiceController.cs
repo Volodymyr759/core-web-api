@@ -78,8 +78,6 @@ namespace CoreWebApi.Controllers.CompanyService
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult Create([FromBody] CompanyServiceDto companyServiceDto)
         {
-            if (!ModelState.IsValid) return BadRequest();
-
             return Created("/CompanyService/Create", companyServiceBL.CreateCompanyService(companyServiceDto));
         }
 
@@ -109,7 +107,6 @@ namespace CoreWebApi.Controllers.CompanyService
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Update([FromBody] CompanyServiceDto companyServiceDto)
         {
-            if (!ModelState.IsValid) return BadRequest();
             if (companyServiceBL.GetCompanyServiceById(companyServiceDto.Id) == null) return NotFound();
 
             return Ok(companyServiceBL.UpdateCompanyService(companyServiceDto));

@@ -75,8 +75,6 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult Create([FromBody] CountryDto CountryDto)
         {
-            if (!ModelState.IsValid) return BadRequest();
-
             return Created("/Country/Create", countryService.CreateCountry(CountryDto));
         }
 
@@ -104,7 +102,6 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Update([FromBody] CountryDto CountryDto)
         {
-            if (!ModelState.IsValid) return BadRequest();
             if (countryService.GetCountryById(CountryDto.Id) == null) return NotFound();
 
             return Ok(countryService.UpdateCountry(CountryDto));

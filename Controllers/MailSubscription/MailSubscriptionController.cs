@@ -75,8 +75,6 @@ namespace CoreWebApi.Controllers.MailSubscription
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult Create([FromBody] MailSubscriptionDto mailSubscriptionDto)
         {
-            if (!ModelState.IsValid) return BadRequest();
-
             return Created("/MailSubscription/Create", mailSubscriptionService.CreateMailSubscription(mailSubscriptionDto));
         }
 
@@ -104,7 +102,6 @@ namespace CoreWebApi.Controllers.MailSubscription
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Update([FromBody] MailSubscriptionDto mailSubscriptionDto)
         {
-            if (!ModelState.IsValid) return BadRequest();
             if (mailSubscriptionService.GetMailSubscriptionById(mailSubscriptionDto.Id) == null) return NotFound();
 
             return Ok(mailSubscriptionService.UpdateMailSubscription(mailSubscriptionDto));

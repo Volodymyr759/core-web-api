@@ -80,8 +80,6 @@ namespace CoreWebApi.Controllers.Vacancy
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult Create([FromBody] VacancyDto vacancyDto)
         {
-            if (!ModelState.IsValid) return BadRequest();
-
             return Created("/Vacancy/Create", vacancyService.CreateVacancy(vacancyDto));
         }
 
@@ -112,7 +110,6 @@ namespace CoreWebApi.Controllers.Vacancy
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Update([FromBody] VacancyDto vacancyDto)
         {
-            if (!ModelState.IsValid) return BadRequest();
             if (vacancyService.GetVacancyById(vacancyDto.Id) == null) return NotFound();
 
             return Ok(vacancyService.UpdateVacancy(vacancyDto));

@@ -79,8 +79,6 @@ namespace CoreWebApi.Controllers.Office
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult Create([FromBody] OfficeDto OfficeDto)
         {
-            if (!ModelState.IsValid) return BadRequest();
-
             return Created("/Office/Create", officeService.CreateOffice(OfficeDto));
         }
 
@@ -112,7 +110,6 @@ namespace CoreWebApi.Controllers.Office
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Update([FromBody] OfficeDto OfficeDto)
         {
-            if (!ModelState.IsValid) return BadRequest();
             if (officeService.GetOfficeById(OfficeDto.Id) == null) return NotFound();
 
             return Ok(officeService.UpdateOffice(OfficeDto));

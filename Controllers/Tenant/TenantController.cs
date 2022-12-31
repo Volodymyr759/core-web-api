@@ -12,11 +12,11 @@ namespace CoreWebApi.Controllers
     [Produces("application/json")]
     public class TenantController : ControllerBase
     {
-        private readonly ITenantService _tenantService;
+        private readonly ITenantService tenantService;
 
         public TenantController(ITenantService tenantService)
         {
-            _tenantService = tenantService;
+            this.tenantService = tenantService;
         }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult GetAllTenants(int limit = 10, int page = 1, string search = "", string sort_field = "Id", string sort = "desc")
         {
-            return Ok(_tenantService.GetAllTenants(limit, page, search, sort_field, sort));
+            return Ok(tenantService.GetAllTenants(limit, page, search, sort_field, sort));
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult GetById(int id)
         {
-            var tenantDto = _tenantService.GetTenantById(id);
+            var tenantDto = tenantService.GetTenantById(id);
             if (tenantDto == null) return NotFound();
 
             return Ok(tenantDto);
@@ -84,9 +84,7 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult Create(CreateTenantDto createTenantDto)
         {
-            if (!ModelState.IsValid) return BadRequest();
-
-            return Created("/api/tenant", _tenantService.CreateTenant(createTenantDto));
+            return Created("/api/tenant", tenantService.CreateTenant(createTenantDto));
         }
 
         /// <summary>
@@ -115,10 +113,9 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Update(TenantDto tenantDto)
         {
-            if (!ModelState.IsValid) return BadRequest();
-            if (_tenantService.GetTenantById(tenantDto.Id) == null) return NotFound();
+            if (tenantService.GetTenantById(tenantDto.Id) == null) return NotFound();
 
-            return Ok(_tenantService.UpdateTenant(tenantDto));
+            return Ok(tenantService.UpdateTenant(tenantDto));
         }
 
         /// <summary>
@@ -133,9 +130,9 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Delete(int id)
         {
-            var tenantDto = _tenantService.GetTenantById(id);
+            var tenantDto = tenantService.GetTenantById(id);
             if (tenantDto == null) return NotFound();
-            _tenantService.DeleteTenant(tenantDto);
+            tenantService.DeleteTenant(tenantDto);
 
             return Ok(tenantDto);
         }
@@ -166,14 +163,14 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult PartialTenantUpdate(int id, JsonPatchDocument<TenantDto> patchDocument)
         {
-            var tenantDto = _tenantService.GetTenantById(id);
+            var tenantDto = tenantService.GetTenantById(id);
             if (tenantDto == null) return NotFound();
 
             patchDocument.ApplyTo(tenantDto, ModelState);
 
             if (!TryValidateModel(tenantDto)) return ValidationProblem(ModelState);
 
-            return Ok(_tenantService.UpdateTenant(tenantDto));
+            return Ok(tenantService.UpdateTenant(tenantDto));
         }
     }
 }

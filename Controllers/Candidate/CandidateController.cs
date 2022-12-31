@@ -82,8 +82,6 @@ namespace CoreWebApi.Controllers.Candidate
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult Create([FromBody] CandidateDto candidateDto)
         {
-            if (!ModelState.IsValid) return BadRequest();
-
             return Created("/Candidate/Create", candidateService.CreateCandidate(candidateDto));
         }
 
@@ -116,7 +114,6 @@ namespace CoreWebApi.Controllers.Candidate
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Update([FromBody] CandidateDto candidateDto)
         {
-            if (!ModelState.IsValid) return BadRequest();
             if (candidateService.GetCandidateById(candidateDto.Id) == null) return NotFound();
 
             return Ok(candidateService.UpdateCandidate(candidateDto));

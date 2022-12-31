@@ -78,8 +78,6 @@ namespace CoreWebApi.Controllers.MailSubscriber
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult Subscribe([FromBody] MailSubscriberDto mailSubscriberDto)
         {
-            if (!ModelState.IsValid) return BadRequest();
-
             return Created("/MailSubscriber/Subscribe", mailSubscriberService.CreateMailSubscriber(mailSubscriberDto));
         }
 

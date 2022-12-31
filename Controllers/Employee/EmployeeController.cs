@@ -81,8 +81,6 @@ namespace CoreWebApi.Controllers.Employee
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult Create([FromBody] EmployeeDto employeeDto)
         {
-            if (!ModelState.IsValid) return BadRequest();
-
             return Created("/Employee/Create", employeeService.CreateEmployee(employeeDto));
         }
 
@@ -114,7 +112,6 @@ namespace CoreWebApi.Controllers.Employee
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Update([FromBody] EmployeeDto employeeDto)
         {
-            if (!ModelState.IsValid) return BadRequest();
             if (employeeService.GetEmployeeById(employeeDto.Id) == null) return NotFound();
 
             return Ok(employeeService.UpdateEmployee(employeeDto));
