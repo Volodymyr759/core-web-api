@@ -1,5 +1,5 @@
-﻿using CoreWebApi.Controllers;
-using CoreWebApi.Services.CountryService;
+﻿using CoreWebApi.Controllers.Office;
+using CoreWebApi.Services.OfficeService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -9,43 +9,43 @@ using System.Collections.Generic;
 namespace UnitTests.Controllers
 {
     [TestClass]
-    public class CountryControllerTests
+    public class OfficeControllerTests
     {
         #region Private Members
 
         private string errorMessage;
-        private CountryController countryController;
-        private Mock<ICountryService> mockCountryService;
+        private OfficeController officeController;
+        private Mock<IOfficeService> mockOfficeService;
 
         #endregion
 
         #region Utilities
 
         [TestInitialize()]
-        public void CountryControllerTestInitialize()
+        public void OfficeControllerTestInitialize()
         {
             errorMessage = "";
-            mockCountryService = new Mock<ICountryService>();
-            countryController = new CountryController(mockCountryService.Object);
+            mockOfficeService = new Mock<IOfficeService>();
+            officeController = new OfficeController(mockOfficeService.Object);
         }
 
         [TestCleanup()]
-        public void CountryControllerTestsCleanup()
+        public void OfficeControllerTestsCleanup()
         {
-            countryController = null;
+            officeController = null;
         }
 
-        private CountryDto GetTestCountryDtoById(int id)
+        private OfficeDto GetTestOfficeDtoById(int id)
         {
-            return new CountryDto { Id = 1, Name = "Australia", Code = "AUS" };
+            return new OfficeDto { Id = 1, Name = "Main office", Description = "Test description 1", Address = "Test address 1", Latitude = 1.111111m, Longitude = 2.22222m, CountryId = 1 };
         }
 
-        private IEnumerable<CountryDto> GetTestCountryDtos()
+        private IEnumerable<OfficeDto> GetTestOfficeDtos()
         {
-            return new List<CountryDto>() {
-                new CountryDto { Id = 1, Name = "Australia", Code = "AUS" },
-                new CountryDto { Id = 2, Name = "Ukraine", Code = "UKR" },
-                new CountryDto { Id = 3, Name = "United States of America", Code = "USA" }
+            return new List<OfficeDto>() {
+                new OfficeDto { Id = 1, Name = "Main office", Description = "Test description 1", Address = "Test address 1", Latitude = 1.111111m, Longitude = 2.22222m, CountryId = 1 },
+                new OfficeDto { Id = 2,  Name = "Dev office 1", Description = "Test description 2", Address = "Test address 2", Latitude = 1.111112m, Longitude = 2.222222m, CountryId = 1 },
+                new OfficeDto { Id = 3, Name = "Dev office 2", Description = "Test description 3", Address = "Test address 3", Latitude = 1.111115m, Longitude = 2.222225m, CountryId = 1 }
             };
         }
 
@@ -54,19 +54,19 @@ namespace UnitTests.Controllers
         #region Tests
 
         [TestMethod]
-        public void GetAll_ReturnsListOfCountries()
+        public void GetAll_ReturnsListOfOffices()
         {
             //Arrange
             int page = 1;
             string sort = "asc";
             int limit = 10;
-            mockCountryService.Setup(r => r.GetAllCountries(page, sort, limit)).Returns(GetTestCountryDtos());
+            mockOfficeService.Setup(r => r.GetAllOffices(page, sort, limit)).Returns(GetTestOfficeDtos());
             OkObjectResult result = null;
 
             try
             {
                 // Act
-                result = countryController.GetAll() as OkObjectResult;
+                result = officeController.GetAll() as OkObjectResult;
             }
             catch (Exception ex)
             {
@@ -77,22 +77,22 @@ namespace UnitTests.Controllers
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
-            Assert.IsInstanceOfType(result.Value, typeof(IEnumerable<CountryDto>), errorMessage);
-            mockCountryService.Verify(r => r.GetAllCountries(page, sort, limit));
+            Assert.IsInstanceOfType(result.Value, typeof(IEnumerable<OfficeDto>), errorMessage);
+            mockOfficeService.Verify(r => r.GetAllOffices(page, sort, limit));
         }
 
         [TestMethod]
-        public void GetById_ReturnsOkWithCountryDtoByCorrectId()
+        public void GetById_ReturnsOkWithOfficeDtoByCorrectId()
         {
             //Arrange
             int id = 1;// correct id
-            mockCountryService.Setup(r => r.GetCountryById(id)).Returns(GetTestCountryDtoById(id));
+            mockOfficeService.Setup(r => r.GetOfficeById(id)).Returns(GetTestOfficeDtoById(id));
             OkObjectResult result = null;
 
             try
             {
                 // Act
-                result = countryController.GetById(id) as OkObjectResult;
+                result = officeController.GetById(id) as OkObjectResult;
             }
             catch (Exception ex)
             {
@@ -103,8 +103,8 @@ namespace UnitTests.Controllers
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
-            Assert.IsInstanceOfType(result.Value, typeof(CountryDto), errorMessage);
-            mockCountryService.Verify(r => r.GetCountryById(id));
+            Assert.IsInstanceOfType(result.Value, typeof(OfficeDto), errorMessage);
+            mockOfficeService.Verify(r => r.GetOfficeById(id));
         }
 
         [TestMethod]
@@ -112,13 +112,13 @@ namespace UnitTests.Controllers
         {
             //Arrange
             int id = int.MaxValue - 1;// wrong id
-            mockCountryService.Setup(r => r.GetCountryById(id)).Returns(value: null);
+            mockOfficeService.Setup(r => r.GetOfficeById(id)).Returns(value: null);
             NotFoundResult result = null;
 
             try
             {
                 // Act
-                result = countryController.GetById(id) as NotFoundResult;
+                result = officeController.GetById(id) as NotFoundResult;
             }
             catch (Exception ex)
             {
@@ -128,21 +128,21 @@ namespace UnitTests.Controllers
             //Assert
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
-            mockCountryService.Verify(r => r.GetCountryById(id));
+            mockOfficeService.Verify(r => r.GetOfficeById(id));
         }
 
         [TestMethod]
-        public void Create_ReturnsCreatedCountryDtoByValidArg()
+        public void Create_ReturnsCreatedOfficeDtoByValidArg()
         {
             //Arrange
-            var createCountryDto = GetTestCountryDtoById(1);
-            mockCountryService.Setup(r => r.CreateCountry(createCountryDto)).Returns(GetTestCountryDtoById(1));
+            var createOfficeDto = GetTestOfficeDtoById(1);
+            mockOfficeService.Setup(r => r.CreateOffice(createOfficeDto)).Returns(GetTestOfficeDtoById(1));
             CreatedResult result = null;
 
             try
             {
                 // Act
-                result = countryController.Create(createCountryDto) as CreatedResult;
+                result = officeController.Create(createOfficeDto) as CreatedResult;
             }
             catch (Exception ex)
             {
@@ -153,22 +153,22 @@ namespace UnitTests.Controllers
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(CreatedResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
-            Assert.IsInstanceOfType(result.Value, typeof(CountryDto), errorMessage);
-            mockCountryService.Verify(r => r.CreateCountry(createCountryDto));
+            Assert.IsInstanceOfType(result.Value, typeof(OfficeDto), errorMessage);
+            mockOfficeService.Verify(r => r.CreateOffice(createOfficeDto));
         }
 
         [TestMethod]
         public void Create_ReturnsBadRequestByInvalidArg()
         {
             //Arrange
-            var createCountryDto = new CountryDto { Name = "Australia", Code = "AUS" }; // too long Name string
-            countryController.ModelState.AddModelError("Name", "Country name (1-20 characters) is required.");
+            var createOfficeDto = new OfficeDto { Name = "Main office", Description = "Test description 1", Address = "Test address 1", Latitude = 1.111111m, Longitude = 2.22222m, CountryId = 1 }; // too long Name string
+            officeController.ModelState.AddModelError("Name", "Office name (1-100 characters) is required.");
             BadRequestResult result = null;
 
             try
             {
                 // Act
-                result = countryController.Create(createCountryDto) as BadRequestResult;
+                result = officeController.Create(createOfficeDto) as BadRequestResult;
             }
             catch (Exception ex)
             {
@@ -181,18 +181,18 @@ namespace UnitTests.Controllers
         }
 
         [TestMethod]
-        public void Update_ReturnsCountryDtoByValidArg()
+        public void Update_ReturnsOfficeDtoByValidArg()
         {
             //Arrange
-            var countryDtoToUpdate = GetTestCountryDtoById(1);
-            mockCountryService.Setup(r => r.GetCountryById(countryDtoToUpdate.Id)).Returns(countryDtoToUpdate);
-            mockCountryService.Setup(r => r.UpdateCountry(countryDtoToUpdate)).Returns(countryDtoToUpdate);
+            var officeDtoToUpdate = GetTestOfficeDtoById(1);
+            mockOfficeService.Setup(r => r.GetOfficeById(officeDtoToUpdate.Id)).Returns(officeDtoToUpdate);
+            mockOfficeService.Setup(r => r.UpdateOffice(officeDtoToUpdate)).Returns(officeDtoToUpdate);
             OkObjectResult result = null;
 
             try
             {
                 // Act
-                result = countryController.Update(countryDtoToUpdate) as OkObjectResult;
+                result = officeController.Update(officeDtoToUpdate) as OkObjectResult;
             }
             catch (Exception ex)
             {
@@ -203,22 +203,22 @@ namespace UnitTests.Controllers
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
-            Assert.IsInstanceOfType(result.Value, typeof(CountryDto), errorMessage);
-            mockCountryService.Verify(r => r.UpdateCountry(countryDtoToUpdate));
+            Assert.IsInstanceOfType(result.Value, typeof(OfficeDto), errorMessage);
+            mockOfficeService.Verify(r => r.UpdateOffice(officeDtoToUpdate));
         }
 
         [TestMethod]
         public void Update_ReturnsNotFoundByWrongIdInArg()
         {
             //Arrange
-            var countryDtoToUpdate = GetTestCountryDtoById(1);
-            countryDtoToUpdate.Id = 0; // wrong id
+            var officeDtoToUpdate = GetTestOfficeDtoById(1);
+            officeDtoToUpdate.Id = 0; // wrong id
             NotFoundResult result = null;
 
             try
             {
                 // Act
-                result = countryController.Update(countryDtoToUpdate) as NotFoundResult;
+                result = officeController.Update(officeDtoToUpdate) as NotFoundResult;
             }
             catch (Exception ex)
             {
@@ -234,16 +234,16 @@ namespace UnitTests.Controllers
         public void Update_ReturnsBadRequestByWrongArg()
         {
             //Arrange
-            var countryDtoToUpdate = GetTestCountryDtoById(1);
-            countryDtoToUpdate.Name = "Too long country Name!!!!! Too long country Name!!!!! Too long country Name!!!!! Too long country Name!!!!!";
-            mockCountryService.Setup(r => r.GetCountryById(countryDtoToUpdate.Id)).Returns(GetTestCountryDtoById(countryDtoToUpdate.Id));
-            countryController.ModelState.AddModelError("Name", "Country name (1-20 characters) is required.");
+            var officeDtoToUpdate = GetTestOfficeDtoById(1);
+            officeDtoToUpdate.Name = "Too long office Name!!!!! Too long office Name!!!!! Too long office Name!!!!!";
+            mockOfficeService.Setup(r => r.GetOfficeById(officeDtoToUpdate.Id)).Returns(GetTestOfficeDtoById(officeDtoToUpdate.Id));
+            officeController.ModelState.AddModelError("Name", "Office name (1-100 characters) is required.");
             BadRequestResult result = null;
 
             try
             {
                 // Act
-                result = countryController.Update(countryDtoToUpdate) as BadRequestResult;
+                result = officeController.Update(officeDtoToUpdate) as BadRequestResult;
             }
             catch (Exception ex)
             {
@@ -256,18 +256,18 @@ namespace UnitTests.Controllers
         }
 
         [TestMethod]
-        public void Delete_ReturnsOkWithCountryDtoByCorrectId()
+        public void Delete_ReturnsOkWithOfficeDtoByCorrectId()
         {
             //Arrange
             int id = 1;// correct id
-            var countryToDelete = GetTestCountryDtoById(id);
-            mockCountryService.Setup(r => r.GetCountryById(id)).Returns(countryToDelete);
+            var officeToDelete = GetTestOfficeDtoById(id);
+            mockOfficeService.Setup(r => r.GetOfficeById(id)).Returns(officeToDelete);
             OkObjectResult result = null;
 
             try
             {
                 // Act
-                result = countryController.Delete(id) as OkObjectResult;
+                result = officeController.Delete(id) as OkObjectResult;
             }
             catch (Exception ex)
             {
@@ -278,8 +278,8 @@ namespace UnitTests.Controllers
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
-            Assert.IsInstanceOfType(result.Value, typeof(CountryDto), errorMessage);
-            mockCountryService.Verify(r => r.GetCountryById(id));
+            Assert.IsInstanceOfType(result.Value, typeof(OfficeDto), errorMessage);
+            mockOfficeService.Verify(r => r.GetOfficeById(id));
         }
 
         [TestMethod]
@@ -287,13 +287,13 @@ namespace UnitTests.Controllers
         {
             //Arrange
             int id = 0;// wrong id
-            mockCountryService.Setup(r => r.GetCountryById(id)).Returns(value: null);
+            mockOfficeService.Setup(r => r.GetOfficeById(id)).Returns(value: null);
             NotFoundResult result = null;
 
             try
             {
                 // Act
-                result = countryController.Delete(id) as NotFoundResult;
+                result = officeController.Delete(id) as NotFoundResult;
             }
             catch (Exception ex)
             {
@@ -303,7 +303,7 @@ namespace UnitTests.Controllers
             //Assert
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
-            mockCountryService.Verify(r => r.GetCountryById(id));
+            mockOfficeService.Verify(r => r.GetOfficeById(id));
         }
 
         #endregion

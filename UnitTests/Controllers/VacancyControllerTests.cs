@@ -1,47 +1,52 @@
-﻿using CoreWebApi.Controllers;
-using CoreWebApi.Services.TenantService;
+﻿using CoreWebApi.Controllers.Vacancy;
+using CoreWebApi.Services.VacancyService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
+using System.Collections.Generic;
 
 namespace UnitTests.Controllers
 {
     [TestClass]
-    public class TenantControllerTests
+    public class VacancyControllerTests
     {
         #region Private Members
 
-        private TenantController tenantController;
-
         private string errorMessage;
-
-        private Mock<ITenantService> mockTenantService;
+        private VacancyController vacancyController;
+        private Mock<IVacancyService> mockVacancyService;
 
         #endregion
 
         #region Utilities
 
         [TestInitialize()]
-        public void TenantControllerTestInitialize()
+        public void VacancyControllerTestInitialize()
         {
             errorMessage = "";
-
-            mockTenantService = new Mock<ITenantService>();
-
-            tenantController = new TenantController(mockTenantService.Object);
+            mockVacancyService = new Mock<IVacancyService>();
+            vacancyController = new VacancyController(mockVacancyService.Object);
         }
 
         [TestCleanup()]
-        public void TenantControllerTestsCleanup()
+        public void VacancyControllerTestsCleanup()
         {
-            tenantController = null;
+            vacancyController = null;
         }
 
-        private TenantDto GetTestTenantDtoById(int id)
+        private VacancyDto GetTestVacancyDtoById(int id)
         {
-            var tenantDto = (id != 0) ? new TenantDto { Id = id, FirstName = "First Name", LastName = "Last Name", Email = "email@gmail.com", Phone = "+123123123" } : null;
-            return tenantDto;
+            return new VacancyDto { Id = 1, Title = ".Net Developer", Description = "Test description 1", Previews = 1, IsActive = true, OfficeId = 1 };
+        }
+
+        private IEnumerable<VacancyDto> GetTestVacancyDtos()
+        {
+            return new List<VacancyDto>() {
+                new VacancyDto { Id = 1, Title = ".Net Developer", Description = "Test description 1", Previews = 1, IsActive = true, OfficeId = 1 },
+                new VacancyDto { Id = 2, Title = "Junior JavaScrip Frontend Developer", Description = "Test description 2", Previews = 0, IsActive = true, OfficeId = 1 },
+                new VacancyDto { Id = 3, Title = "Senior JavaScrip Frontend Developer", Description = "Test description 3", Previews = 0, IsActive = true, OfficeId = 1 }
+            };
         }
 
         #endregion
@@ -49,17 +54,17 @@ namespace UnitTests.Controllers
         #region Tests
 
         [TestMethod]
-        public void GetById_ReturnsOkWithTenantDtoByCorrectId()
+        public void GetById_ReturnsOkWithVacancyDtoByCorrectId()
         {
             //Arrange
             int id = 1;// correct id
-            mockTenantService.Setup(r => r.GetTenantById(id)).Returns(GetTestTenantDtoById(id));
+            mockVacancyService.Setup(r => r.GetVacancyById(id)).Returns(GetTestVacancyDtoById(id));
             OkObjectResult result = null;
 
             try
             {
                 // Act
-                result = tenantController.GetById(id) as OkObjectResult;
+                result = vacancyController.GetById(id) as OkObjectResult;
             }
             catch (Exception ex)
             {
@@ -70,8 +75,8 @@ namespace UnitTests.Controllers
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
-            Assert.IsInstanceOfType(result.Value, typeof(TenantDto), errorMessage);
-            mockTenantService.Verify(r => r.GetTenantById(id));
+            Assert.IsInstanceOfType(result.Value, typeof(VacancyDto), errorMessage);
+            mockVacancyService.Verify(r => r.GetVacancyById(id));
         }
 
         [TestMethod]
@@ -79,14 +84,13 @@ namespace UnitTests.Controllers
         {
             //Arrange
             int id = int.MaxValue - 1;// wrong id
-            TenantDto tenantDto = null;
-            mockTenantService.Setup(r => r.GetTenantById(id)).Returns(tenantDto);
+            mockVacancyService.Setup(r => r.GetVacancyById(id)).Returns(value: null);
             NotFoundResult result = null;
 
             try
             {
                 // Act
-                result = tenantController.GetById(id) as NotFoundResult;
+                result = vacancyController.GetById(id) as NotFoundResult;
             }
             catch (Exception ex)
             {
@@ -96,21 +100,21 @@ namespace UnitTests.Controllers
             //Assert
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
-            mockTenantService.Verify(r => r.GetTenantById(id));
+            mockVacancyService.Verify(r => r.GetVacancyById(id));
         }
 
         [TestMethod]
-        public void Create_ReturnsCreatedTenantDtoByValidArg()
+        public void Create_ReturnsCreatedVacancyDtoByValidArg()
         {
             //Arrange
-            var createTenantDto = new CreateTenantDto { FirstName = "First Name", LastName = "Last Name", Email = "q@q.com", Phone = "+123123123" };
-            mockTenantService.Setup(r => r.CreateTenant(createTenantDto)).Returns(GetTestTenantDtoById(1));
+            var createVacancyDto = GetTestVacancyDtoById(1);
+            mockVacancyService.Setup(r => r.CreateVacancy(createVacancyDto)).Returns(GetTestVacancyDtoById(1));
             CreatedResult result = null;
 
             try
             {
                 // Act
-                result = tenantController.Create(createTenantDto) as CreatedResult;
+                result = vacancyController.Create(createVacancyDto) as CreatedResult;
             }
             catch (Exception ex)
             {
@@ -121,22 +125,22 @@ namespace UnitTests.Controllers
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(CreatedResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
-            Assert.IsInstanceOfType(result.Value, typeof(TenantDto), errorMessage);
-            mockTenantService.Verify(r => r.CreateTenant(createTenantDto));
+            Assert.IsInstanceOfType(result.Value, typeof(VacancyDto), errorMessage);
+            mockVacancyService.Verify(r => r.CreateVacancy(createVacancyDto));
         }
 
         [TestMethod]
         public void Create_ReturnsBadRequestByInvalidArg()
         {
             //Arrange
-            var createTenantDto = new CreateTenantDto { FirstName = "First Name", LastName = "Last Name", Email = "q@q.com", Phone = "+123123123123123123111" }; // too long Phone string
-            tenantController.ModelState.AddModelError("Phone", "Phone should be 0 - 20 characters");
+            var createVacancyDto = new VacancyDto { Title = ".Net Developer", Description = "Test description 1", Previews = 1, IsActive = true, OfficeId = 1 }; // too long Title string
+            vacancyController.ModelState.AddModelError("Title", "Title (1-50 characters) is required.");
             BadRequestResult result = null;
 
             try
             {
                 // Act
-                result = tenantController.Create(createTenantDto) as BadRequestResult;
+                result = vacancyController.Create(createVacancyDto) as BadRequestResult;
             }
             catch (Exception ex)
             {
@@ -149,18 +153,18 @@ namespace UnitTests.Controllers
         }
 
         [TestMethod]
-        public void Update_ReturnsTenantDtoByValidArg()
+        public void Update_ReturnsVacancyDtoByValidArg()
         {
             //Arrange
-            var tenantDtoToUpdate = new TenantDto { Id = 1, FirstName = "First Name", LastName = "Last Name", Email = "q@q.com", Phone = "+123123123" };
-            mockTenantService.Setup(r => r.GetTenantById(tenantDtoToUpdate.Id)).Returns(GetTestTenantDtoById(1));
-            mockTenantService.Setup(r => r.UpdateTenant(tenantDtoToUpdate)).Returns(GetTestTenantDtoById(1));
+            var vacancyDtoToUpdate = GetTestVacancyDtoById(1);
+            mockVacancyService.Setup(r => r.GetVacancyById(vacancyDtoToUpdate.Id)).Returns(vacancyDtoToUpdate);
+            mockVacancyService.Setup(r => r.UpdateVacancy(vacancyDtoToUpdate)).Returns(vacancyDtoToUpdate);
             OkObjectResult result = null;
 
             try
             {
                 // Act
-                result = tenantController.Update(tenantDtoToUpdate) as OkObjectResult;
+                result = vacancyController.Update(vacancyDtoToUpdate) as OkObjectResult;
             }
             catch (Exception ex)
             {
@@ -171,21 +175,22 @@ namespace UnitTests.Controllers
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
-            Assert.IsInstanceOfType(result.Value, typeof(TenantDto), errorMessage);
-            mockTenantService.Verify(r => r.UpdateTenant(tenantDtoToUpdate));
+            Assert.IsInstanceOfType(result.Value, typeof(VacancyDto), errorMessage);
+            mockVacancyService.Verify(r => r.UpdateVacancy(vacancyDtoToUpdate));
         }
 
         [TestMethod]
         public void Update_ReturnsNotFoundByWrongIdInArg()
         {
             //Arrange
-            var tenantDtoToUpdate = new TenantDto { Id = 0, FirstName = "", LastName = "", Email = "", Phone = "" };
+            var vacancyDtoToUpdate = GetTestVacancyDtoById(1);
+            vacancyDtoToUpdate.Id = 0; // wrong id
             NotFoundResult result = null;
 
             try
             {
                 // Act
-                result = tenantController.Update(tenantDtoToUpdate) as NotFoundResult;
+                result = vacancyController.Update(vacancyDtoToUpdate) as NotFoundResult;
             }
             catch (Exception ex)
             {
@@ -201,22 +206,16 @@ namespace UnitTests.Controllers
         public void Update_ReturnsBadRequestByWrongArg()
         {
             //Arrange
-            var tenantDtoToUpdate = new TenantDto
-            {
-                Id = 1,
-                FirstName = "First Name",
-                LastName = "Last Name",
-                Email = "q@q.com",
-                Phone = "+123123123123123123111"  // too long Phone string
-            };
-            mockTenantService.Setup(r => r.GetTenantById(tenantDtoToUpdate.Id)).Returns(GetTestTenantDtoById(tenantDtoToUpdate.Id));
-            tenantController.ModelState.AddModelError("Phone", "Phone should be 0 - 20 characters");
+            var vacancyDtoToUpdate = GetTestVacancyDtoById(1);
+            vacancyDtoToUpdate.Title = "Too long Vacancy Title!!!!! Too long Vacancy Title!!!!! Too long Vacancy Title!!!!!";
+            mockVacancyService.Setup(r => r.GetVacancyById(vacancyDtoToUpdate.Id)).Returns(GetTestVacancyDtoById(vacancyDtoToUpdate.Id));
+            vacancyController.ModelState.AddModelError("Title", "Title (1-50 characters) is required.");
             BadRequestResult result = null;
 
             try
             {
                 // Act
-                result = tenantController.Update(tenantDtoToUpdate) as BadRequestResult;
+                result = vacancyController.Update(vacancyDtoToUpdate) as BadRequestResult;
             }
             catch (Exception ex)
             {
@@ -229,18 +228,18 @@ namespace UnitTests.Controllers
         }
 
         [TestMethod]
-        public void Delete_ReturnsOkWithTenantDtoByCorrectId()
+        public void Delete_ReturnsOkWithVacancyDtoByCorrectId()
         {
             //Arrange
             int id = 1;// correct id
-            var tenantToDelete = GetTestTenantDtoById(id);
-            mockTenantService.Setup(r => r.GetTenantById(id)).Returns(tenantToDelete);
+            var vacancyToDelete = GetTestVacancyDtoById(id);
+            mockVacancyService.Setup(r => r.GetVacancyById(id)).Returns(vacancyToDelete);
             OkObjectResult result = null;
 
             try
             {
                 // Act
-                result = tenantController.GetById(id) as OkObjectResult;
+                result = vacancyController.Delete(id) as OkObjectResult;
             }
             catch (Exception ex)
             {
@@ -251,23 +250,22 @@ namespace UnitTests.Controllers
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
-            Assert.IsInstanceOfType(result.Value, typeof(TenantDto), errorMessage);
-            mockTenantService.Verify(r => r.GetTenantById(id));
+            Assert.IsInstanceOfType(result.Value, typeof(VacancyDto), errorMessage);
+            mockVacancyService.Verify(r => r.GetVacancyById(id));
         }
 
         [TestMethod]
         public void Delete_ReturnsNotFoundByWrongId()
         {
             //Arrange
-            int id = int.MaxValue - 1;// wrong id
-            TenantDto tenantDto = null;
-            mockTenantService.Setup(r => r.GetTenantById(id)).Returns(tenantDto);
+            int id = 0;// wrong id
+            mockVacancyService.Setup(r => r.GetVacancyById(id)).Returns(value: null);
             NotFoundResult result = null;
 
             try
             {
                 // Act
-                result = tenantController.Delete(id) as NotFoundResult;
+                result = vacancyController.Delete(id) as NotFoundResult;
             }
             catch (Exception ex)
             {
@@ -277,7 +275,7 @@ namespace UnitTests.Controllers
             //Assert
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
-            mockTenantService.Verify(r => r.GetTenantById(id));
+            mockVacancyService.Verify(r => r.GetVacancyById(id));
         }
 
         #endregion
