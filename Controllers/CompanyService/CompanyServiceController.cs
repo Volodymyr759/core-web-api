@@ -73,7 +73,6 @@ namespace CoreWebApi.Controllers.CompanyService
         /// </remarks>
         /// <response code="201">Returns the newly created CompanyServiceDto item</response>
         /// <response code="400">If the argument is not valid</response>
-        /// <response code="401">If the user is not logged in</response>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
