@@ -46,18 +46,18 @@ namespace UnitTests.Services
         private IEnumerable<MailSubscription> GetTestMailSubscriptions()
         {
             return new List<MailSubscription>() {
-                new MailSubscription { Id = 1, Title = "Company News", Content = "Test conyent 1" },
-                new MailSubscription { Id = 2, Title = "Our Vacancies", Content = "Test conyent 2" },
-                new MailSubscription { Id = 3, Title = "Other test subscription", Content = "Test conyent 3" }
+                new MailSubscription { Id = 1, Title = "Company News", Content = "Test content 1" },
+                new MailSubscription { Id = 2, Title = "Our Vacancies", Content = "Test content 2" },
+                new MailSubscription { Id = 3, Title = "Other test subscription", Content = "Test content 3" }
             };
         }
 
         private IEnumerable<MailSubscriptionDto> GetTestMailSubscriptionDtos()
         {
             return new List<MailSubscriptionDto>() {
-                new MailSubscriptionDto { Id = 1, Title = "Company News", Content = "Test conyent 1" },
-                new MailSubscriptionDto { Id = 2, Title = "Our Vacancies", Content = "Test conyent 2" },
-                new MailSubscriptionDto { Id = 3, Title = "Other test subscription", Content = "Test conyent 3" }
+                new MailSubscriptionDto { Id = 1, Title = "Company News", Content = "Test content 1" },
+                new MailSubscriptionDto { Id = 2, Title = "Our Vacancies", Content = "Test content 2" },
+                new MailSubscriptionDto { Id = 3, Title = "Other test subscription", Content = "Test content 3" }
             };
         }
 

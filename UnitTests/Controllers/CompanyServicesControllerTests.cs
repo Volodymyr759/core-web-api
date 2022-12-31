@@ -1,5 +1,4 @@
-﻿using CoreWebApi.Controllers;
-using CoreWebApi.Controllers.CompanyService;
+﻿using CoreWebApi.Controllers.CompanyService;
 using CoreWebApi.Services.CompanyServiceBL;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

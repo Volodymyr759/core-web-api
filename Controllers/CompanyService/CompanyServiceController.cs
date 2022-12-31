@@ -3,10 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace CoreWebApi.Controllers.CompanyService
 {
@@ -161,7 +157,7 @@ namespace CoreWebApi.Controllers.CompanyService
         /// <param name="id">Identifier int id</param>
         /// <returns>Status 200 and deleted CompanyServiceDto object</returns>
         /// <response code="200">Returns the deleted CompanyServiceDto item</response>
-        /// <response code="404">If the tenant with given id not found</response>
+        /// <response code="404">If the company service with given id not found</response>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

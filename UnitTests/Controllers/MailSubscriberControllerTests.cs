@@ -1,5 +1,4 @@
-﻿using CoreWebApi.Controllers;
-using CoreWebApi.Controllers.MailSubscriber;
+﻿using CoreWebApi.Controllers.MailSubscriber;
 using CoreWebApi.Services.MailSubscriberService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -156,35 +155,6 @@ namespace UnitTests.Controllers
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(MailSubscriberDto), errorMessage);
             mockMailSubscriberService.Verify(r => r.CreateMailSubscriber(createMailSubscriberDto));
-        }
-
-        [TestMethod]
-        public void Unsubscribe_ReturnsMailSubscriberDtoByValidArg()
-        {
-            //Arrange
-            var mailSubscriberDtoToUpdate = GetTestMailSubscriberDtoById(1);
-            mockMailSubscriberService.Setup(r => r.GetMailSubscriberById(mailSubscriberDtoToUpdate.Id)).Returns(mailSubscriberDtoToUpdate);
-            mockMailSubscriberService.Setup(r => r.UpdateMailSubscriber(mailSubscriberDtoToUpdate)).Returns(mailSubscriberDtoToUpdate);
-            OkObjectResult result = null;
-
-            try
-            {
-                // Act
-                result = mailSubscriberController.Unsubscribe(
-                    mailSubscriberDtoToUpdate.Id, 
-                    new Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<MailSubscriberDto>()) as OkObjectResult;
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + " | " + ex.StackTrace;
-            }
-
-            //Assert
-            Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
-            Assert.IsNotNull(result.Value, errorMessage);
-            Assert.IsInstanceOfType(result.Value, typeof(MailSubscriberDto), errorMessage);
-            mockMailSubscriberService.Verify(r => r.UpdateMailSubscriber(mailSubscriberDtoToUpdate));
         }
 
         [TestMethod]
