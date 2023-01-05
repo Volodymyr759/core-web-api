@@ -377,7 +377,7 @@ namespace CoreWebApi.Controllers
             if (_tokenService.IsTokenExpired(tokenModel.RefreshToken)) return Forbid(); // refresh token has expired - so user should log in
             if (user == null || (await _userManager.GetAuthenticationTokenAsync(user, "CoreWebApi", "refresh"))
                 != tokenModel.RefreshToken) return BadRequest("Could not update tokens.");
-            var authModel = await CreateAuthModelAsync(user);
+            var authModel = await CreateAuthModelAsync(user, 15);
             await SaveTokensAsync(user, authModel.Tokens);
 
             return Created("/account/refresh", authModel);
@@ -390,10 +390,11 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///     
-        ///     POST /api/account/LoginAsync
+        ///     POST /api/account/login
         ///     {
-        ///         "email": "vvv@gmail.com",
-        ///         "password": "Password1."
+        ///         "email": "admin1@gmail.com",
+        ///         "password": "Password."
+        ///         "remember": "true"
         ///     }
         ///     
         /// </remarks>
@@ -413,7 +414,8 @@ namespace CoreWebApi.Controllers
                 !(await _signInManager.CheckPasswordSignInAsync(user, loginUserDto.Password, false)).Succeeded ||
                 !user.EmailConfirmed)
                 return BadRequest("Could not login user.");
-            var authModel = await CreateAuthModelAsync(user);
+            var rememberPeriod = loginUserDto.Remember ? 60 * 24 : 15;
+            var authModel = await CreateAuthModelAsync(user, rememberPeriod);
             await SaveTokensAsync(user, authModel.Tokens);
 
             return Ok(authModel);
@@ -445,7 +447,7 @@ namespace CoreWebApi.Controllers
             return Ok("User logged out.");
         }
 
-        private async Task<AuthModel> CreateAuthModelAsync(ApplicationUser user)
+        private async Task<AuthModel> CreateAuthModelAsync(ApplicationUser user, int rememberPeriod)
         {
             var roles = await _userManager.GetRolesAsync(user);
             var tokenClaims = new List<Claim>
@@ -461,7 +463,7 @@ namespace CoreWebApi.Controllers
                 Roles = roles,
                 Tokens = new TokenModel()
                 {
-                    AccessToken = _tokenService.GenerateAccessToken(tokenClaims, 15),
+                    AccessToken = _tokenService.GenerateAccessToken(tokenClaims, rememberPeriod),
                     RefreshToken = _tokenService.GenerateAccessToken(tokenClaims, 60 * 24 * 14)
                 }
             };

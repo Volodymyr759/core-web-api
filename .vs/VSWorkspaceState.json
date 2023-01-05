@@ -1,6 +1,8 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\Controllers",
+    "\\Controllers\\Account"
   ],
   "SelectedNode": "\\CoreWebApi.sln",
   "PreviewInSolutionExplorer": false

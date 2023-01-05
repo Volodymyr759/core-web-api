@@ -107,7 +107,7 @@ namespace CoreWebApi
 
             services.AddCors(options => options.AddPolicy("Cors", builder =>
             {
-                builder
+                builder.WithOrigins("https://localhost:3000")
                 .AllowAnyOrigin()
                 .AllowAnyMethod()
                 .AllowAnyHeader();
@@ -177,7 +177,7 @@ namespace CoreWebApi
                     options.InjectStylesheet("/swagger-ui/custom.css");//some styling can be added
                 });
             }
-
+            app.UseCors("Cors");
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
