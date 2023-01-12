@@ -1,6 +1,8 @@
 # CoreWebApi - project
 
-Boilerplate of Asp.Net Core web-api application
+Boilerplate of Asp.Net Core web-api application.
+
+This is backend for my react-typescript application: https://github.com/Volodymyr759/core-web-client
 
 ## Includes:
 

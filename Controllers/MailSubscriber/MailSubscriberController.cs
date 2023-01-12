@@ -74,6 +74,7 @@ namespace CoreWebApi.Controllers.MailSubscriber
         /// <response code="400">If the argument is not valid</response>
         /// <response code="401">If the user is not logged in</response>
         [HttpPost]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult Subscribe([FromBody] MailSubscriberDto mailSubscriberDto)

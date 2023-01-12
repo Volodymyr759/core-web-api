@@ -295,7 +295,7 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     POST /api/account/RegisterAsync
+        ///     POST /api/account/register
         ///     {
         ///        "Email": "test@gmail.com",
         ///        "Password": "Password.",
@@ -320,7 +320,7 @@ namespace CoreWebApi.Controllers
             await _emailSender.SendEmailAsync($"{user.Email}", "Confirmation email link",
                 $"Confirmation email link: /Account/ConfirmEmail/?token={code}&email={user.Email}");
 
-            return Created("/register", user.Id);
+            return Created("/account/register", user.Id);
         }
 
         /// <summary>
@@ -444,7 +444,7 @@ namespace CoreWebApi.Controllers
             if (user == null) return NotFound("User Not Found.");
             await RemoveTokens(user);
 
-            return Ok("User logged out.");
+            return Ok();
         }
 
         private async Task<AuthModel> CreateAuthModelAsync(ApplicationUser user, int rememberPeriod)

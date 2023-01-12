@@ -17,6 +17,8 @@ namespace CoreWebApi.Data
 
         public DbSet<Country> Countries { get; set; }
 
+        public DbSet<Employee> Employees { get; set; }
+
         public DbSet<Tenant> Tenants { get; set; }
 
         public DbSet<MailSubscriber> MailSubscribers { get; set; }

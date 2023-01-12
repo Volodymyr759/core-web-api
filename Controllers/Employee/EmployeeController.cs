@@ -32,10 +32,11 @@ namespace CoreWebApi.Controllers.Employee
         /// </remarks>
         /// <response code="200">list of TenantDto's</response>
         [HttpGet]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult GetAll(int limit = 10, int page = 1, string search = "", string sort_field = "Id", string sort = "desc")
         {
-            return Ok(employeeService.GetAllEmployees(limit, page, search, sort_field, sort));
+            return Ok(employeeService.GetAllEmployees(limit, page, search ?? "", sort_field, sort));
         }
 
         /// <summary>
