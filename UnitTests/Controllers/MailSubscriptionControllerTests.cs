@@ -113,12 +113,12 @@ namespace UnitTests.Controllers
             //Arrange
             int id = int.MaxValue - 1;// wrong id
             mockMailSubscriptionServise.Setup(r => r.GetMailSubscriptionById(id)).Returns(value: null);
-            NotFoundResult result = null;
+            NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = mailSubscriptionController.GetById(id) as NotFoundResult;
+                result = mailSubscriptionController.GetById(id) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -127,7 +127,7 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
             mockMailSubscriptionServise.Verify(r => r.GetMailSubscriptionById(id));
         }
 
@@ -135,8 +135,9 @@ namespace UnitTests.Controllers
         public void Create_ReturnsCreatedMailSubscriptionDtoByValidArg()
         {
             //Arrange
-            var createMailSubscriptionDto = GetTestMailSubscriptionDtoById(1);
-            mockMailSubscriptionServise.Setup(r => r.CreateMailSubscription(createMailSubscriptionDto)).Returns(GetTestMailSubscriptionDtoById(1));
+            int id = 1;
+            var createMailSubscriptionDto = GetTestMailSubscriptionDtoById(id);
+            mockMailSubscriptionServise.Setup(r => r.CreateMailSubscription(createMailSubscriptionDto)).Returns(GetTestMailSubscriptionDtoById(id));
             CreatedResult result = null;
 
             try
@@ -161,14 +162,15 @@ namespace UnitTests.Controllers
         public void Create_ReturnsBadRequestByInvalidArg()
         {
             //Arrange
-            var createMailSubscriptionDto = new MailSubscriptionDto { Title = "Company News", Content = "Test content 1" }; // too long Title string
-            mailSubscriptionController.ModelState.AddModelError("Title", "Title should be 1 - 100 characters");
-            BadRequestResult result = null;
+            int id = 1;
+            var createMailSubscriptionDto = GetTestMailSubscriptionDtoById(id);
+            mailSubscriptionController.ModelState.AddModelError("Title", "Title should be 1 - 100 characters");// too long Title string
+            BadRequestObjectResult result = null;
 
             try
             {
                 // Act
-                result = mailSubscriptionController.Create(createMailSubscriptionDto) as BadRequestResult;
+                result = mailSubscriptionController.Create(createMailSubscriptionDto) as BadRequestObjectResult;
             }
             catch (Exception ex)
             {
@@ -177,14 +179,15 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(BadRequestResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult), errorMessage);
         }
 
         [TestMethod]
         public void Update_ReturnsMailSubscriptionDtoByValidArg()
         {
             //Arrange
-            var mailSubscriptionDtoToUpdate = GetTestMailSubscriptionDtoById(1);
+            int id = 1;
+            var mailSubscriptionDtoToUpdate = GetTestMailSubscriptionDtoById(id);
             mockMailSubscriptionServise.Setup(r => r.GetMailSubscriptionById(mailSubscriptionDtoToUpdate.Id)).Returns(mailSubscriptionDtoToUpdate);
             mockMailSubscriptionServise.Setup(r => r.UpdateMailSubscription(mailSubscriptionDtoToUpdate)).Returns(mailSubscriptionDtoToUpdate);
             OkObjectResult result = null;
@@ -211,14 +214,15 @@ namespace UnitTests.Controllers
         public void Update_ReturnsNotFoundByWrongIdInArg()
         {
             //Arrange
-            var mailSubscriptionDtoToUpdate = GetTestMailSubscriptionDtoById(1);
+            int id = 1;
+            var mailSubscriptionDtoToUpdate = GetTestMailSubscriptionDtoById(id);
             mailSubscriptionDtoToUpdate.Id = 0; // wrong id
-            NotFoundResult result = null;
+            NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = mailSubscriptionController.Update(mailSubscriptionDtoToUpdate) as NotFoundResult;
+                result = mailSubscriptionController.Update(mailSubscriptionDtoToUpdate) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -227,23 +231,22 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
         }
 
         [TestMethod]
         public void Update_ReturnsBadRequestByWrongArg()
         {
             //Arrange
-            var mailSubscriptionDtoToUpdate = GetTestMailSubscriptionDtoById(1);
-            mailSubscriptionDtoToUpdate.Title = "Too long mail subscription Title!!!!! Too mail subscription service Title!!!!! Too long mail subscription Title!!!!!";
-            mockMailSubscriptionServise.Setup(r => r.GetMailSubscriptionById(mailSubscriptionDtoToUpdate.Id)).Returns(GetTestMailSubscriptionDtoById(mailSubscriptionDtoToUpdate.Id));
+            int id = 1;
+            var mailSubscriptionDtoToUpdate = GetTestMailSubscriptionDtoById(id);
             mailSubscriptionController.ModelState.AddModelError("Title", "Title (1 - 100 characters) is required.");
-            BadRequestResult result = null;
+            BadRequestObjectResult result = null;
 
             try
             {
                 // Act
-                result = mailSubscriptionController.Update(mailSubscriptionDtoToUpdate) as BadRequestResult;
+                result = mailSubscriptionController.Update(mailSubscriptionDtoToUpdate) as BadRequestObjectResult;
             }
             catch (Exception ex)
             {
@@ -252,7 +255,7 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(BadRequestResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult), errorMessage);
         }
 
         [TestMethod]
@@ -288,12 +291,12 @@ namespace UnitTests.Controllers
             //Arrange
             int id = 0;// wrong id
             mockMailSubscriptionServise.Setup(r => r.GetMailSubscriptionById(id)).Returns(value: null);
-            NotFoundResult result = null;
+            NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = mailSubscriptionController.Delete(id) as NotFoundResult;
+                result = mailSubscriptionController.Delete(id) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -302,7 +305,7 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
             mockMailSubscriptionServise.Verify(r => r.GetMailSubscriptionById(id));
         }
 

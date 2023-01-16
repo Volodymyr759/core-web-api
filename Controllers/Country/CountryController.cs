@@ -1,18 +1,23 @@
-﻿using CoreWebApi.Services.CountryService;
+﻿using CoreWebApi.Controllers.ResponseError;
+using CoreWebApi.Services.CountryService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CoreWebApi.Controllers
 {
-    [ApiController, Authorize, Produces("application/json"), Route("api/[controller]/[action]")]
+    [ApiController, Authorize, Produces("application/json"), Route("api/[controller]/[action]"), ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public class CountryController : ControllerBase
     {
         private readonly ICountryService countryService;
+        private IResponseError responseBadRequestError;
+        private IResponseError responseNotFoundError;
 
         public CountryController(ICountryService countryService)
         {
             this.countryService = countryService;
+            responseBadRequestError = ResponseErrorFactory.getBadRequestError("");
+            responseNotFoundError = ResponseErrorFactory.getNotFoundError("");
         }
 
         /// <summary>
@@ -49,7 +54,11 @@ namespace CoreWebApi.Controllers
         public IActionResult GetById([FromRoute] int id)
         {
             var companySeviceDto = countryService.GetCountryById(id);
-            if (companySeviceDto == null) return NotFound();
+            if (companySeviceDto == null)
+            {
+                responseNotFoundError.Title = "Country Not Found.";
+                return NotFound(responseNotFoundError);
+            }
 
             return Ok(companySeviceDto);
         }
@@ -61,7 +70,7 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     POST /api/Country/Create
+        ///     POST /api/country/create
         ///     {
         ///        "Name": "Australia",
         ///        "Code": "AUS"
@@ -75,7 +84,12 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult Create([FromBody] CountryDto CountryDto)
         {
-            return Created("/Country/Create", countryService.CreateCountry(CountryDto));
+            if (!ModelState.IsValid)
+            {
+                responseBadRequestError.Title = "Wrong country-data.";
+                return BadRequest(responseBadRequestError);
+            }
+            return Created("/api/country/create", countryService.CreateCountry(CountryDto));
         }
 
         /// <summary>
@@ -85,7 +99,7 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     PUT /api/Country/Update
+        ///     PUT /api/country/update
         ///     {
         ///        "Id": "1",
         ///        "Name": "Australia",
@@ -102,7 +116,16 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Update([FromBody] CountryDto CountryDto)
         {
-            if (countryService.GetCountryById(CountryDto.Id) == null) return NotFound();
+            if (!ModelState.IsValid)
+            {
+                responseBadRequestError.Title = "Wrong country-data.";
+                return BadRequest(responseBadRequestError);
+            }
+            if (countryService.GetCountryById(CountryDto.Id) == null)
+            {
+                responseNotFoundError.Title = "Country Not Found.";
+                return NotFound(responseNotFoundError);
+            }
 
             return Ok(countryService.UpdateCountry(CountryDto));
         }
@@ -120,7 +143,11 @@ namespace CoreWebApi.Controllers
         public IActionResult Delete([FromRoute] int id)
         {
             var CountryToDelete = countryService.GetCountryById(id);
-            if (CountryToDelete == null) return NotFound();
+            if (CountryToDelete == null)
+            {
+                responseNotFoundError.Title = "Country Not Found.";
+                return NotFound(responseNotFoundError);
+            }
             countryService.DeleteCountry(id);
 
             return Ok(CountryToDelete);

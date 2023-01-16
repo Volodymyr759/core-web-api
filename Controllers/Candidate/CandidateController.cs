@@ -1,18 +1,23 @@
-﻿using CoreWebApi.Services.CandidateService;
+﻿using CoreWebApi.Controllers.ResponseError;
+using CoreWebApi.Services.CandidateService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CoreWebApi.Controllers.Candidate
 {
-    [ApiController, Authorize, Produces("application/json"), Route("api/[controller]/[action]")]
+    [ApiController, Authorize, Produces("application/json"), Route("api/[controller]/[action]"), ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public class CandidateController : ControllerBase
     {
         private readonly ICandidateService candidateService;
+        private IResponseError responseBadRequestError;
+        private IResponseError responseNotFoundError;
 
         public CandidateController(ICandidateService candidateService)
         {
             this.candidateService = candidateService;
+            responseBadRequestError = ResponseErrorFactory.getBadRequestError("");
+            responseNotFoundError = ResponseErrorFactory.getNotFoundError("");
         }
 
         /// <summary>
@@ -51,7 +56,11 @@ namespace CoreWebApi.Controllers.Candidate
         public IActionResult GetById([FromRoute] int id)
         {
             var candidateDto = candidateService.GetCandidateById(id);
-            if (candidateDto == null) return NotFound();
+            if (candidateDto == null)
+            {
+                responseNotFoundError.Title = "Candidate Not Found.";
+                return NotFound(responseNotFoundError);
+            }
 
             return Ok(candidateDto);
         }
@@ -63,14 +72,14 @@ namespace CoreWebApi.Controllers.Candidate
         /// <remarks>
         /// Sample request:
         ///
-        ///     POST /api/Candidate/Create
+        ///     POST /api/candidate/create
         ///     {
         ///        "FullName": "Sindy Crowford",
         ///        "Email": "sindy@gmail.com",
         ///        "Phone": "+1234567891",
         ///        "Notes": "Test note 1",
         ///        "IsDismissed": "false",
-        ///        "JoinedAt": "20221231",
+        ///        "JoinedAt": "2022/12/31",
         ///        "VacancyId": "1"
         ///     }
         ///     
@@ -82,7 +91,12 @@ namespace CoreWebApi.Controllers.Candidate
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult Create([FromBody] CandidateDto candidateDto)
         {
-            return Created("/Candidate/Create", candidateService.CreateCandidate(candidateDto));
+            if (!ModelState.IsValid)
+            {
+                responseBadRequestError.Title = "Wrong candidate-data.";
+                return BadRequest(responseBadRequestError);
+            }
+            return Created("/api/candidate/create", candidateService.CreateCandidate(candidateDto));
         }
 
         /// <summary>
@@ -114,7 +128,16 @@ namespace CoreWebApi.Controllers.Candidate
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Update([FromBody] CandidateDto candidateDto)
         {
-            if (candidateService.GetCandidateById(candidateDto.Id) == null) return NotFound();
+            if (!ModelState.IsValid)
+            {
+                responseBadRequestError.Title = "Wrong candidate-data.";
+                return BadRequest(responseBadRequestError);
+            }
+            if (candidateService.GetCandidateById(candidateDto.Id) == null)
+            {
+                responseNotFoundError.Title = "Candidate Not Found.";
+                return NotFound(responseNotFoundError);
+            }
 
             return Ok(candidateService.UpdateCandidate(candidateDto));
         }
@@ -132,7 +155,11 @@ namespace CoreWebApi.Controllers.Candidate
         public IActionResult Delete([FromRoute] int id)
         {
             var candidateToDelete = candidateService.GetCandidateById(id);
-            if (candidateToDelete == null) return NotFound();
+            if (candidateToDelete == null)
+            {
+                responseNotFoundError.Title = "Candidate Not Found.";
+                return NotFound(responseNotFoundError);
+            }
             candidateService.DeleteCandidate(id);
 
             return Ok(candidateToDelete);

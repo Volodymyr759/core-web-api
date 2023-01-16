@@ -113,12 +113,12 @@ namespace UnitTests.Controllers
             //Arrange
             int id = int.MaxValue - 1;// wrong id
             mockOfficeService.Setup(r => r.GetOfficeById(id)).Returns(value: null);
-            NotFoundResult result = null;
+            NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = officeController.GetById(id) as NotFoundResult;
+                result = officeController.GetById(id) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -127,7 +127,7 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
             mockOfficeService.Verify(r => r.GetOfficeById(id));
         }
 
@@ -135,8 +135,9 @@ namespace UnitTests.Controllers
         public void Create_ReturnsCreatedOfficeDtoByValidArg()
         {
             //Arrange
-            var createOfficeDto = GetTestOfficeDtoById(1);
-            mockOfficeService.Setup(r => r.CreateOffice(createOfficeDto)).Returns(GetTestOfficeDtoById(1));
+            int id = 1;
+            var createOfficeDto = GetTestOfficeDtoById(id);
+            mockOfficeService.Setup(r => r.CreateOffice(createOfficeDto)).Returns(GetTestOfficeDtoById(id));
             CreatedResult result = null;
 
             try
@@ -161,14 +162,15 @@ namespace UnitTests.Controllers
         public void Create_ReturnsBadRequestByInvalidArg()
         {
             //Arrange
-            var createOfficeDto = new OfficeDto { Name = "Main office", Description = "Test description 1", Address = "Test address 1", Latitude = 1.111111m, Longitude = 2.22222m, CountryId = 1 }; // too long Name string
-            officeController.ModelState.AddModelError("Name", "Office name (1-100 characters) is required.");
-            BadRequestResult result = null;
+            int id = 1;
+            var createOfficeDto = GetTestOfficeDtoById(id);
+            officeController.ModelState.AddModelError("Name", "Office name (1-100 characters) is required.");// too long Name string
+            BadRequestObjectResult result = null;
 
             try
             {
                 // Act
-                result = officeController.Create(createOfficeDto) as BadRequestResult;
+                result = officeController.Create(createOfficeDto) as BadRequestObjectResult;
             }
             catch (Exception ex)
             {
@@ -177,14 +179,15 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(BadRequestResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult), errorMessage);
         }
 
         [TestMethod]
         public void Update_ReturnsOfficeDtoByValidArg()
         {
             //Arrange
-            var officeDtoToUpdate = GetTestOfficeDtoById(1);
+            int id = 1;
+            var officeDtoToUpdate = GetTestOfficeDtoById(id);
             mockOfficeService.Setup(r => r.GetOfficeById(officeDtoToUpdate.Id)).Returns(officeDtoToUpdate);
             mockOfficeService.Setup(r => r.UpdateOffice(officeDtoToUpdate)).Returns(officeDtoToUpdate);
             OkObjectResult result = null;
@@ -211,14 +214,15 @@ namespace UnitTests.Controllers
         public void Update_ReturnsNotFoundByWrongIdInArg()
         {
             //Arrange
-            var officeDtoToUpdate = GetTestOfficeDtoById(1);
+            int id = 1;
+            var officeDtoToUpdate = GetTestOfficeDtoById(id);
             officeDtoToUpdate.Id = 0; // wrong id
-            NotFoundResult result = null;
+            NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = officeController.Update(officeDtoToUpdate) as NotFoundResult;
+                result = officeController.Update(officeDtoToUpdate) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -227,23 +231,22 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
         }
 
         [TestMethod]
         public void Update_ReturnsBadRequestByWrongArg()
         {
             //Arrange
-            var officeDtoToUpdate = GetTestOfficeDtoById(1);
-            officeDtoToUpdate.Name = "Too long office Name!!!!! Too long office Name!!!!! Too long office Name!!!!!";
-            mockOfficeService.Setup(r => r.GetOfficeById(officeDtoToUpdate.Id)).Returns(GetTestOfficeDtoById(officeDtoToUpdate.Id));
+            int id = 1;
+            var officeDtoToUpdate = GetTestOfficeDtoById(id);
             officeController.ModelState.AddModelError("Name", "Office name (1-100 characters) is required.");
-            BadRequestResult result = null;
+            BadRequestObjectResult result = null;
 
             try
             {
                 // Act
-                result = officeController.Update(officeDtoToUpdate) as BadRequestResult;
+                result = officeController.Update(officeDtoToUpdate) as BadRequestObjectResult;
             }
             catch (Exception ex)
             {
@@ -252,7 +255,7 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(BadRequestResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult), errorMessage);
         }
 
         [TestMethod]
@@ -288,12 +291,12 @@ namespace UnitTests.Controllers
             //Arrange
             int id = 0;// wrong id
             mockOfficeService.Setup(r => r.GetOfficeById(id)).Returns(value: null);
-            NotFoundResult result = null;
+            NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = officeController.Delete(id) as NotFoundResult;
+                result = officeController.Delete(id) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -302,7 +305,7 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
             mockOfficeService.Verify(r => r.GetOfficeById(id));
         }
 

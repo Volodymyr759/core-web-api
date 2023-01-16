@@ -1,4 +1,5 @@
-﻿using CoreWebApi.Services.CompanyServiceBL;
+﻿using CoreWebApi.Controllers.ResponseError;
+using CoreWebApi.Services.CompanyServiceBL;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
@@ -6,14 +7,18 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CoreWebApi.Controllers.CompanyService
 {
-    [ApiController, Authorize, Produces("application/json"), Route("api/[controller]/[action]")]
+    [ApiController, Authorize, Produces("application/json"), Route("api/[controller]/[action]"), ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public class CompanyServiceController : ControllerBase
     {
         private readonly ICompanyServiceBL companyServiceBL;
+        private IResponseError responseBadRequestError;
+        private IResponseError responseNotFoundError;
 
         public CompanyServiceController(ICompanyServiceBL companyServiceBL)
         {
             this.companyServiceBL = companyServiceBL;
+            responseBadRequestError = ResponseErrorFactory.getBadRequestError("");
+            responseNotFoundError = ResponseErrorFactory.getNotFoundError("");
         }
 
         /// <summary>
@@ -50,7 +55,11 @@ namespace CoreWebApi.Controllers.CompanyService
         public IActionResult GetById([FromRoute] int id)
         {
             var companySeviceDto = companyServiceBL.GetCompanyServiceById(id);
-            if (companySeviceDto == null) return NotFound();
+            if (companySeviceDto == null)
+            {
+                responseNotFoundError.Title = "Company Service Not Found.";
+                return NotFound(responseNotFoundError);
+            }
 
             return Ok(companySeviceDto);
         }
@@ -62,7 +71,7 @@ namespace CoreWebApi.Controllers.CompanyService
         /// <remarks>
         /// Sample request:
         ///
-        ///     POST /api/CompanyService/Create
+        ///     POST /api/companyservice/create
         ///     {
         ///        "Title": "Lorem Ipsum",
         ///        "Description": "Voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi",
@@ -78,7 +87,12 @@ namespace CoreWebApi.Controllers.CompanyService
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult Create([FromBody] CompanyServiceDto companyServiceDto)
         {
-            return Created("/CompanyService/Create", companyServiceBL.CreateCompanyService(companyServiceDto));
+            if (!ModelState.IsValid)
+            {
+                responseBadRequestError.Title = "Wrong company service - data.";
+                return BadRequest(responseBadRequestError);
+            }
+            return Created("api/companyservice/create", companyServiceBL.CreateCompanyService(companyServiceDto));
         }
 
         /// <summary>
@@ -88,7 +102,7 @@ namespace CoreWebApi.Controllers.CompanyService
         /// <remarks>
         /// Sample request:
         ///
-        ///     PUT /api/CompanyService/Update
+        ///     PUT /api/companyservice/update
         ///     {
         ///        "Id": "1",
         ///        "Title": "Lorem Ipsum",
@@ -107,7 +121,16 @@ namespace CoreWebApi.Controllers.CompanyService
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Update([FromBody] CompanyServiceDto companyServiceDto)
         {
-            if (companyServiceBL.GetCompanyServiceById(companyServiceDto.Id) == null) return NotFound();
+            if (!ModelState.IsValid)
+            {
+                responseBadRequestError.Title = "Wrong company service - data.";
+                return BadRequest(responseBadRequestError);
+            }
+            if (companyServiceBL.GetCompanyServiceById(companyServiceDto.Id) == null)
+            {
+                responseNotFoundError.Title = "Company Service Not Found.";
+                return NotFound(responseNotFoundError);
+            }
 
             return Ok(companyServiceBL.UpdateCompanyService(companyServiceDto));
         }
@@ -130,16 +153,18 @@ namespace CoreWebApi.Controllers.CompanyService
         ///     
         /// </remarks>
         /// <response code="200">Returns the updated CompanyServiceDto item</response>
-        /// <response code="400">If the argument is not valid</response>
         /// <response code="404">If the company service with given id not found</response>
         [HttpPatch("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult SetIsActive([FromRoute] int id, [FromBody] JsonPatchDocument<CompanyServiceDto> patchDocument)
         {
             var companyServiceDto = companyServiceBL.GetCompanyServiceById(id);
-            if (companyServiceDto == null) return NotFound();
+            if (companyServiceDto == null)
+            {
+                responseNotFoundError.Title = "Company Service Not Found.";
+                return NotFound(responseNotFoundError);
+            }
 
             patchDocument.ApplyTo(companyServiceDto, ModelState);
             if (!TryValidateModel(companyServiceDto)) return ValidationProblem(ModelState);
@@ -160,7 +185,11 @@ namespace CoreWebApi.Controllers.CompanyService
         public IActionResult Delete([FromRoute] int id)
         {
             var companyServiceToDelete = companyServiceBL.GetCompanyServiceById(id);
-            if (companyServiceToDelete == null) return NotFound();
+            if (companyServiceToDelete == null)
+            {
+                responseNotFoundError.Title = "Company Service Not Found.";
+                return NotFound(responseNotFoundError);
+            }
             companyServiceBL.DeleteCompanyService(id);
 
             return Ok(companyServiceToDelete);

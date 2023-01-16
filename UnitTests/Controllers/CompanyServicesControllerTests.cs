@@ -11,7 +11,7 @@ namespace UnitTests.Controllers
     [TestClass]
     public class CompanyServicesControllerTests
     {
-        #region Private Members
+        #region Private members
 
         private string errorMessage;
         private CompanyServiceController companyServiceController;
@@ -114,12 +114,12 @@ namespace UnitTests.Controllers
             //Arrange
             int id = int.MaxValue - 1;// wrong id
             mockCompanyServiceBL.Setup(r => r.GetCompanyServiceById(id)).Returns(value: null);
-            NotFoundResult result = null;
+            NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = companyServiceController.GetById(id) as NotFoundResult;
+                result = companyServiceController.GetById(id) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -128,7 +128,7 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
             mockCompanyServiceBL.Verify(r => r.GetCompanyServiceById(id));
         }
 
@@ -162,14 +162,15 @@ namespace UnitTests.Controllers
         public void Create_ReturnsBadRequestByInvalidArg()
         {
             //Arrange
-            var createCompanyServiceDto = new CompanyServiceDto { Title = "Lorem Ipsum", Description = "Voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi", ImageUrl = "https://somewhere.com/1", IsActive = true }; // too long Title string
-            companyServiceController.ModelState.AddModelError("Title", "Title should be 1 - 100 characters");
-            BadRequestResult result = null;
+            int i = 1;
+            var createCompanyServiceDto = GetTestCompanyServiceDtoById(1);
+            companyServiceController.ModelState.AddModelError("Title", "Title should be 1 - 100 characters");// too long Title string
+            BadRequestObjectResult result = null;
 
             try
             {
                 // Act
-                result = companyServiceController.Create(createCompanyServiceDto) as BadRequestResult;
+                result = companyServiceController.Create(createCompanyServiceDto) as BadRequestObjectResult;
             }
             catch (Exception ex)
             {
@@ -178,7 +179,7 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(BadRequestResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult), errorMessage);
         }
 
         [TestMethod]
@@ -214,12 +215,12 @@ namespace UnitTests.Controllers
             //Arrange
             var companyServiceDtoToUpdate = GetTestCompanyServiceDtoById(1);
             companyServiceDtoToUpdate.Id = 0; // wrong id
-            NotFoundResult result = null;
+            NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = companyServiceController.Update(companyServiceDtoToUpdate) as NotFoundResult;
+                result = companyServiceController.Update(companyServiceDtoToUpdate) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -228,23 +229,22 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
         }
 
         [TestMethod]
         public void Update_ReturnsBadRequestByWrongArg()
         {
             //Arrange
-            var companyServiceDtoToUpdate = GetTestCompanyServiceDtoById(1);
-            companyServiceDtoToUpdate.Title = "Too long company service Title!!!!! Too long company service Title!!!!! Too long company service Title!!!!!";
-            mockCompanyServiceBL.Setup(r => r.GetCompanyServiceById(companyServiceDtoToUpdate.Id)).Returns(GetTestCompanyServiceDtoById(companyServiceDtoToUpdate.Id));
+            int i = 1;
+            var companyServiceDtoToUpdate = GetTestCompanyServiceDtoById(i);
             companyServiceController.ModelState.AddModelError("Title", "Title (1 - 100 characters) is required.");
-            BadRequestResult result = null;
+            BadRequestObjectResult result = null;
 
             try
             {
                 // Act
-                result = companyServiceController.Update(companyServiceDtoToUpdate) as BadRequestResult;
+                result = companyServiceController.Update(companyServiceDtoToUpdate) as BadRequestObjectResult;
             }
             catch (Exception ex)
             {
@@ -253,7 +253,7 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(BadRequestResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult), errorMessage);
         }
 
         [TestMethod]
@@ -289,12 +289,12 @@ namespace UnitTests.Controllers
             //Arrange
             int id = 0;// wrong id
             mockCompanyServiceBL.Setup(r => r.GetCompanyServiceById(id)).Returns(value: null);
-            NotFoundResult result = null;
+            NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = companyServiceController.Delete(id) as NotFoundResult;
+                result = companyServiceController.Delete(id) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -303,7 +303,7 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
             mockCompanyServiceBL.Verify(r => r.GetCompanyServiceById(id));
         }
 

@@ -1,5 +1,4 @@
-﻿using CoreWebApi.Controllers;
-using CoreWebApi.Controllers.Employee;
+﻿using CoreWebApi.Controllers.Employee;
 using CoreWebApi.Services.EmployeeService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -12,7 +11,7 @@ namespace UnitTests.Controllers
     [TestClass]
     public class EmployeeControllerTests
     {
-        #region Private Members
+        #region Private members
 
         private string errorMessage;
         private EmployeeController employeeController;
@@ -86,12 +85,12 @@ namespace UnitTests.Controllers
             //Arrange
             int id = int.MaxValue - 1;// wrong id
             mockEmployeeService.Setup(r => r.GetEmployeeById(id)).Returns(value: null);
-            NotFoundResult result = null;
+            NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = employeeController.GetById(id) as NotFoundResult;
+                result = employeeController.GetById(id) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -100,7 +99,7 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
             mockEmployeeService.Verify(r => r.GetEmployeeById(id));
         }
 
@@ -134,14 +133,15 @@ namespace UnitTests.Controllers
         public void Create_ReturnsBadRequestByInvalidArg()
         {
             //Arrange
-            var createEmployeeDto = new EmployeeDto { FullName = "John Done", Email = "john@gmail.com", Position = "CEO", Description = "CEO description", AvatarUrl = "https://www.somewhere.com/1", OfficeId = 1 }; // too long Name string
+            int id = 1;
+            var createEmployeeDto = GetTestEmployeeDtoById(id); // too long Name string
             employeeController.ModelState.AddModelError("Name", "Employee name (1-20 characters) is required.");
-            BadRequestResult result = null;
+            BadRequestObjectResult result = null;
 
             try
             {
                 // Act
-                result = employeeController.Create(createEmployeeDto) as BadRequestResult;
+                result = employeeController.Create(createEmployeeDto) as BadRequestObjectResult;
             }
             catch (Exception ex)
             {
@@ -150,7 +150,7 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(BadRequestResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult), errorMessage);
         }
 
         [TestMethod]
@@ -186,12 +186,12 @@ namespace UnitTests.Controllers
             //Arrange
             var employeeDtoToUpdate = GetTestEmployeeDtoById(1);
             employeeDtoToUpdate.Id = 0; // wrong id
-            NotFoundResult result = null;
+            NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = employeeController.Update(employeeDtoToUpdate) as NotFoundResult;
+                result = employeeController.Update(employeeDtoToUpdate) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -200,23 +200,22 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
         }
 
         [TestMethod]
         public void Update_ReturnsBadRequestByWrongArg()
         {
             //Arrange
-            var employeeDtoToUpdate = GetTestEmployeeDtoById(1);
-            employeeDtoToUpdate.FullName = "Too long employee FullName!!!!! Too long employee FullName!!!!! Too long employee FullName!!!!! Too long employee FullName!!!!!";
-            mockEmployeeService.Setup(r => r.GetEmployeeById(employeeDtoToUpdate.Id)).Returns(GetTestEmployeeDtoById(employeeDtoToUpdate.Id));
+            int id = 1;
+            var employeeDtoToUpdate = GetTestEmployeeDtoById(id);
             employeeController.ModelState.AddModelError("Name", "Employee name (1-20 characters) is required.");
-            BadRequestResult result = null;
+            BadRequestObjectResult result = null;
 
             try
             {
                 // Act
-                result = employeeController.Update(employeeDtoToUpdate) as BadRequestResult;
+                result = employeeController.Update(employeeDtoToUpdate) as BadRequestObjectResult;
             }
             catch (Exception ex)
             {
@@ -225,7 +224,7 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(BadRequestResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult), errorMessage);
         }
 
         [TestMethod]
@@ -261,12 +260,12 @@ namespace UnitTests.Controllers
             //Arrange
             int id = 0;// wrong id
             mockEmployeeService.Setup(r => r.GetEmployeeById(id)).Returns(value: null);
-            NotFoundResult result = null;
+            NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = employeeController.Delete(id) as NotFoundResult;
+                result = employeeController.Delete(id) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -275,7 +274,7 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
             mockEmployeeService.Verify(r => r.GetEmployeeById(id));
         }
 

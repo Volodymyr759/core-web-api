@@ -1,18 +1,23 @@
-﻿using CoreWebApi.Services.OfficeService;
+﻿using CoreWebApi.Controllers.ResponseError;
+using CoreWebApi.Services.OfficeService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CoreWebApi.Controllers.Office
 {
-    [ApiController, Authorize, Produces("application/json"), Route("api/[controller]/[action]")]
+    [ApiController, Authorize, Produces("application/json"), Route("api/[controller]/[action]"), ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public class OfficeController : ControllerBase
     {
         private readonly IOfficeService officeService;
+        private IResponseError responseBadRequestError;
+        private IResponseError responseNotFoundError;
 
         public OfficeController(IOfficeService officeService)
         {
             this.officeService = officeService;
+            responseBadRequestError = ResponseErrorFactory.getBadRequestError("");
+            responseNotFoundError = ResponseErrorFactory.getNotFoundError("");
         }
 
         /// <summary>
@@ -49,7 +54,11 @@ namespace CoreWebApi.Controllers.Office
         public IActionResult GetById([FromRoute] int id)
         {
             var officeDto = officeService.GetOfficeById(id);
-            if (officeDto == null) return NotFound();
+            if (officeDto == null)
+            {
+                responseNotFoundError.Title = "Office Not Found.";
+                return NotFound(responseNotFoundError);
+            }
 
             return Ok(officeDto);
         }
@@ -61,7 +70,7 @@ namespace CoreWebApi.Controllers.Office
         /// <remarks>
         /// Sample request:
         ///
-        ///     POST /api/Office/Create
+        ///     POST /api/office/create
         ///     {
         ///        "Name": "Main office",
         ///        "Description": "Test description 1",
@@ -79,7 +88,12 @@ namespace CoreWebApi.Controllers.Office
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult Create([FromBody] OfficeDto OfficeDto)
         {
-            return Created("/Office/Create", officeService.CreateOffice(OfficeDto));
+            if (!ModelState.IsValid)
+            {
+                responseBadRequestError.Title = "Wrong office-data.";
+                return BadRequest(responseBadRequestError);
+            }
+            return Created("/api/office/create", officeService.CreateOffice(OfficeDto));
         }
 
         /// <summary>
@@ -110,7 +124,16 @@ namespace CoreWebApi.Controllers.Office
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Update([FromBody] OfficeDto OfficeDto)
         {
-            if (officeService.GetOfficeById(OfficeDto.Id) == null) return NotFound();
+            if (!ModelState.IsValid)
+            {
+                responseBadRequestError.Title = "Wrong office-data.";
+                return BadRequest(responseBadRequestError);
+            }
+            if (officeService.GetOfficeById(OfficeDto.Id) == null)
+            {
+                responseNotFoundError.Title = "Office Not Found.";
+                return NotFound(responseNotFoundError);
+            }
 
             return Ok(officeService.UpdateOffice(OfficeDto));
         }
@@ -128,7 +151,11 @@ namespace CoreWebApi.Controllers.Office
         public IActionResult Delete([FromRoute] int id)
         {
             var officeToDelete = officeService.GetOfficeById(id);
-            if (officeToDelete == null) return NotFound();
+            if (officeToDelete == null)
+            {
+                responseNotFoundError.Title = "Office Not Found.";
+                return NotFound(responseNotFoundError);
+            }
             officeService.DeleteOffice(id);
 
             return Ok(officeToDelete);

@@ -113,12 +113,12 @@ namespace UnitTests.Controllers
             //Arrange
             int id = int.MaxValue - 1;// wrong id
             mockMailSubscriberService.Setup(r => r.GetMailSubscriberById(id)).Returns(value: null);
-            NotFoundResult result = null;
+            NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = mailSubscriberController.GetById(id) as NotFoundResult;
+                result = mailSubscriberController.GetById(id) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -127,7 +127,7 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
             mockMailSubscriberService.Verify(r => r.GetMailSubscriberById(id));
         }
 
@@ -163,12 +163,12 @@ namespace UnitTests.Controllers
             //Arrange
             var mailSubscriberDtoToUpdate = GetTestMailSubscriberDtoById(1);
             mailSubscriberDtoToUpdate.Id = 0; // wrong id
-            NotFoundResult result = null;
+            NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = mailSubscriberController.Unsubscribe(mailSubscriberDtoToUpdate.Id, null) as NotFoundResult;
+                result = mailSubscriberController.Unsubscribe(mailSubscriberDtoToUpdate.Id, null) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -177,7 +177,7 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
         }
 
         [TestMethod]
@@ -213,12 +213,12 @@ namespace UnitTests.Controllers
             //Arrange
             int id = 0;// wrong id
             mockMailSubscriberService.Setup(r => r.GetMailSubscriberById(id)).Returns(value: null);
-            NotFoundResult result = null;
+            NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = mailSubscriberController.Delete(id) as NotFoundResult;
+                result = mailSubscriberController.Delete(id) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -227,7 +227,7 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
             mockMailSubscriberService.Verify(r => r.GetMailSubscriberById(id));
         }
 

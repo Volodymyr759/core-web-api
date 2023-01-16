@@ -85,12 +85,12 @@ namespace UnitTests.Controllers
             //Arrange
             int id = int.MaxValue - 1;// wrong id
             mockVacancyService.Setup(r => r.GetVacancyById(id)).Returns(value: null);
-            NotFoundResult result = null;
+            NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = vacancyController.GetById(id) as NotFoundResult;
+                result = vacancyController.GetById(id) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -99,7 +99,7 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
             mockVacancyService.Verify(r => r.GetVacancyById(id));
         }
 
@@ -107,8 +107,9 @@ namespace UnitTests.Controllers
         public void Create_ReturnsCreatedVacancyDtoByValidArg()
         {
             //Arrange
-            var createVacancyDto = GetTestVacancyDtoById(1);
-            mockVacancyService.Setup(r => r.CreateVacancy(createVacancyDto)).Returns(GetTestVacancyDtoById(1));
+            int id = 1;
+            var createVacancyDto = GetTestVacancyDtoById(id);
+            mockVacancyService.Setup(r => r.CreateVacancy(createVacancyDto)).Returns(GetTestVacancyDtoById(id));
             CreatedResult result = null;
 
             try
@@ -133,14 +134,15 @@ namespace UnitTests.Controllers
         public void Create_ReturnsBadRequestByInvalidArg()
         {
             //Arrange
-            var createVacancyDto = new VacancyDto { Title = ".Net Developer", Description = "Test description 1", Previews = 1, IsActive = true, OfficeId = 1 }; // too long Title string
-            vacancyController.ModelState.AddModelError("Title", "Title (1-50 characters) is required.");
-            BadRequestResult result = null;
+            int id = 1;
+            var createVacancyDto = GetTestVacancyDtoById(id);
+            vacancyController.ModelState.AddModelError("Title", "Title (1-50 characters) is required."); // too long Title string
+            BadRequestObjectResult result = null;
 
             try
             {
                 // Act
-                result = vacancyController.Create(createVacancyDto) as BadRequestResult;
+                result = vacancyController.Create(createVacancyDto) as BadRequestObjectResult;
             }
             catch (Exception ex)
             {
@@ -149,14 +151,15 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(BadRequestResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult), errorMessage);
         }
 
         [TestMethod]
         public void Update_ReturnsVacancyDtoByValidArg()
         {
             //Arrange
-            var vacancyDtoToUpdate = GetTestVacancyDtoById(1);
+            int id = 1;
+            var vacancyDtoToUpdate = GetTestVacancyDtoById(id);
             mockVacancyService.Setup(r => r.GetVacancyById(vacancyDtoToUpdate.Id)).Returns(vacancyDtoToUpdate);
             mockVacancyService.Setup(r => r.UpdateVacancy(vacancyDtoToUpdate)).Returns(vacancyDtoToUpdate);
             OkObjectResult result = null;
@@ -183,14 +186,15 @@ namespace UnitTests.Controllers
         public void Update_ReturnsNotFoundByWrongIdInArg()
         {
             //Arrange
-            var vacancyDtoToUpdate = GetTestVacancyDtoById(1);
+            int id = 1;
+            var vacancyDtoToUpdate = GetTestVacancyDtoById(id);
             vacancyDtoToUpdate.Id = 0; // wrong id
-            NotFoundResult result = null;
+            NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = vacancyController.Update(vacancyDtoToUpdate) as NotFoundResult;
+                result = vacancyController.Update(vacancyDtoToUpdate) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -199,23 +203,22 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
         }
 
         [TestMethod]
         public void Update_ReturnsBadRequestByWrongArg()
         {
             //Arrange
-            var vacancyDtoToUpdate = GetTestVacancyDtoById(1);
-            vacancyDtoToUpdate.Title = "Too long Vacancy Title!!!!! Too long Vacancy Title!!!!! Too long Vacancy Title!!!!!";
-            mockVacancyService.Setup(r => r.GetVacancyById(vacancyDtoToUpdate.Id)).Returns(GetTestVacancyDtoById(vacancyDtoToUpdate.Id));
+            int id = 1;
+            var vacancyDtoToUpdate = GetTestVacancyDtoById(id);
             vacancyController.ModelState.AddModelError("Title", "Title (1-50 characters) is required.");
-            BadRequestResult result = null;
+            BadRequestObjectResult result = null;
 
             try
             {
                 // Act
-                result = vacancyController.Update(vacancyDtoToUpdate) as BadRequestResult;
+                result = vacancyController.Update(vacancyDtoToUpdate) as BadRequestObjectResult;
             }
             catch (Exception ex)
             {
@@ -224,7 +227,7 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(BadRequestResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult), errorMessage);
         }
 
         [TestMethod]
@@ -260,12 +263,12 @@ namespace UnitTests.Controllers
             //Arrange
             int id = 0;// wrong id
             mockVacancyService.Setup(r => r.GetVacancyById(id)).Returns(value: null);
-            NotFoundResult result = null;
+            NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = vacancyController.Delete(id) as NotFoundResult;
+                result = vacancyController.Delete(id) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -274,7 +277,7 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
             mockVacancyService.Verify(r => r.GetVacancyById(id));
         }
 

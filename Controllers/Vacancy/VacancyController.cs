@@ -1,18 +1,23 @@
-﻿using CoreWebApi.Services.VacancyService;
+﻿using CoreWebApi.Controllers.ResponseError;
+using CoreWebApi.Services.VacancyService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CoreWebApi.Controllers.Vacancy
 {
-    [ApiController, Authorize, Produces("application/json"), Route("api/[controller]/[action]")]
+    [ApiController, Authorize, Produces("application/json"), Route("api/[controller]/[action]"), ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public class VacancyController : ControllerBase
     {
         private readonly IVacancyService vacancyService;
+        private IResponseError responseBadRequestError;
+        private IResponseError responseNotFoundError;
 
         public VacancyController(IVacancyService vacancyService)
         {
             this.vacancyService = vacancyService;
+            responseBadRequestError = ResponseErrorFactory.getBadRequestError("");
+            responseNotFoundError = ResponseErrorFactory.getNotFoundError("");
         }
 
         /// <summary>
@@ -51,7 +56,11 @@ namespace CoreWebApi.Controllers.Vacancy
         public IActionResult GetById([FromRoute] int id)
         {
             var vacancyDto = vacancyService.GetVacancyById(id);
-            if (vacancyDto == null) return NotFound();
+            if (vacancyDto == null)
+            {
+                responseNotFoundError.Title = "Vacancy Not Found.";
+                return NotFound(responseNotFoundError);
+            }
 
             return Ok(vacancyDto);
         }
@@ -63,7 +72,7 @@ namespace CoreWebApi.Controllers.Vacancy
         /// <remarks>
         /// Sample request:
         ///
-        ///     POST /api/Vacancy/Create
+        ///     POST /api/vacancy/create
         ///     {
         ///        "Title": ".Net Developer",
         ///        "Description": "Test description 1",
@@ -80,7 +89,12 @@ namespace CoreWebApi.Controllers.Vacancy
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult Create([FromBody] VacancyDto vacancyDto)
         {
-            return Created("/Vacancy/Create", vacancyService.CreateVacancy(vacancyDto));
+            if (!ModelState.IsValid)
+            {
+                responseBadRequestError.Title = "Wrong vacancy-data.";
+                return BadRequest(responseBadRequestError);
+            }
+            return Created("/api/vacancy/create", vacancyService.CreateVacancy(vacancyDto));
         }
 
         /// <summary>
@@ -110,7 +124,16 @@ namespace CoreWebApi.Controllers.Vacancy
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Update([FromBody] VacancyDto vacancyDto)
         {
-            if (vacancyService.GetVacancyById(vacancyDto.Id) == null) return NotFound();
+            if (!ModelState.IsValid)
+            {
+                responseBadRequestError.Title = "Wrong vacancy-data.";
+                return BadRequest(responseBadRequestError);
+            }
+            if (vacancyService.GetVacancyById(vacancyDto.Id) == null)
+            {
+                responseNotFoundError.Title = "Vacancy Not Found.";
+                return NotFound(responseNotFoundError);
+            }
 
             return Ok(vacancyService.UpdateVacancy(vacancyDto));
         }
@@ -128,7 +151,11 @@ namespace CoreWebApi.Controllers.Vacancy
         public IActionResult Delete([FromRoute] int id)
         {
             var vacancyToDelete = vacancyService.GetVacancyById(id);
-            if (vacancyToDelete == null) return NotFound();
+            if (vacancyToDelete == null)
+            {
+                responseNotFoundError.Title = "Vacancy Not Found.";
+                return NotFound(responseNotFoundError);
+            }
             vacancyService.DeleteVacancy(id);
 
             return Ok(vacancyToDelete);

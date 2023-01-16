@@ -11,7 +11,7 @@ namespace UnitTests.Controllers
     [TestClass]
     public class CandidateControllerTests
     {
-        #region Private Members
+        #region Private members
 
         private string errorMessage;
         private CandidateController candidateController;
@@ -85,12 +85,12 @@ namespace UnitTests.Controllers
             //Arrange
             int id = int.MaxValue - 1;// wrong id
             mockCandidateService.Setup(r => r.GetCandidateById(id)).Returns(value: null);
-            NotFoundResult result = null;
+            NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = candidateController.GetById(id) as NotFoundResult;
+                result = candidateController.GetById(id) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -99,7 +99,7 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
             mockCandidateService.Verify(r => r.GetCandidateById(id));
         }
 
@@ -133,14 +133,15 @@ namespace UnitTests.Controllers
         public void Create_ReturnsBadRequestByInvalidArg()
         {
             //Arrange
-            var createCandidateDto = new CandidateDto { FullName = "Sindy Crowford", Email = "sindy@gmail.com", Phone = "+1234567891", Notes = "Test note 1", IsDismissed = false, JoinedAt = DateTime.Today, VacancyId = 1 }; // too long FullName string
+            int i = 1;
+            var createCandidateDto = GetTestCandidateDtoById(i);
             candidateController.ModelState.AddModelError("FullName", "Full name (1-50 characters) is required.");
-            BadRequestResult result = null;
+            BadRequestObjectResult result = null;
 
             try
             {
                 // Act
-                result = candidateController.Create(createCandidateDto) as BadRequestResult;
+                result = candidateController.Create(createCandidateDto) as BadRequestObjectResult;
             }
             catch (Exception ex)
             {
@@ -149,7 +150,7 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(BadRequestResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult), errorMessage);
         }
 
         [TestMethod]
@@ -185,12 +186,12 @@ namespace UnitTests.Controllers
             //Arrange
             var candidateDtoToUpdate = GetTestCandidateDtoById(1);
             candidateDtoToUpdate.Id = 0; // wrong id
-            NotFoundResult result = null;
+            NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = candidateController.Update(candidateDtoToUpdate) as NotFoundResult;
+                result = candidateController.Update(candidateDtoToUpdate) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -199,23 +200,22 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
         }
 
         [TestMethod]
         public void Update_ReturnsBadRequestByWrongArg()
         {
             //Arrange
-            var candidateDtoToUpdate = GetTestCandidateDtoById(1);
-            candidateDtoToUpdate.FullName = "Too long candidate FullName!!!!! Too long candidate FullName!!!!! Too long candidate FullName!!!!!";
-            mockCandidateService.Setup(r => r.GetCandidateById(candidateDtoToUpdate.Id)).Returns(GetTestCandidateDtoById(candidateDtoToUpdate.Id));
+            int i = 1;
+            var candidateDtoToUpdate = GetTestCandidateDtoById(i);
             candidateController.ModelState.AddModelError("FullName", "Full name (1-50 characters) is required.");
-            BadRequestResult result = null;
+            BadRequestObjectResult result = null;
 
             try
             {
                 // Act
-                result = candidateController.Update(candidateDtoToUpdate) as BadRequestResult;
+                result = candidateController.Update(candidateDtoToUpdate) as BadRequestObjectResult;
             }
             catch (Exception ex)
             {
@@ -224,7 +224,7 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(BadRequestResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult), errorMessage);
         }
 
         [TestMethod]
@@ -260,12 +260,12 @@ namespace UnitTests.Controllers
             //Arrange
             int id = 0;// wrong id
             mockCandidateService.Setup(r => r.GetCandidateById(id)).Returns(value: null);
-            NotFoundResult result = null;
+            NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = candidateController.Delete(id) as NotFoundResult;
+                result = candidateController.Delete(id) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -274,7 +274,7 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
             mockCandidateService.Verify(r => r.GetCandidateById(id));
         }
 

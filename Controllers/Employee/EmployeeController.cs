@@ -1,18 +1,23 @@
-﻿using CoreWebApi.Services.EmployeeService;
+﻿using CoreWebApi.Controllers.ResponseError;
+using CoreWebApi.Services.EmployeeService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CoreWebApi.Controllers.Employee
 {
-    [ApiController, Authorize, Produces("application/json"), Route("api/[controller]/[action]")]
+    [ApiController, Authorize, Produces("application/json"), Route("api/[controller]/[action]"), ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeService employeeService;
+        private IResponseError responseBadRequestError;
+        private IResponseError responseNotFoundError;
 
         public EmployeeController(IEmployeeService employeeService)
         {
             this.employeeService = employeeService;
+            responseBadRequestError = ResponseErrorFactory.getBadRequestError("");
+            responseNotFoundError = ResponseErrorFactory.getNotFoundError("");
         }
 
         /// <summary>
@@ -52,7 +57,11 @@ namespace CoreWebApi.Controllers.Employee
         public IActionResult GetById([FromRoute] int id)
         {
             var employeeDto = employeeService.GetEmployeeById(id);
-            if (employeeDto == null) return NotFound();
+            if (employeeDto == null)
+            {
+                responseNotFoundError.Title = "Employee Not Found.";
+                return NotFound(responseNotFoundError);
+            }
 
             return Ok(employeeDto);
         }
@@ -64,7 +73,7 @@ namespace CoreWebApi.Controllers.Employee
         /// <remarks>
         /// Sample request:
         ///
-        ///     POST /api/Employee/Create
+        ///     POST /api/Employee/create
         ///     {
         ///        "FullName": "John Done",
         ///        "Email": "john@gmail.com",
@@ -82,7 +91,12 @@ namespace CoreWebApi.Controllers.Employee
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult Create([FromBody] EmployeeDto employeeDto)
         {
-            return Created("/Employee/Create", employeeService.CreateEmployee(employeeDto));
+            if (!ModelState.IsValid)
+            {
+                responseBadRequestError.Title = "Wrong employee-data.";
+                return BadRequest(responseBadRequestError);
+            }
+            return Created("/api/Employee/create", employeeService.CreateEmployee(employeeDto));
         }
 
         /// <summary>
@@ -92,7 +106,7 @@ namespace CoreWebApi.Controllers.Employee
         /// <remarks>
         /// Sample request:
         ///
-        ///     PUT /api/Employee/Update
+        ///     PUT /api/employee/update
         ///     {
         ///        "Id": "1",
         ///        "FullName": "John Done",
@@ -113,7 +127,16 @@ namespace CoreWebApi.Controllers.Employee
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Update([FromBody] EmployeeDto employeeDto)
         {
-            if (employeeService.GetEmployeeById(employeeDto.Id) == null) return NotFound();
+            if (!ModelState.IsValid)
+            {
+                responseBadRequestError.Title = "Wrong employee-data.";
+                return BadRequest(responseBadRequestError);
+            }
+            if (employeeService.GetEmployeeById(employeeDto.Id) == null)
+            {
+                responseNotFoundError.Title = "Employee Not Found.";
+                return NotFound(responseNotFoundError);
+            }
 
             return Ok(employeeService.UpdateEmployee(employeeDto));
         }
@@ -131,7 +154,11 @@ namespace CoreWebApi.Controllers.Employee
         public IActionResult Delete([FromRoute] int id)
         {
             var employeeToDelete = employeeService.GetEmployeeById(id);
-            if (employeeToDelete == null) return NotFound();
+            if (employeeToDelete == null)
+            {
+                responseNotFoundError.Title = "Employee Not Found.";
+                return NotFound(responseNotFoundError);
+            }
             employeeService.DeleteEmployee(id);
 
             return Ok(employeeToDelete);

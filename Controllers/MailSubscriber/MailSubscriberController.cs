@@ -1,4 +1,5 @@
-﻿using CoreWebApi.Services.MailSubscriberService;
+﻿using CoreWebApi.Controllers.ResponseError;
+using CoreWebApi.Services.MailSubscriberService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
@@ -6,14 +7,18 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CoreWebApi.Controllers.MailSubscriber
 {
-    [ApiController, Authorize, Produces("application/json"), Route("api/[controller]/[action]")]
+    [ApiController, Authorize, Produces("application/json"), Route("api/[controller]/[action]"), ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public class MailSubscriberController : ControllerBase
     {
         private readonly IMailSubscriberService mailSubscriberService;
+        private IResponseError responseBadRequestError;
+        private IResponseError responseNotFoundError;
 
         public MailSubscriberController(IMailSubscriberService mailSubscriberService)
         {
             this.mailSubscriberService = mailSubscriberService;
+            responseBadRequestError = ResponseErrorFactory.getBadRequestError("");
+            responseNotFoundError = ResponseErrorFactory.getNotFoundError("");
         }
 
         /// <summary>
@@ -50,7 +55,11 @@ namespace CoreWebApi.Controllers.MailSubscriber
         public IActionResult GetById([FromRoute] int id)
         {
             var mailSubscriberDto = mailSubscriberService.GetMailSubscriberById(id);
-            if (mailSubscriberDto == null) return NotFound();
+            if (mailSubscriberDto == null)
+            {
+                responseNotFoundError.Title = "Mail Subscriber Not Found.";
+                return NotFound(responseNotFoundError);
+            }
 
             return Ok(mailSubscriberDto);
         }
@@ -62,7 +71,7 @@ namespace CoreWebApi.Controllers.MailSubscriber
         /// <remarks>
         /// Sample request:
         ///
-        ///     POST /api/MailSubscriber/Subscribe
+        ///     POST /api/nailsubscriber/subscribe
         ///     {
         ///        "Email" = "test1@gmail.com",
         ///        "IsSubscribed": "true",
@@ -72,14 +81,18 @@ namespace CoreWebApi.Controllers.MailSubscriber
         /// </remarks>
         /// <response code="201">Returns the newly created MailSubscriberDto item</response>
         /// <response code="400">If the argument is not valid</response>
-        /// <response code="401">If the user is not logged in</response>
         [HttpPost]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult Subscribe([FromBody] MailSubscriberDto mailSubscriberDto)
         {
-            return Created("/MailSubscriber/Subscribe", mailSubscriberService.CreateMailSubscriber(mailSubscriberDto));
+            if (!ModelState.IsValid)
+            {
+                responseBadRequestError.Title = "Wrong mail subscriber - data.";
+                return BadRequest(responseBadRequestError);
+            }
+            return Created("/api/nailsubscriber/subscribe", mailSubscriberService.CreateMailSubscriber(mailSubscriberDto));
         }
 
         /// <summary>
@@ -109,7 +122,11 @@ namespace CoreWebApi.Controllers.MailSubscriber
         public IActionResult Unsubscribe([FromRoute] int id, [FromBody] JsonPatchDocument<MailSubscriberDto> patchDocument)
         {
             var mailSubscriberDto = mailSubscriberService.GetMailSubscriberById(id);
-            if (mailSubscriberDto == null) return NotFound();
+            if (mailSubscriberDto == null)
+            {
+                responseNotFoundError.Title = "Mail Subscriber Not Found.";
+                return NotFound(responseNotFoundError);
+            }
 
             patchDocument.ApplyTo(mailSubscriberDto, ModelState);
             if (!TryValidateModel(mailSubscriberDto)) return ValidationProblem(ModelState);
@@ -130,7 +147,11 @@ namespace CoreWebApi.Controllers.MailSubscriber
         public IActionResult Delete([FromRoute] int id)
         {
             var mailSubscriberToDelete = mailSubscriberService.GetMailSubscriberById(id);
-            if (mailSubscriberToDelete == null) return NotFound();
+            if (mailSubscriberToDelete == null)
+            {
+                responseNotFoundError.Title = "Mail Subscriber Not Found.";
+                return NotFound(responseNotFoundError);
+            }
             mailSubscriberService.DeleteMailSubsriber(id);
 
             return Ok(mailSubscriberToDelete);

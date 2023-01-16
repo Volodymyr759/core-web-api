@@ -2,17 +2,22 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using CoreWebApi.Controllers.ResponseError;
 
 namespace CoreWebApi.Controllers.MailSubscription
 {
-    [ApiController, Authorize, Produces("application/json"), Route("api/[controller]/[action]")]
+    [ApiController, Authorize, Produces("application/json"), Route("api/[controller]/[action]"), ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public class MailSubscriptionController : ControllerBase
     {
         private readonly IMailSubscriptionService mailSubscriptionService;
+        private IResponseError responseBadRequestError;
+        private IResponseError responseNotFoundError;
 
         public MailSubscriptionController(IMailSubscriptionService mailSubscriptionService)
         {
             this.mailSubscriptionService = mailSubscriptionService;
+            responseBadRequestError = ResponseErrorFactory.getBadRequestError("");
+            responseNotFoundError = ResponseErrorFactory.getNotFoundError("");
         }
 
         /// <summary>
@@ -49,7 +54,11 @@ namespace CoreWebApi.Controllers.MailSubscription
         public IActionResult GetById([FromRoute] int id)
         {
             var mailSubscriptionDto = mailSubscriptionService.GetMailSubscriptionById(id);
-            if (mailSubscriptionDto == null) return NotFound();
+            if (mailSubscriptionDto == null)
+            {
+                responseNotFoundError.Title = "Mail Subscription Not Found.";
+                return NotFound(responseNotFoundError);
+            }
 
             return Ok(mailSubscriptionDto);
         }
@@ -61,7 +70,7 @@ namespace CoreWebApi.Controllers.MailSubscription
         /// <remarks>
         /// Sample request:
         ///
-        ///     POST /api/MailSubscription/Create
+        ///     POST /api/mailsubscription/create
         ///     {
         ///        "Title": "Company News",
         ///        "Content": "Test content 1"
@@ -75,7 +84,12 @@ namespace CoreWebApi.Controllers.MailSubscription
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult Create([FromBody] MailSubscriptionDto mailSubscriptionDto)
         {
-            return Created("/MailSubscription/Create", mailSubscriptionService.CreateMailSubscription(mailSubscriptionDto));
+            if (!ModelState.IsValid)
+            {
+                responseBadRequestError.Title = "Wrong mail subscription - data.";
+                return BadRequest(responseBadRequestError);
+            }
+            return Created("/api/mailsubscription/create", mailSubscriptionService.CreateMailSubscription(mailSubscriptionDto));
         }
 
         /// <summary>
@@ -102,7 +116,16 @@ namespace CoreWebApi.Controllers.MailSubscription
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Update([FromBody] MailSubscriptionDto mailSubscriptionDto)
         {
-            if (mailSubscriptionService.GetMailSubscriptionById(mailSubscriptionDto.Id) == null) return NotFound();
+            if (!ModelState.IsValid)
+            {
+                responseBadRequestError.Title = "Wrong mail subscription - data.";
+                return BadRequest(responseBadRequestError);
+            }
+            if (mailSubscriptionService.GetMailSubscriptionById(mailSubscriptionDto.Id) == null)
+            {
+                responseNotFoundError.Title = "Mail Subscription Not Found.";
+                return NotFound(responseNotFoundError);
+            }
 
             return Ok(mailSubscriptionService.UpdateMailSubscription(mailSubscriptionDto));
         }
@@ -120,7 +143,11 @@ namespace CoreWebApi.Controllers.MailSubscription
         public IActionResult Delete([FromRoute] int id)
         {
             var mailSubscriptionToDelete = mailSubscriptionService.GetMailSubscriptionById(id);
-            if (mailSubscriptionToDelete == null) return NotFound();
+            if (mailSubscriptionToDelete == null)
+            {
+                responseNotFoundError.Title = "Mail Subscription Not Found.";
+                return NotFound(responseNotFoundError);
+            }
             mailSubscriptionService.DeleteMailSubscription(id);
 
             return Ok(mailSubscriptionToDelete);

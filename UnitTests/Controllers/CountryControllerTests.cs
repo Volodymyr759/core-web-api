@@ -113,12 +113,12 @@ namespace UnitTests.Controllers
             //Arrange
             int id = int.MaxValue - 1;// wrong id
             mockCountryService.Setup(r => r.GetCountryById(id)).Returns(value: null);
-            NotFoundResult result = null;
+            NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = countryController.GetById(id) as NotFoundResult;
+                result = countryController.GetById(id) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -127,7 +127,7 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
             mockCountryService.Verify(r => r.GetCountryById(id));
         }
 
@@ -135,7 +135,8 @@ namespace UnitTests.Controllers
         public void Create_ReturnsCreatedCountryDtoByValidArg()
         {
             //Arrange
-            var createCountryDto = GetTestCountryDtoById(1);
+            int i = 1;
+            var createCountryDto = GetTestCountryDtoById(i);
             mockCountryService.Setup(r => r.CreateCountry(createCountryDto)).Returns(GetTestCountryDtoById(1));
             CreatedResult result = null;
 
@@ -161,14 +162,15 @@ namespace UnitTests.Controllers
         public void Create_ReturnsBadRequestByInvalidArg()
         {
             //Arrange
-            var createCountryDto = new CountryDto { Name = "Australia", Code = "AUS" }; // too long Name string
-            countryController.ModelState.AddModelError("Name", "Country name (1-20 characters) is required.");
-            BadRequestResult result = null;
+            int i = 1;
+            var createCountryDto = GetTestCountryDtoById(i);
+            countryController.ModelState.AddModelError("Name", "Country name (1-20 characters) is required.");// too long Name string
+            BadRequestObjectResult result = null;
 
             try
             {
                 // Act
-                result = countryController.Create(createCountryDto) as BadRequestResult;
+                result = countryController.Create(createCountryDto) as BadRequestObjectResult;
             }
             catch (Exception ex)
             {
@@ -177,7 +179,7 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(BadRequestResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult), errorMessage);
         }
 
         [TestMethod]
@@ -213,12 +215,12 @@ namespace UnitTests.Controllers
             //Arrange
             var countryDtoToUpdate = GetTestCountryDtoById(1);
             countryDtoToUpdate.Id = 0; // wrong id
-            NotFoundResult result = null;
+            NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = countryController.Update(countryDtoToUpdate) as NotFoundResult;
+                result = countryController.Update(countryDtoToUpdate) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -227,23 +229,22 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
         }
 
         [TestMethod]
         public void Update_ReturnsBadRequestByWrongArg()
         {
             //Arrange
-            var countryDtoToUpdate = GetTestCountryDtoById(1);
-            countryDtoToUpdate.Name = "Too long country Name!!!!! Too long country Name!!!!! Too long country Name!!!!! Too long country Name!!!!!";
-            mockCountryService.Setup(r => r.GetCountryById(countryDtoToUpdate.Id)).Returns(GetTestCountryDtoById(countryDtoToUpdate.Id));
+            int i = 1;
+            var countryDtoToUpdate = GetTestCountryDtoById(i);
             countryController.ModelState.AddModelError("Name", "Country name (1-20 characters) is required.");
-            BadRequestResult result = null;
+            BadRequestObjectResult result = null;
 
             try
             {
                 // Act
-                result = countryController.Update(countryDtoToUpdate) as BadRequestResult;
+                result = countryController.Update(countryDtoToUpdate) as BadRequestObjectResult;
             }
             catch (Exception ex)
             {
@@ -252,7 +253,7 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(BadRequestResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult), errorMessage);
         }
 
         [TestMethod]
@@ -288,12 +289,12 @@ namespace UnitTests.Controllers
             //Arrange
             int id = 0;// wrong id
             mockCountryService.Setup(r => r.GetCountryById(id)).Returns(value: null);
-            NotFoundResult result = null;
+            NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = countryController.Delete(id) as NotFoundResult;
+                result = countryController.Delete(id) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -302,7 +303,7 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(NotFoundResult), errorMessage);
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
             mockCountryService.Verify(r => r.GetCountryById(id));
         }
 
