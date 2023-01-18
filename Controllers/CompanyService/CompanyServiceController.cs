@@ -1,4 +1,4 @@
-﻿using CoreWebApi.Controllers.ResponseError;
+﻿using CoreWebApi.Library.ResponseError;
 using CoreWebApi.Services.CompanyServiceBL;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

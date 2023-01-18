@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using CoreWebApi.Controllers.ResponseError;
+using CoreWebApi.Library.ResponseError;
 
 namespace CoreWebApi.Controllers.MailSubscription
 {

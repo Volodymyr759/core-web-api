@@ -150,9 +150,21 @@ namespace CoreWebApi.Data
             }
         }
 
-        public Task<IEnumerable<TModel>> GetAllAsync(Expression<Func<TModel, bool>> query = null, Func<IQueryable<TModel>, IOrderedQueryable<TModel>> orderBy = null)
+        public async Task<IEnumerable<TModel>> GetAllAsync(Expression<Func<TModel, bool>> query = null, Func<IQueryable<TModel>, IOrderedQueryable<TModel>> orderBy = null)
         {
-            throw new NotImplementedException();
+            try
+            {
+                IQueryable<TModel> dbSet = _set;
+
+                if (query != null) dbSet =  dbSet.Where(query);
+                if (orderBy != null) dbSet = orderBy(dbSet);
+
+                return await dbSet.ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new RetrieveEntitiesQueryFailedException(typeof(TModel), ex);
+            }
         }
 
         public async Task<TModel> GetAsync(int id)

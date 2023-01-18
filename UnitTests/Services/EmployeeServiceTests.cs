@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
+using CoreWebApi.Library.Enums;
+using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
 using CoreWebApi.Services.EmployeeService;
 using CoreWebApi.Services.OfficeService;
@@ -7,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace UnitTests.Services
 {
@@ -65,20 +68,46 @@ namespace UnitTests.Services
 
         #endregion
 
+        //[TestMethod]
+        //public void GetAllEmployees_ReturnsListEmployees()
+        //{
+        //    //Arrange
+        //    IEnumerable<EmployeeDto> employeeDtos = null;
+        //    int page = 1;
+        //    int limit = 3;
+        //    mockEmployeeRepository.Setup(repo => repo.GetAll()).Returns(GetTestEmployees());
+        //    mockMapper.Setup(x => x.Map<IEnumerable<EmployeeDto>>(It.IsAny<IEnumerable<Employee>>())).Returns(GetTestEmployeeDtos());
+
+        //    try
+        //    {
+        //        // Act
+        //        employeeDtos = employeeService.GetAllEmployees(10, page, "", "FullName", "asc");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        errorMessage = ex.Message + " | " + ex.StackTrace;
+        //    }
+
+        //    //Assert
+        //    Assert.IsNotNull(employeeDtos, errorMessage);
+        //    Assert.IsTrue(((List<EmployeeDto>)employeeDtos).Count == limit, errorMessage);
+        //    Assert.IsInstanceOfType(employeeDtos, typeof(IEnumerable<EmployeeDto>), errorMessage);
+        //}
+
         [TestMethod]
-        public void GetAllEmployees_ReturnsListEmployees()
+        public async Task GetAllEmployeesSearchResult_ReturnsSearchResultWithEmployees()
         {
             //Arrange
-            IEnumerable<EmployeeDto> employeeDtos = null;
+            SearchResult<EmployeeDto> searchResult = null;
             int page = 1;
             int limit = 3;
-            mockEmployeeRepository.Setup(repo => repo.GetAll()).Returns(GetTestEmployees());
+            mockEmployeeRepository.Setup(repo => repo.GetAllAsync(null, null)).ReturnsAsync(GetTestEmployees());
             mockMapper.Setup(x => x.Map<IEnumerable<EmployeeDto>>(It.IsAny<IEnumerable<Employee>>())).Returns(GetTestEmployeeDtos());
 
             try
             {
                 // Act
-                employeeDtos = employeeService.GetAllEmployees(10, page, "", "FullName", "asc");
+                searchResult = await employeeService.GetEmployeesSearchResultAsync(limit, page, search: "", sort_field: "Id", order: OrderType.Ascending);
             }
             catch (Exception ex)
             {
@@ -86,9 +115,9 @@ namespace UnitTests.Services
             }
 
             //Assert
-            Assert.IsNotNull(employeeDtos, errorMessage);
-            Assert.IsTrue(((List<EmployeeDto>)employeeDtos).Count == limit, errorMessage);
-            Assert.IsInstanceOfType(employeeDtos, typeof(IEnumerable<EmployeeDto>), errorMessage);
+            Assert.IsNotNull(searchResult, errorMessage);
+            Assert.IsTrue(searchResult.ItemList.Count == limit, errorMessage);
+            Assert.IsInstanceOfType(searchResult, typeof(SearchResult<EmployeeDto>), errorMessage);
         }
 
         [TestMethod]
@@ -128,9 +157,9 @@ namespace UnitTests.Services
             mockEmployeeRepository.Setup(r => r.Get(t => t.Id == id)).Returns(value: null);
             EmployeeDto employeeDto = null;
 
+            // Act
             try
             {
-                // Act
                 employeeDto = employeeService.GetEmployeeById(id);
             }
             catch (Exception ex)
@@ -239,14 +268,14 @@ namespace UnitTests.Services
             // service gets id and passes it to the repo:
             int id = 3;
             mockEmployeeRepository.Setup(r => r.Delete(id)).Returns(GetTestEmployees().Find(c => c.Id == id));
-            // since repo.delete(int id) returns origin Office-object - possible to map it to dto and give it back:
+            // since repo.delete(int id) returns origin Employee-object - possible to map it to dto and give it back:
             mockMapper.Setup(x => x.Map<EmployeeDto>(It.IsAny<Employee>())).Returns(GetTestEmployeeDtos().Find(c => c.Id == id));
 
             EmployeeDto employeeDto = null;
 
+            // Act
             try
             {
-                // Act
                 employeeDto = employeeService.DeleteEmployee(id);
             }
             catch (Exception ex)

@@ -1,8 +1,10 @@
-﻿using CoreWebApi.Controllers.ResponseError;
+﻿using CoreWebApi.Library.ResponseError;
+using CoreWebApi.Library.Enums;
 using CoreWebApi.Services.EmployeeService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace CoreWebApi.Controllers.Employee
 {
@@ -23,26 +25,43 @@ namespace CoreWebApi.Controllers.Employee
         /// <summary>
         /// Gets a list of EmployeeDto's with pagination params and values for search and sorting.
         /// </summary>
-        /// <param name="limit" default="10">number of items per page</param>
-        /// <param name="page" default="1">requested page</param>
-        /// <param name="search">part of full name for searching</param>
-        /// <param name="sort_field" default="id">field name for sorting</param>
-        /// <param name="sort" default="desc">sort direction: asc or desc</param>
+        /// <param name="limit" default="10">Number of items per page</param>
+        /// <param name="page" default="1">Requested page</param>
+        /// <param name="search">Part of full name for searching</param>
+        /// <param name="sort_field" default="FullName">Field name for sorting</param>
+        /// <param name="order" default="ascending">Sort direction: ascending or descending</param>
         /// <returns>Status 200 and list of EmployeeDto's</returns>
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/Employee/GetAll/?limit=10&amp;page=1&amp;search=j&amp;sort_field=Id&amp;sort=desc
+        ///     GET /api/employee/getall/?limit=10&amp;page=1&amp;search=j&amp;sort_field=Id&amp;sort=desc
         ///     
         /// </remarks>
-        /// <response code="200">list of TenantDto's</response>
+        /// <response code="200">list of EmployeeDto's</response>
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult GetAll(int limit, int page, string search, string sort_field, OrderType order)
+        {
+            return Ok(employeeService.GetAllEmployees(limit | 10, page | 1, search ?? "", sort_field ?? "FullName", order | OrderType.Ascending));
+        }
+
+        /// <summary>
+        /// Gets a list of EmployeeDto's for public pages.
+        /// </summary>
+        /// <param name="page" default="1">requested page</param>
+        /// <returns>Status 200 and list of EmployeeDto's</returns>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET /api/employee/getpublic?page=1
+        ///     
+        /// </remarks>
+        /// <response code="200">list of EmployeeDto's</response>
         [HttpGet]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult GetAll(int limit = 10, int page = 1, string search = "", string sort_field = "Id", string sort = "desc")
-        {
-            return Ok(employeeService.GetAllEmployees(limit, page, search ?? "", sort_field, sort));
-        }
+        public async Task<IActionResult> GetPublicAsync(int page) =>
+            Ok(await employeeService.GetEmployeesSearchResultAsync(limit: 3, page, search: "", sort_field: "Id", order: OrderType.Ascending));
 
         /// <summary>
         /// Gets a specific EmployeeDto Item.

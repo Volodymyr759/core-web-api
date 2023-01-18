@@ -1,11 +1,14 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
+using CoreWebApi.Library.Enums;
+using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
 using CoreWebApi.Services.OfficeService;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace CoreWebApi.Services.EmployeeService
 {
@@ -25,7 +28,7 @@ namespace CoreWebApi.Services.EmployeeService
             this.officeRepository = officeRepository;
         }
 
-        public IEnumerable<EmployeeDto> GetAllEmployees(int limit, int page, string search, string sort_field, string sort)
+        public IEnumerable<EmployeeDto> GetAllEmployees(int limit, int page, string search, string sort_field, OrderType order)
         {
             // search by FullName
             Expression<Func<Employee, bool>> searchQuery = null;
@@ -33,9 +36,33 @@ namespace CoreWebApi.Services.EmployeeService
 
             // sorting - newest first
             Func<IQueryable<Employee>, IOrderedQueryable<Employee>> orderBy = null;
-            orderBy = sort == "asc" ? q => q.OrderBy(s => s.Id) : orderBy = q => q.OrderByDescending(s => s.Id);
+            orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Id) : orderBy = q => q.OrderByDescending(s => s.Id);
 
             return mapper.Map<IEnumerable<EmployeeDto>>(employeeRepository.GetAll(limit, page, searchQuery, orderBy));
+        }
+
+        public async Task<SearchResult<EmployeeDto>> GetEmployeesSearchResultAsync(int limit, int page, string search, string sort_field, OrderType order)
+        {
+            // search by FullName
+            Expression<Func<Employee, bool>> searchQuery = null;
+            if (search.Trim().Length > 0) searchQuery = t => t.FullName.Contains(search);
+
+            // sorting - newest first
+            Func<IQueryable<Employee>, IOrderedQueryable<Employee>> orderBy = null;
+            orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Id) : orderBy = q => q.OrderByDescending(s => s.Id);
+
+            var employees = await employeeRepository.GetAllAsync(searchQuery, orderBy);
+
+            return new SearchResult<EmployeeDto>
+            {
+                CurrentPageNumber = page,
+                Order = order,
+                PageSize = limit,
+                PageCount = Convert.ToInt32(Math.Ceiling((double)employees.Count() / limit)),
+                SearchCriteria = search,
+                TotalItemCount = employees.Count(),
+                ItemList = (List<EmployeeDto>)mapper.Map<IEnumerable<EmployeeDto>>(employees.Skip((page - 1) * limit).Take(limit))
+            };
         }
 
         public EmployeeDto GetEmployeeById(int id)

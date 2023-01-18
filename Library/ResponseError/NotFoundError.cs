@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CoreWebApi.Controllers.ResponseError
+namespace CoreWebApi.Library.ResponseError
 {
     public class NotFoundError : IResponseError
     {

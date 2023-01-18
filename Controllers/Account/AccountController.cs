@@ -1,4 +1,4 @@
-﻿using CoreWebApi.Controllers.ResponseError;
+﻿using CoreWebApi.Library.ResponseError;
 using CoreWebApi.Models.Account;
 using CoreWebApi.Services;
 using CoreWebApi.Services.AccountService;
