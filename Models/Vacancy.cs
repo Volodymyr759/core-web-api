@@ -20,10 +20,10 @@ namespace CoreWebApi.Models
 
         public Boolean IsActive { get; set; } = true;
 
-        public ICollection<Candidate> Candidates { get; set; }
+        public virtual ICollection<Candidate> Candidates { get; set; }
 
         [Required]
         public int OfficeId { get; set; }
-        public Office Office { get; set; }
+        public virtual Office Office { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CoreWebApi.Models
 {
@@ -21,8 +22,9 @@ namespace CoreWebApi.Models
 
         public string AvatarUrl { get; set; }
 
-        [Required]
-        public int OfficeId { get; set; }
-        public Office Office { get; set; }
+        public int? OfficeId { get; set; }
+
+        [ForeignKey("OfficeId")]
+        public virtual Office Office { get; set; }
     }
 }

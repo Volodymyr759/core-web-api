@@ -9,7 +9,12 @@ namespace CoreWebApi.Data
     public class SeerDbContext : IdentityDbContext<ApplicationUser>
     {
         public SeerDbContext(DbContextOptions<SeerDbContext> options)
-            : base(options) { }
+            : base(options) {}
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseLazyLoadingProxies();
+        }
 
         public DbSet<Candidate> Candidates { get; set; }
 
@@ -40,6 +45,19 @@ namespace CoreWebApi.Data
             modelBuilder.Entity<IdentityUserLogin<string>>(entity => { entity.ToTable("UserLogins"); });
             modelBuilder.Entity<IdentityUserToken<string>>(entity => { entity.ToTable("UserTokens"); });
             modelBuilder.Entity<IdentityRoleClaim<string>>(entity => { entity.ToTable("RoleClaims"); });
+
+            //modelBuilder.Entity<Employee>()
+            //    .HasOne(o => o.Office)
+            //    .WithMany(e => e.Employees)
+            //    .HasForeignKey(e => e.OfficeId);
+            //modelBuilder.Entity<Office>()
+            //    .HasMany(e => e.Employees)
+            //    .WithOne(o => o.Office)
+            //    .HasForeignKey(k => k.OfficeId);
+            //modelBuilder.Entity<Employee>()
+            //    .HasOne(u => u.Office)
+            //    .WithMany(c => c.Employees)
+            //    .HasForeignKey(u => u.OfficeId);
         }
     }
 }

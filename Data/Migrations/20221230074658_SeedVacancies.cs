@@ -6,9 +6,9 @@ namespace CoreWebApi.Data.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("INSERT INTO dbo.Vacancies (Title, Description, Previews, IsActive, OfficeId) VALUES ('.Net Developer', 'Test description 1', 0, 1, 1)");
-            migrationBuilder.Sql("INSERT INTO dbo.Vacancies (Title, Description, Previews, IsActive, OfficeId) VALUES ('Junior JavaScrip Frontend Developer', 'Test description 2', 0, 1, 1)");
-            migrationBuilder.Sql("INSERT INTO dbo.Vacancies (Title, Description, Previews, IsActive, OfficeId) VALUES ('Senior JavaScrip Frontend Developer', 'Test description 3', 0, 1, 1)");
+            migrationBuilder.Sql("INSERT INTO dbo.Vacancies (Title, Description, Previews, IsActive, OfficeId) VALUES ('.Net Developer', 'Test description 1', 0, 1, 3)");
+            migrationBuilder.Sql("INSERT INTO dbo.Vacancies (Title, Description, Previews, IsActive, OfficeId) VALUES ('Junior JavaScrip Frontend Developer', 'Test description 2', 0, 1, 3)");
+            migrationBuilder.Sql("INSERT INTO dbo.Vacancies (Title, Description, Previews, IsActive, OfficeId) VALUES ('Senior JavaScrip Frontend Developer', 'Test description 3', 0, 1, 3)");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

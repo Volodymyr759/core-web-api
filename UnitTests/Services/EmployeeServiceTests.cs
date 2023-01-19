@@ -68,32 +68,6 @@ namespace UnitTests.Services
 
         #endregion
 
-        //[TestMethod]
-        //public void GetAllEmployees_ReturnsListEmployees()
-        //{
-        //    //Arrange
-        //    IEnumerable<EmployeeDto> employeeDtos = null;
-        //    int page = 1;
-        //    int limit = 3;
-        //    mockEmployeeRepository.Setup(repo => repo.GetAll()).Returns(GetTestEmployees());
-        //    mockMapper.Setup(x => x.Map<IEnumerable<EmployeeDto>>(It.IsAny<IEnumerable<Employee>>())).Returns(GetTestEmployeeDtos());
-
-        //    try
-        //    {
-        //        // Act
-        //        employeeDtos = employeeService.GetAllEmployees(10, page, "", "FullName", "asc");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        errorMessage = ex.Message + " | " + ex.StackTrace;
-        //    }
-
-        //    //Assert
-        //    Assert.IsNotNull(employeeDtos, errorMessage);
-        //    Assert.IsTrue(((List<EmployeeDto>)employeeDtos).Count == limit, errorMessage);
-        //    Assert.IsInstanceOfType(employeeDtos, typeof(IEnumerable<EmployeeDto>), errorMessage);
-        //}
-
         [TestMethod]
         public async Task GetAllEmployeesSearchResult_ReturnsSearchResultWithEmployees()
         {

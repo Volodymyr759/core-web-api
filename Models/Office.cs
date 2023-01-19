@@ -28,9 +28,9 @@ namespace CoreWebApi.Models
 
         [Required]
         public int CountryId { get; set; }
-        public Country Country { get; set; }
+        public virtual Country Country { get; set; }
 
-        public ICollection<Employee> Employees { get; set; }
-        public ICollection<Vacancy> Vacancies { get; set; }
+        public virtual ICollection<Employee> Employees { get; set; }
+        public virtual ICollection<Vacancy> Vacancies { get; set; }
     }
 }

@@ -40,10 +40,8 @@ namespace CoreWebApi.Controllers.Employee
         /// <response code="200">list of EmployeeDto's</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult GetAll(int limit, int page, string search, string sort_field, OrderType order)
-        {
-            return Ok(employeeService.GetAllEmployees(limit | 10, page | 1, search ?? "", sort_field ?? "FullName", order | OrderType.Ascending));
-        }
+        public async Task<IActionResult> GetAsync(int limit, int page, string search, string sort_field, OrderType order) =>
+            Ok(await employeeService.GetEmployeesSearchResultAsync(limit, page, search ?? "", sort_field ?? "FullName", order));
 
         /// <summary>
         /// Gets a list of EmployeeDto's for public pages.
