@@ -363,8 +363,8 @@ namespace CoreWebApi.Controllers
             await userManager.AddToRoleAsync(user, nameof(AppRoles.Registered));
             await Task.WhenAll(userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation", code),
                 emailSender.SendEmailAsync($"{user.Email}", "Confirmation email link",
-                $"Confirmation email link: /Account/ConfirmEmail/?token={code}&email={user.Email}"));
-            return Created("/account/register", user.Id);
+                $"Confirmation email link: /Account/ConfirmEmail/?code={code}&email={user.Email}"));
+            return Created("/account/register", code);
         }
 
         /// <summary>

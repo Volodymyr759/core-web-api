@@ -25,11 +25,11 @@ namespace CoreWebApi.Controllers.Employee
         /// <summary>
         /// Gets a list of EmployeeDto's with pagination params and values for search and sorting.
         /// </summary>
-        /// <param name="limit" default="10">Number of items per page</param>
-        /// <param name="page" default="1">Requested page</param>
+        /// <param name="limit">Number of items per page</param>
+        /// <param name="page">Requested page</param>
         /// <param name="search">Part of full name for searching</param>
-        /// <param name="sort_field" default="FullName">Field name for sorting</param>
-        /// <param name="order" default="ascending">Sort direction: ascending or descending</param>
+        /// <param name="sort_field">Field name for sorting</param>
+        /// <param name="order">Sort direction: 0 - Ascending or 1 - Descending</param>
         /// <returns>Status 200 and list of EmployeeDto's</returns>
         /// <remarks>
         /// Sample request:
@@ -46,7 +46,7 @@ namespace CoreWebApi.Controllers.Employee
         /// <summary>
         /// Gets a list of EmployeeDto's for public pages.
         /// </summary>
-        /// <param name="page" default="1">requested page</param>
+        /// <param name="page">Requested page</param>
         /// <returns>Status 200 and list of EmployeeDto's</returns>
         /// <remarks>
         /// Sample request:
@@ -54,7 +54,7 @@ namespace CoreWebApi.Controllers.Employee
         ///     GET /api/employee/getpublic?page=1
         ///     
         /// </remarks>
-        /// <response code="200">list of EmployeeDto's</response>
+        /// <response code="200">List of EmployeeDto's</response>
         [HttpGet]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]

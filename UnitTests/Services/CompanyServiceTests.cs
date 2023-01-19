@@ -1,14 +1,18 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
+using CoreWebApi.Library.Enums;
+using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
 using CoreWebApi.Services.CompanyServiceBL;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace UnitTests.Services
 {
+    [TestClass]
     public class CompanyServiceTests
     {
         #region Private Members
@@ -63,19 +67,19 @@ namespace UnitTests.Services
         #endregion
 
         [TestMethod]
-        public void GetAllCompanyServices_ReturnsListOfCompanyServices()
+        public async Task GetCompanyServicesSearchResultAsync_ReturnsSearchResultWithCompanyServices()
         {
             //Arrange
-            IEnumerable<CompanyServiceDto> companyServiceDtos = null;
+            SearchResult<CompanyServiceDto> searchResult = null;
             int page = 1;
             int limit = 3;
-            mockCompanyServiceRepository.Setup(repo => repo.GetAll()).Returns(GetTestCompanyServices());
+            mockCompanyServiceRepository.Setup(repo => repo.GetAllAsync(null, null)).ReturnsAsync(GetTestCompanyServices());
             mockMapper.Setup(x => x.Map<IEnumerable<CompanyServiceDto>>(It.IsAny<IEnumerable<CompanyService>>())).Returns(GetTestCompanyServiceDtos());
 
             try
             {
                 // Act
-                companyServiceDtos = companyServiceBL.GetAllCompanyServices(page, "asc", limit);
+                searchResult = await companyServiceBL.GetCompanyServicesSearchResultAsync(limit, page, OrderType.Ascending);
             }
             catch (Exception ex)
             {
@@ -83,9 +87,9 @@ namespace UnitTests.Services
             }
 
             //Assert
-            Assert.IsNotNull(companyServiceDtos, errorMessage);
-            Assert.IsTrue(((List<CompanyServiceDto>)companyServiceDtos).Count == limit, errorMessage);
-            Assert.IsInstanceOfType(companyServiceDtos, typeof(IEnumerable<CompanyServiceDto>), errorMessage);
+            Assert.IsNotNull(searchResult, errorMessage);
+            Assert.IsTrue(searchResult.ItemList.Count == ((List<CompanyServiceDto>)GetTestCompanyServiceDtos()).Count, errorMessage);
+            Assert.IsInstanceOfType(searchResult, typeof(SearchResult<CompanyServiceDto>), errorMessage);
         }
 
         [TestMethod]

@@ -1,9 +1,11 @@
-﻿using CoreWebApi.Library.ResponseError;
+﻿using CoreWebApi.Library.Enums;
+using CoreWebApi.Library.ResponseError;
 using CoreWebApi.Services.CompanyServiceBL;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace CoreWebApi.Controllers.CompanyService
 {
@@ -24,23 +26,39 @@ namespace CoreWebApi.Controllers.CompanyService
         /// <summary>
         /// Gets a list of CompanyServiceDto's with values for pagination (page number, limit) and sorting by Title.
         /// </summary>
-        /// <param name="page" default="1">requested page</param>
-        /// <param name="sort" default="asc">sort direction: asc or desc</param>
-        /// <param name="limit" default="10">number of items per page</param>
+        /// <param name="limit">Number of items per page</param>
+        /// <param name="page">Requested page</param>
+        /// <param name="order">Sort direction: 0 - Ascending or 1 - Descending</param>
         /// <returns>Status 200 and list of CompanyServiceDto's</returns>
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/CompanyService/GetAll;page=1;sort=asc;limit=3
+        ///     GET /api/companyservice/get?limit=3&page=1&order=0;
         ///     
         /// </remarks>
         /// <response code="200">list of CompanyServiceDto's</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult GetAll(int page = 1, string sort = "asc", int limit = 10)
-        {
-            return Ok(companyServiceBL.GetAllCompanyServices(page, sort, limit));
-        }
+        public async Task<IActionResult> GetAsync(int limit, int page, OrderType order) =>
+            Ok(await companyServiceBL.GetCompanyServicesSearchResultAsync(limit, page, order));
+
+        /// <summary>
+        /// Gets a list of CompanyServiceDto's with values for pagination (page number, limit) and sorting by Title for public pages.
+        /// </summary>
+        /// <param name="page">Requested page</param>
+        /// <returns>Status 200 and list of CompanyServiceDto's</returns>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET /api/companyservice/getpublic?page=1
+        ///     
+        /// </remarks>
+        /// <response code="200">list of CompanyServiceDto's</response>
+        [HttpGet]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetPublicAsync(int page) =>
+            Ok(await companyServiceBL.GetCompanyServicesSearchResultAsync(limit: 3, page, order: OrderType.Ascending));
 
         /// <summary>
         /// Gets a specific CompanySeviceDto Item.

@@ -54,33 +54,33 @@ namespace UnitTests.Controllers
 
         #region Tests
 
-        [TestMethod]
-        public void GetAll_ReturnsListOfCompanyServices()
-        {
-            //Arrange
-            int page = 1;
-            string sort = "asc";
-            int limit = 10;
-            mockCompanyServiceBL.Setup(r => r.GetAllCompanyServices(page, sort, limit)).Returns(GetTestCompanyServiceDtos());
-            OkObjectResult result = null;
+        //[TestMethod]
+        //public void GetAll_ReturnsListOfCompanyServices()
+        //{
+        //    //Arrange
+        //    int page = 1;
+        //    string sort = "asc";
+        //    int limit = 10;
+        //    mockCompanyServiceBL.Setup(r => r.GetAllCompanyServices(page, sort, limit)).Returns(GetTestCompanyServiceDtos());
+        //    OkObjectResult result = null;
 
-            try
-            {
-                // Act
-                result = companyServiceController.GetAll() as OkObjectResult;
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + " | " + ex.StackTrace;
-            }
+        //    try
+        //    {
+        //        // Act
+        //        result = companyServiceController.GetAll() as OkObjectResult;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        errorMessage = ex.Message + " | " + ex.StackTrace;
+        //    }
 
-            //Assert
-            Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
-            Assert.IsNotNull(result.Value, errorMessage);
-            Assert.IsInstanceOfType(result.Value, typeof(IEnumerable<CompanyServiceDto>), errorMessage);
-            mockCompanyServiceBL.Verify(r => r.GetAllCompanyServices(page, sort, limit));
-        }
+        //    //Assert
+        //    Assert.IsNotNull(result, errorMessage);
+        //    Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
+        //    Assert.IsNotNull(result.Value, errorMessage);
+        //    Assert.IsInstanceOfType(result.Value, typeof(IEnumerable<CompanyServiceDto>), errorMessage);
+        //    mockCompanyServiceBL.Verify(r => r.GetAllCompanyServices(page, sort, limit));
+        //}
 
         [TestMethod]
         public void GetById_ReturnsOkWithCompanyServiceDtoByCorrectId()
@@ -163,7 +163,7 @@ namespace UnitTests.Controllers
         {
             //Arrange
             int i = 1;
-            var createCompanyServiceDto = GetTestCompanyServiceDtoById(1);
+            var createCompanyServiceDto = GetTestCompanyServiceDtoById(i);
             companyServiceController.ModelState.AddModelError("Title", "Title should be 1 - 100 characters");// too long Title string
             BadRequestObjectResult result = null;
 

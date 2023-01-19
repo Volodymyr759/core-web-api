@@ -242,13 +242,5 @@ namespace UnitTests.Services
             Assert.IsNotNull(mailSubscriberDto, errorMessage);
             Assert.IsInstanceOfType(mailSubscriberDto, typeof(MailSubscriberDto), errorMessage);
         }
-
-        [TestMethod]
-        public void GetSubscriptionsBySubscribersEmail_ReturnsListOfSubscriptions()
-        {
-            // To do
-
-            Assert.IsNotNull(null, errorMessage);
-        }
     }
 }

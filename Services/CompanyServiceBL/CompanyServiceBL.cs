@@ -1,15 +1,19 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
+using CoreWebApi.Library.Enums;
+using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace CoreWebApi.Services.CompanyServiceBL
 {
     public class CompanyServiceBL : ICompanyServiceBL
     {
         private readonly IMapper mapper;
+
         private readonly IRepository<CompanyService> repository;
 
         public CompanyServiceBL(IMapper mapper, IRepository<CompanyService> repository)
@@ -18,13 +22,23 @@ namespace CoreWebApi.Services.CompanyServiceBL
             this.repository = repository;
         }
 
-        public IEnumerable<CompanyServiceDto> GetAllCompanyServices(int page, string sort, int limit)
+        public async Task<SearchResult<CompanyServiceDto>> GetCompanyServicesSearchResultAsync(int limit, int page, OrderType order)
         {
-            // sorting only by Title
-            Func<IQueryable<CompanyService>, IOrderedQueryable<CompanyService>> orderBy = null;
-            orderBy = sort == "asc" ? q => q.OrderBy(s => s.Title) : orderBy = q => q.OrderByDescending(s => s.Title);
+            Func<IQueryable<CompanyService>, IOrderedQueryable<CompanyService>> orderBy = null;// sorting only by Title
+            orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Title) : orderBy = q => q.OrderByDescending(s => s.Title);
 
-            return mapper.Map<IEnumerable<CompanyServiceDto>>(repository.GetAll(limit, page, null, orderBy));
+            var services = await repository.GetAllAsync(null, orderBy);
+
+            return new SearchResult<CompanyServiceDto>
+            {
+                CurrentPageNumber = page,
+                Order = order,
+                PageSize = limit,
+                PageCount = Convert.ToInt32(Math.Ceiling((double)services.Count() / limit)),
+                SearchCriteria = string.Empty,
+                TotalItemCount = services.Count(),
+                ItemList = (List<CompanyServiceDto>)mapper.Map<IEnumerable<CompanyServiceDto>>(services.Skip((page - 1) * limit).Take(limit))
+            };
         }
 
         public CompanyServiceDto GetCompanyServiceById(int id)

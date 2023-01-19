@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using CoreWebApi.Library.Enums;
+using CoreWebApi.Library.SearchResult;
+using System.Threading.Tasks;
 
 namespace CoreWebApi.Services.CompanyServiceBL
 {
     public interface ICompanyServiceBL
     {
-        IEnumerable<CompanyServiceDto> GetAllCompanyServices(int page, string sort, int limit);
+        Task<SearchResult<CompanyServiceDto>> GetCompanyServicesSearchResultAsync(int limit, int page, OrderType order);
         CompanyServiceDto GetCompanyServiceById(int id);
         CompanyServiceDto CreateCompanyService(CompanyServiceDto companyServiceDto);
         CompanyServiceDto UpdateCompanyService(CompanyServiceDto companyServiceDto);

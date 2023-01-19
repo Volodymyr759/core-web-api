@@ -69,7 +69,7 @@ namespace UnitTests.Services
         #endregion
 
         [TestMethod]
-        public async Task GetAllEmployeesSearchResult_ReturnsSearchResultWithEmployees()
+        public async Task GetEmployeesSearchResultAsync_ReturnsSearchResultWithEmployees()
         {
             //Arrange
             SearchResult<EmployeeDto> searchResult = null;
