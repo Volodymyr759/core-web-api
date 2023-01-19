@@ -1,10 +1,13 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
+using CoreWebApi.Library.Enums;
+using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
 using CoreWebApi.Services.MailSubscriberService;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace CoreWebApi.Services.MailSubscriptionService
 {
@@ -24,13 +27,24 @@ namespace CoreWebApi.Services.MailSubscriptionService
             this.subscriberRepository = subscriberRepository;
         }
 
-        public IEnumerable<MailSubscriptionDto> GetAllMailSubscriptions(int page, string sort, int limit)
+        public async Task<SearchResult<MailSubscriptionDto>> GetMailSubscriptionsSearchResultAsync(int limit, int page, OrderType order)
         {
             // sorting only by Title
             Func<IQueryable<MailSubscription>, IOrderedQueryable<MailSubscription>> orderBy = null;
-            orderBy = sort == "asc" ? q => q.OrderBy(s => s.Title) : orderBy = q => q.OrderByDescending(s => s.Title);
+            orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Title) : orderBy = q => q.OrderByDescending(s => s.Title);
 
-            return mapper.Map<IEnumerable<MailSubscriptionDto>>(subscriptionRepository.GetAll(limit, page, null, orderBy));
+            var mailSubscriptions = await subscriptionRepository.GetAllAsync(null, orderBy);
+
+            return new SearchResult<MailSubscriptionDto>
+            {
+                CurrentPageNumber = page,
+                Order = order,
+                PageSize = limit,
+                PageCount = Convert.ToInt32(Math.Ceiling((double)mailSubscriptions.Count() / limit)),
+                SearchCriteria = "",
+                TotalItemCount = mailSubscriptions.Count(),
+                ItemList = (List<MailSubscriptionDto>)mapper.Map<IEnumerable<MailSubscriptionDto>>(mailSubscriptions.Skip((page - 1) * limit).Take(limit))
+            };
         }
 
         public MailSubscriptionDto GetMailSubscriptionById(int id)

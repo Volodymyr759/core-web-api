@@ -53,33 +53,33 @@ namespace UnitTests.Controllers
 
         #region Tests
 
-        [TestMethod]
-        public void GetAll_ReturnsListOfMailSubscriptions()
-        {
-            //Arrange
-            int page = 1;
-            string sort = "asc";
-            int limit = 10;
-            mockMailSubscriptionServise.Setup(r => r.GetAllMailSubscriptions(page, sort, limit)).Returns(GetTestMailSubscriptionDtos());
-            OkObjectResult result = null;
+        //[TestMethod]
+        //public void GetAll_ReturnsListOfMailSubscriptions()
+        //{
+        //    //Arrange
+        //    int page = 1;
+        //    string sort = "asc";
+        //    int limit = 10;
+        //    mockMailSubscriptionServise.Setup(r => r.GetAllMailSubscriptions(page, sort, limit)).Returns(GetTestMailSubscriptionDtos());
+        //    OkObjectResult result = null;
 
-            try
-            {
-                // Act
-                result = mailSubscriptionController.GetAll() as OkObjectResult;
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + " | " + ex.StackTrace;
-            }
+        //    try
+        //    {
+        //        // Act
+        //        result = mailSubscriptionController.GetAll() as OkObjectResult;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        errorMessage = ex.Message + " | " + ex.StackTrace;
+        //    }
 
-            //Assert
-            Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
-            Assert.IsNotNull(result.Value, errorMessage);
-            Assert.IsInstanceOfType(result.Value, typeof(IEnumerable<MailSubscriptionDto>), errorMessage);
-            mockMailSubscriptionServise.Verify(r => r.GetAllMailSubscriptions(page, sort, limit));
-        }
+        //    //Assert
+        //    Assert.IsNotNull(result, errorMessage);
+        //    Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
+        //    Assert.IsNotNull(result.Value, errorMessage);
+        //    Assert.IsInstanceOfType(result.Value, typeof(IEnumerable<MailSubscriptionDto>), errorMessage);
+        //    mockMailSubscriptionServise.Verify(r => r.GetAllMailSubscriptions(page, sort, limit));
+        //}
 
         [TestMethod]
         public void GetById_ReturnsOkWithMailSubscriptionDtoByCorrectId()

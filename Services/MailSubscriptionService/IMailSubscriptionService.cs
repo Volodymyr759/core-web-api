@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using CoreWebApi.Library.Enums;
+using CoreWebApi.Library.SearchResult;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace CoreWebApi.Services.MailSubscriptionService
 {
     public interface IMailSubscriptionService
     {
-        IEnumerable<MailSubscriptionDto> GetAllMailSubscriptions(int page, string sort, int limit);
+        Task<SearchResult<MailSubscriptionDto>> GetMailSubscriptionsSearchResultAsync(int limit, int page, OrderType order);
         MailSubscriptionDto GetMailSubscriptionById(int id);
         MailSubscriptionDto CreateMailSubscription(MailSubscriptionDto mailSubscriptionDto);
         MailSubscriptionDto UpdateMailSubscription(MailSubscriptionDto mailSubscriptionDto);

@@ -1,11 +1,14 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
+using CoreWebApi.Library.Enums;
+using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
 using CoreWebApi.Services.MailSubscriptionService;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace UnitTests.Services
 {
@@ -32,7 +35,7 @@ namespace UnitTests.Services
             mockMailSubscriberRepository = new Mock<IRepository<MailSubscriber>>();
             mockMapper = new Mock<IMapper>();
             mailSubscriptionService = new MailSubscriptionService(
-                mockMapper.Object, 
+                mockMapper.Object,
                 mockMailSubscriptionRepository.Object,
                 mockMailSubscriberRepository.Object);
         }
@@ -64,10 +67,10 @@ namespace UnitTests.Services
         #endregion
 
         [TestMethod]
-        public void GetAllMailSubscriptions_ReturnsListOfMailSubscriptions()
+        public async Task GetMailSubscriptionsSearchResultAsync_ReturnsSearchResultWithMailSubscriptions()
         {
             //Arrange
-            IEnumerable<MailSubscriptionDto> mailSubscriptionDtos = null;
+            SearchResult<MailSubscriptionDto> searchResult = null;
             int page = 1;
             int limit = 3;
             mockMailSubscriptionRepository.Setup(repo => repo.GetAll()).Returns(GetTestMailSubscriptions());
@@ -76,7 +79,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                mailSubscriptionDtos = mailSubscriptionService.GetAllMailSubscriptions(page, "asc", limit);
+                searchResult = await mailSubscriptionService.GetMailSubscriptionsSearchResultAsync(limit, page, order: OrderType.Ascending);
             }
             catch (Exception ex)
             {
@@ -84,9 +87,9 @@ namespace UnitTests.Services
             }
 
             //Assert
-            Assert.IsNotNull(mailSubscriptionDtos, errorMessage);
-            Assert.IsTrue(((List<MailSubscriptionDto>)mailSubscriptionDtos).Count == limit, errorMessage);
-            Assert.IsInstanceOfType(mailSubscriptionDtos, typeof(IEnumerable<MailSubscriptionDto>), errorMessage);
+            Assert.IsNotNull(searchResult, errorMessage);
+            Assert.IsTrue(searchResult.ItemList.Count == ((List<MailSubscriptionDto>)GetTestMailSubscriptionDtos()).Count, errorMessage);
+            Assert.IsInstanceOfType(searchResult, typeof(SearchResult<MailSubscriptionDto>), errorMessage);
         }
 
         [TestMethod]
