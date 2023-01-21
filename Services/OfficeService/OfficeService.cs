@@ -1,82 +1,64 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
+using CoreWebApi.Library.Enums;
+using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
-using CoreWebApi.Services.EmployeeService;
-using CoreWebApi.Services.VacancyService;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
-namespace CoreWebApi.Services.OfficeService
+namespace CoreWebApi.Services
 {
     public class OfficeService : IOfficeService
     {
         private readonly IMapper mapper;
-        private readonly IRepository<Office> officeRepository;
-        private readonly IRepository<Employee> employeeRepository;
-        private readonly IRepository<Vacancy> vacancyRepository;
+        private readonly IRepository<Office> repository;
 
         public OfficeService(
             IMapper mapper,
-            IRepository<Office> officeRepository,
-            IRepository<Employee> employeeRepository,
-            IRepository<Vacancy> vacancyRepository)
+            IRepository<Office> repository)
         {
             this.mapper = mapper;
-            this.officeRepository = officeRepository;
-            this.employeeRepository = employeeRepository;
-            this.vacancyRepository = vacancyRepository;
+            this.repository = repository;
         }
 
-        public IEnumerable<OfficeDto> GetAllOffices(int page, string sort, int limit)
+        public async Task<SearchResult<OfficeDto>> GetOfficesSearchResultAsync(int limit, int page, OrderType order)
         {
-            // sorting only by Name
+            // sorting sorting only by Name
             Func<IQueryable<Office>, IOrderedQueryable<Office>> orderBy = null;
-            orderBy = sort == "asc" ? q => q.OrderBy(s => s.Name) : orderBy = q => q.OrderByDescending(s => s.Name);
+            orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Name) : orderBy = q => q.OrderByDescending(s => s.Name);
 
-            var officeDtos = mapper.Map<IEnumerable<OfficeDto>>(officeRepository.GetAll(limit, page, null, orderBy));
+            var offices = await repository.GetAllAsync(null, orderBy);
 
-            if (((List<OfficeDto>)officeDtos).Count > 0)
+            return new SearchResult<OfficeDto>
             {
-                foreach (var o in officeDtos)
-                {
-                    o.EmployeeDtos = mapper.Map<IEnumerable<EmployeeDto>>(employeeRepository.GetAll());
-                    o.VacancyDtos = mapper.Map<IEnumerable<VacancyDto>>(vacancyRepository.GetAll());
-                }
-            }
-
-            return officeDtos;
+                CurrentPageNumber = page,
+                Order = order,
+                PageSize = limit,
+                PageCount = Convert.ToInt32(Math.Ceiling((double)offices.Count() / limit)),
+                SearchCriteria = string.Empty,
+                TotalItemCount = offices.Count(),
+                ItemList = (List<OfficeDto>)mapper.Map<IEnumerable<OfficeDto>>(offices.Skip((page - 1) * limit).Take(limit))
+            };
         }
 
-        public OfficeDto GetOfficeById(int id)
-        {
-            var officeDto = mapper.Map<OfficeDto>(officeRepository.Get(id));
-            if (officeDto != null)
-            {
-                officeDto.EmployeeDtos = mapper.Map<IEnumerable<EmployeeDto>>(employeeRepository.GetAll().Where(e => e.OfficeId == officeDto.Id));
-                officeDto.VacancyDtos = mapper.Map<IEnumerable<VacancyDto>>(vacancyRepository.GetAll().Where(v => v.OfficeId == officeDto.Id));
-            }
-
-            return officeDto;
-        }
+        public OfficeDto GetOfficeById(int id) => mapper.Map<OfficeDto>(repository.Get(id));
 
         public OfficeDto CreateOffice(OfficeDto officeDto)
         {
             var office = mapper.Map<Office>(officeDto);
 
-            return mapper.Map<OfficeDto>(officeRepository.Create(office));
+            return mapper.Map<OfficeDto>(repository.Create(office));
         }
 
         public OfficeDto UpdateOffice(OfficeDto officeDto)
         {
-            var office = mapper.Map<Office>(officeDto);
+            repository.Update(mapper.Map<Office>(officeDto));
 
-            return mapper.Map<OfficeDto>(officeRepository.Update(office));
+            return officeDto;
         }
 
-        public OfficeDto DeleteOffice(int id)
-        {
-            return mapper.Map<OfficeDto>(officeRepository.Delete(id));
-        }
+        public OfficeDto DeleteOffice(int id) => mapper.Map<OfficeDto>(repository.Delete(id));
     }
 }

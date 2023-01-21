@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace CoreWebApi.Services.TenantService
+namespace CoreWebApi.Services
 {
     public interface ITenantService
     {

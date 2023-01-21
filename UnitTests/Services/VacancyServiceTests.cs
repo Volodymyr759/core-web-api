@@ -1,13 +1,14 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
+using CoreWebApi.Library.Enums;
+using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
-using CoreWebApi.Services.CandidateService;
-using CoreWebApi.Services.OfficeService;
-using CoreWebApi.Services.VacancyService;
+using CoreWebApi.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace UnitTests.Services
 {
@@ -17,9 +18,7 @@ namespace UnitTests.Services
         #region Private Members
 
         private string errorMessage;
-        private Mock<IRepository<Vacancy>> mockVacancyRepository;
-        private Mock<IRepository<Office>> mockOfficeRepository;
-        private Mock<IRepository<Candidate>> mockCandidateRepository;
+        private Mock<IRepository<Vacancy>> mockRepository;
         private Mock<IMapper> mockMapper;
         private VacancyService vacancyService;
 
@@ -31,15 +30,11 @@ namespace UnitTests.Services
         public void VacancyServiceTestsInitialize()
         {
             errorMessage = "";
-            mockVacancyRepository = new Mock<IRepository<Vacancy>>();
-            mockOfficeRepository = new Mock<IRepository<Office>>();
-            mockCandidateRepository = new Mock<IRepository<Candidate>>();
+            mockRepository = new Mock<IRepository<Vacancy>>();
             mockMapper = new Mock<IMapper>();
             vacancyService = new VacancyService(
                 mockMapper.Object,
-                mockVacancyRepository.Object,
-                mockOfficeRepository.Object,
-                mockCandidateRepository.Object);
+                mockRepository.Object);
         }
 
         [TestCleanup()]
@@ -70,19 +65,19 @@ namespace UnitTests.Services
         #endregion
 
         [TestMethod]
-        public void GetAllVacancies_ReturnsListOfVacancies()
+        public async Task GetVacanciesSearchResultAsync_ReturnsSearchResultWithVacancies()
         {
             //Arrange
-            IEnumerable<VacancyDto> vacancyDtos = null;
+            SearchResult<VacancyDto> searchResult = null;
             int page = 1;
             int limit = 3;
-            mockVacancyRepository.Setup(repo => repo.GetAll()).Returns(GetTestVacancies());
+            mockRepository.Setup(repo => repo.GetAllAsync(null, null)).ReturnsAsync(GetTestVacancies());
             mockMapper.Setup(x => x.Map<IEnumerable<VacancyDto>>(It.IsAny<IEnumerable<Vacancy>>())).Returns(GetTestVacancyDtos());
 
             try
             {
                 // Act
-                vacancyDtos = vacancyService.GetAllVacancies(10, page, "", "Title", "asc");
+                searchResult = await vacancyService.GetVacanciesSearchResultAsync(limit, page, search: "", sort_field: "Id", order: OrderType.Ascending);
             }
             catch (Exception ex)
             {
@@ -90,9 +85,9 @@ namespace UnitTests.Services
             }
 
             //Assert
-            Assert.IsNotNull(vacancyDtos, errorMessage);
-            Assert.IsTrue(((List<VacancyDto>)vacancyDtos).Count == limit, errorMessage);
-            Assert.IsInstanceOfType(vacancyDtos, typeof(IEnumerable<VacancyDto>), errorMessage);
+            Assert.IsNotNull(searchResult, errorMessage);
+            Assert.IsTrue(searchResult.ItemList.Count == limit, errorMessage);
+            Assert.IsInstanceOfType(searchResult, typeof(SearchResult<VacancyDto>), errorMessage);
         }
 
         [TestMethod]
@@ -100,15 +95,8 @@ namespace UnitTests.Services
         {
             //Arrange
             int id = 1;// correct id
-            var existingVacancy = GetTestVacancies().Find(c => c.Id == id);
-            mockVacancyRepository.Setup(r => r.Get(id)).Returns(existingVacancy);
+            mockRepository.Setup(r => r.Get(id)).Returns(GetTestVacancies().Find(c => c.Id == id));
             mockMapper.Setup(x => x.Map<VacancyDto>(It.IsAny<Vacancy>())).Returns(GetTestVacancyDtos().Find(c => c.Id == id));
-
-            mockOfficeRepository.Setup(e => e.Get(existingVacancy.OfficeId)).Returns(new Office());
-            mockMapper.Setup(x => x.Map<OfficeDto>(It.IsAny<Office>())).Returns(new OfficeDto());
-
-            mockCandidateRepository.Setup(v => v.GetAll()).Returns(new List<Candidate>());
-            mockMapper.Setup(x => x.Map<List<CandidateDto>>(It.IsAny<List<Candidate>>())).Returns(new List<CandidateDto>());
 
             VacancyDto vacancyDto = null;
 
@@ -125,8 +113,6 @@ namespace UnitTests.Services
             //Assert
             Assert.IsNotNull(vacancyDto, errorMessage);
             Assert.IsInstanceOfType(vacancyDto, typeof(VacancyDto), errorMessage);
-            Assert.IsNotNull(vacancyDto.OfficeDto, errorMessage);
-            Assert.IsNotNull(vacancyDto.CandidateDtos, errorMessage);
         }
 
         [TestMethod]
@@ -134,7 +120,7 @@ namespace UnitTests.Services
         {
             //Arrange
             int id = int.MaxValue - 1;// wrong id
-            mockVacancyRepository.Setup(r => r.Get(id)).Returns(value: null);
+            mockRepository.Setup(r => r.Get(id)).Returns(value: null);
             VacancyDto vacancyDto = null;
 
             try
@@ -159,7 +145,7 @@ namespace UnitTests.Services
             var newVacancyDto = new VacancyDto() { Title = ".Net Developer", Description = "Test description 1", Previews = 1, IsActive = true, OfficeId = 1 };
             mockMapper.Setup(x => x.Map<Vacancy>(It.IsAny<VacancyDto>())).Returns(new Vacancy());
             // pass the instance to repo, which should return model with created id:
-            mockVacancyRepository.Setup(r => r.Create(new Vacancy())).Returns(new Vacancy()
+            mockRepository.Setup(r => r.Create(new Vacancy())).Returns(new Vacancy()
             {
                 Id = int.MaxValue,
                 Title = newVacancyDto.Title,
@@ -202,7 +188,7 @@ namespace UnitTests.Services
             //Arrange the same scenario like in 'Create' method
             var vacancyDtoToUpdate = new VacancyDto() { Id = 1, Title = ".Net Developer", Description = "Test description 1", Previews = 1, IsActive = true, OfficeId = 1 };
             mockMapper.Setup(x => x.Map<Vacancy>(It.IsAny<VacancyDto>())).Returns(new Vacancy());
-            mockVacancyRepository.Setup(r => r.Update(new Vacancy())).Returns(new Vacancy()
+            mockRepository.Setup(r => r.Update(new Vacancy())).Returns(new Vacancy()
             {
                 Id = int.MaxValue,
                 Title = vacancyDtoToUpdate.Title,
@@ -244,7 +230,7 @@ namespace UnitTests.Services
             // Arrange scenario:
             // service gets id and passes it to the repo:
             int id = 1;
-            mockVacancyRepository.Setup(r => r.Delete(id)).Returns(GetTestVacancies().Find(c => c.Id == id));
+            mockRepository.Setup(r => r.Delete(id)).Returns(GetTestVacancies().Find(c => c.Id == id));
             // since repo.delete(int id) returns origin Vacancy-object - possible to map it to dto and give it back:
             mockMapper.Setup(x => x.Map<VacancyDto>(It.IsAny<Vacancy>())).Returns(GetTestVacancyDtos().Find(c => c.Id == id));
 

@@ -1,4 +1,4 @@
-﻿using CoreWebApi.Services.TenantService;
+﻿using CoreWebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;

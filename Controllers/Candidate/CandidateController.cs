@@ -1,10 +1,12 @@
-﻿using CoreWebApi.Library.ResponseError;
-using CoreWebApi.Services.CandidateService;
+﻿using CoreWebApi.Library.Enums;
+using CoreWebApi.Library.ResponseError;
+using CoreWebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
-namespace CoreWebApi.Controllers.Candidate
+namespace CoreWebApi.Controllers
 {
     [ApiController, Authorize, Produces("application/json"), Route("api/[controller]/[action]"), ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public class CandidateController : ControllerBase
@@ -23,25 +25,41 @@ namespace CoreWebApi.Controllers.Candidate
         /// <summary>
         /// Gets a list of CandidateDto's with pagination params and values for search and sorting.
         /// </summary>
-        /// <param name="limit" default="10">number of items per page</param>
-        /// <param name="page" default="1">requested page</param>
-        /// <param name="search">part of FullName for searching</param>
-        /// <param name="sort_field" default="id">field name for sorting</param>
-        /// <param name="sort" default="desc">sort direction: asc or desc</param>
+        /// <param name="limit">Number of items per page</param>
+        /// <param name="page">Requested page</param>
+        /// <param name="search">Part of FullName for searching</param>
+        /// <param name="sort_field">field name for sorting</param>
+        /// <param name="order">sort direction: 0 - Ascending or 1 - Descending</param>
         /// <returns>Status 200 and list of CandidateDto's</returns>
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/Candidate/GetAll/?limit=10&amp;page=1&amp;search=j&amp;sort_field=Id&amp;sort=desc
+        ///     GET /api/Candidate/get/?limit=10&amp;page=1&amp;search=&amp;sort_field=Id&amp;order=0
         ///     
         /// </remarks>
         /// <response code="200">list of CandidateDto's</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult GetAll(int limit = 10, int page = 1, string search = "", string sort_field = "Id", string sort = "desc")
-        {
-            return Ok(candidateService.GetAllCandidates(limit, page, search, sort_field, sort));
-        }
+        public async Task<IActionResult> GetAsync(int limit, int page, string search, string sort_field, OrderType order) =>
+            Ok(await candidateService.GetCandidatesSearchResultAsync(limit, page, search, sort_field, order));
+
+        /// <summary>
+        /// Gets a list of CandidateDto's for public pages.
+        /// </summary>
+        /// <param name="page">Requested page</param>
+        /// <returns>Status 200 and list of CandidateDto's</returns>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET /api/Candidate/getpublic/?page=1
+        ///     
+        /// </remarks>
+        /// <response code="200">list of CandidateDto's</response>
+        [HttpGet]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetPublicAsync(int page) =>
+            Ok(await candidateService.GetCandidatesSearchResultAsync(limit: 10, page, search: "", sort_field: "Id", order: OrderType.Descending));
 
         /// <summary>
         /// Gets a specific CandidateDto Item.

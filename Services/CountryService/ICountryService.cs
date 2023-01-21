@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using CoreWebApi.Library.Enums;
+using CoreWebApi.Library.SearchResult;
+using System.Threading.Tasks;
 
-namespace CoreWebApi.Services.CountryService
+namespace CoreWebApi.Services
 {
     public interface ICountryService
     {
-        IEnumerable<CountryDto> GetAllCountries(int page, string sort, int limit);
+        Task<SearchResult<CountryDto>> GetCountriesSearchResultAsync(int limit, int page, OrderType order);
         CountryDto GetCountryById(int id);
         CountryDto CreateCountry(CountryDto countryDto);
         CountryDto UpdateCountry(CountryDto countryDto);

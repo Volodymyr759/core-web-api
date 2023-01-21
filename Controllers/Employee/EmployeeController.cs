@@ -1,12 +1,12 @@
 ﻿using CoreWebApi.Library.ResponseError;
 using CoreWebApi.Library.Enums;
-using CoreWebApi.Services.EmployeeService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using CoreWebApi.Services;
 
-namespace CoreWebApi.Controllers.Employee
+namespace CoreWebApi.Controllers
 {
     [ApiController, Authorize, Produces("application/json"), Route("api/[controller]/[action]"), ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public class EmployeeController : ControllerBase

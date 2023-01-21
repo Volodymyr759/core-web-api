@@ -1,14 +1,5 @@
 ﻿using AutoMapper;
 using CoreWebApi.Models;
-using CoreWebApi.Services.CandidateService;
-using CoreWebApi.Services.CompanyServiceBL;
-using CoreWebApi.Services.CountryService;
-using CoreWebApi.Services.EmployeeService;
-using CoreWebApi.Services.MailSubscriberService;
-using CoreWebApi.Services.MailSubscriptionService;
-using CoreWebApi.Services.OfficeService;
-using CoreWebApi.Services.TenantService;
-using CoreWebApi.Services.VacancyService;
 
 namespace CoreWebApi.Services
 {
@@ -16,10 +7,25 @@ namespace CoreWebApi.Services
     {
         public AutoMapperProfile()
         {
-            CreateMap<Candidate, CandidateDto>().ReverseMap();
+            CreateMap<Candidate, CandidateDto>()
+                .ForMember(dest => dest.VacancyDto, act => act.MapFrom(src => new VacancyDto()
+                {
+                    Id = src.Vacancy.Id,
+                    Title = src.Vacancy.Title,
+                    IsActive = src.Vacancy.IsActive
+                }));
+
+            CreateMap<CandidateDto, Candidate>();
+
             CreateMap<CompanyService, CompanyServiceDto>().ReverseMap();
-            CreateMap<Country, CountryDto>().ReverseMap();
-            CreateMap<Office, OfficeDto>().ReverseMap();
+
+            CreateMap<Country, CountryDto>()
+                .ForMember(dest => dest.OfficeDtos, act => act.MapFrom(src => src.Offices));
+            CreateMap<CountryDto, Country>();
+
+            CreateMap<Office, OfficeDto>()
+                .ForMember(dest => dest.VacancyDtos, act => act.MapFrom(src => src.Vacancies));
+            CreateMap<OfficeDto, Office>();
 
             CreateMap<Employee, EmployeeDto>()
                 .ForMember(dest => dest.OfficeDto, act => act.MapFrom(src => src.Office));
@@ -32,7 +38,20 @@ namespace CoreWebApi.Services
             CreateMap<MailSubscriptionDto, MailSubscription>();
 
             CreateMap<Tenant, TenantDto>().ReverseMap();
-            CreateMap<Vacancy, VacancyDto>().ReverseMap();
+
+            CreateMap<Vacancy, VacancyDto>()
+                .ForMember(dest => dest.CandidateDtos, act => act.MapFrom(src => src.Candidates))
+                .ForMember(dest => dest.OfficeDto, act => act.MapFrom(src => new OfficeDto()
+                {
+                    Id = src.Id,
+                    Name = src.Office.Name,
+                    Description = "",
+                    Address = src.Office.Address
+                }));
+
+            CreateMap<VacancyDto, Vacancy>();
+
+
             CreateMap<CreateTenantDto, Tenant>().ForMember(dest => dest.Id, act => act.Ignore());
         }
     }

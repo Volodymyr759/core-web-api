@@ -1,8 +1,10 @@
-﻿using CoreWebApi.Library.ResponseError;
-using CoreWebApi.Services.CountryService;
+﻿using CoreWebApi.Library.Enums;
+using CoreWebApi.Library.ResponseError;
+using CoreWebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace CoreWebApi.Controllers
 {
@@ -23,23 +25,41 @@ namespace CoreWebApi.Controllers
         /// <summary>
         /// Gets a list of CountryDto's with values for pagination (page number, limit) and sorting by Name.
         /// </summary>
-        /// <param name="page" default="1">requested page</param>
-        /// <param name="sort" default="asc">sort direction: asc or desc</param>
-        /// <param name="limit" default="10">number of items per page</param>
+        /// <param name="limit">Number of items per page</param>
+        /// <param name="page">Requested page</param>
+        /// <param name="order" default="asc">sort direction: 0 - Ascending or 1 - Descending</param>
+        /// 
         /// <returns>Status 200 and list of CountryDto's</returns>
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/Country/GetAll;page=1;sort=asc;limit=3
+        ///     GET /api/Country/get?limit=3;page=1;order=0
         ///     
         /// </remarks>
-        /// <response code="200">list of CountryDto's</response>
+        /// <response code="200">List of CountryDto's</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult GetAll(int page = 1, string sort = "asc", int limit = 10)
-        {
-            return Ok(countryService.GetAllCountries(page, sort, limit));
-        }
+        public async Task<IActionResult> GetAsync(int limit, int page, OrderType order ) =>
+            Ok(await countryService.GetCountriesSearchResultAsync(limit, page, order));
+
+        /// <summary>
+        /// Gets a list of CountryDto's for public pages.
+        /// </summary>
+        /// <param name="page">Requested page</param>
+        /// 
+        /// <returns>Status 200 and list of CountryDto's</returns>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET /api/Country/get?limit=3;page=1;order=0
+        ///     
+        /// </remarks>
+        /// <response code="200">List of CountryDto's</response>
+        [HttpGet]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetPublicAsync(int page) =>
+            Ok(await countryService.GetCountriesSearchResultAsync(limit: 3, page, order: OrderType.Ascending));
 
         /// <summary>
         /// Gets a specific CountryDto Item.

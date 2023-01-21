@@ -104,18 +104,6 @@ namespace CoreWebApi.Data
             }
         }
 
-        public TModel Get(Expression<Func<TModel, bool>> query)
-        {
-            try
-            {
-                return _set.AsNoTracking().FirstOrDefault(query);
-            }
-            catch (Exception ex)
-            {
-                throw new RetrieveEntitiesQueryFailedException(typeof(TModel), ex);
-            }
-        }
-
         public IEnumerable<TModel> GetAll()
         {
             try

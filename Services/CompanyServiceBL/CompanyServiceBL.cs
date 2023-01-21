@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CoreWebApi.Services.CompanyServiceBL
+namespace CoreWebApi.Services
 {
     public class CompanyServiceBL : ICompanyServiceBL
     {
@@ -41,10 +41,7 @@ namespace CoreWebApi.Services.CompanyServiceBL
             };
         }
 
-        public CompanyServiceDto GetCompanyServiceById(int id)
-        {
-            return mapper.Map<CompanyServiceDto>(repository.Get(t => t.Id == id));
-        }
+        public CompanyServiceDto GetCompanyServiceById(int id) => mapper.Map<CompanyServiceDto>(repository.Get(id));
 
         public CompanyServiceDto CreateCompanyService(CompanyServiceDto companyServiceDto)
         {
@@ -62,7 +59,7 @@ namespace CoreWebApi.Services.CompanyServiceBL
 
         public void SetIsActive(int id, bool isActive)
         {
-            var companyService = repository.Get(t => t.Id == id);
+            var companyService = repository.Get(id);
 
             if (companyService != null)
             {

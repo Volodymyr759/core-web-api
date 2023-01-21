@@ -1,5 +1,5 @@
-﻿using CoreWebApi.Controllers.Candidate;
-using CoreWebApi.Services.CandidateService;
+﻿using CoreWebApi.Controllers;
+using CoreWebApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;

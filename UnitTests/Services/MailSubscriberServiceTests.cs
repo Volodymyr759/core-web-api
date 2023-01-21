@@ -1,8 +1,7 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
 using CoreWebApi.Models;
-using CoreWebApi.Services.MailSubscriberService;
-using CoreWebApi.Services.MailSubscriptionService;
+using CoreWebApi.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
@@ -103,10 +102,9 @@ namespace UnitTests.Services
             //Arrange
             int id = 1;// correct id
             var existingMailSubscriber = GetTestMailSubscribers().Find(c => c.Id == id);
-            mockMailSubscriberRepository.Setup(r => r.Get(t => t.Id == id)).Returns(existingMailSubscriber);
+            mockMailSubscriberRepository.Setup(r => r.Get(id)).Returns(existingMailSubscriber);
             mockMapper.Setup(x => x.Map<MailSubscriberDto>(It.IsAny<MailSubscriber>()))
                 .Returns(GetTestMailSubscriberDtos().Find(c => c.Id == id));
-            mockMailSubscriptionRepository.Setup(ms => ms.Get(s => s.Id == id)).Returns(new MailSubscription());
             mockMapper.Setup(x => x.Map<MailSubscriptionDto>(It.IsAny<MailSubscription>())).Returns(new MailSubscriptionDto());
             MailSubscriberDto mailSubscriberDto = null;
 
@@ -131,7 +129,7 @@ namespace UnitTests.Services
         {
             //Arrange
             int id = int.MaxValue - 1;// wrong id
-            mockMailSubscriberRepository.Setup(r => r.Get(t => t.Id == id)).Returns(value: null);
+            mockMailSubscriberRepository.Setup(r => r.Get(id)).Returns(value: null);
             MailSubscriberDto mailSubscriberDto = null;
 
             try

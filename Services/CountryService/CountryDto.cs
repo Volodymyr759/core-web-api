@@ -1,8 +1,7 @@
-﻿using CoreWebApi.Services.OfficeService;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace CoreWebApi.Services.CountryService
+namespace CoreWebApi.Services
 {
     public class CountryDto
     {

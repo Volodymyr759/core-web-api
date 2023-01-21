@@ -3,30 +3,25 @@ using CoreWebApi.Data;
 using CoreWebApi.Library.Enums;
 using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
-using CoreWebApi.Services.OfficeService;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-namespace CoreWebApi.Services.EmployeeService
+namespace CoreWebApi.Services
 {
     public class EmployeeService : IEmployeeService
     {
         private readonly IMapper mapper;
-        private readonly IRepository<Employee> employeeRepository;
-        private readonly IRepository<Office> officeRepository;
+        private readonly IRepository<Employee> repository;
 
         public EmployeeService(
             IMapper mapper,
-            IRepository<Employee> employeeRepository,
-            IRepository<Office> officeRepository)
+            IRepository<Employee> repository)
         {
             this.mapper = mapper;
-            this.employeeRepository = employeeRepository;
-            this.officeRepository = officeRepository;
+            this.repository = repository;
         }
 
         public async Task<SearchResult<EmployeeDto>> GetEmployeesSearchResultAsync(int limit, int page, string search, string sort_field, OrderType order)
@@ -39,7 +34,7 @@ namespace CoreWebApi.Services.EmployeeService
             Func<IQueryable<Employee>, IOrderedQueryable<Employee>> orderBy = null;
             orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Id) : orderBy = q => q.OrderByDescending(s => s.Id);
 
-            var employees = await employeeRepository.GetAllAsync(searchQuery, orderBy);
+            var employees = await repository.GetAllAsync(searchQuery, orderBy);
 
             return new SearchResult<EmployeeDto>
             {
@@ -53,31 +48,25 @@ namespace CoreWebApi.Services.EmployeeService
             };
         }
 
-        public EmployeeDto GetEmployeeById(int id)
-        {
-            var employeeDto = mapper.Map<EmployeeDto>(employeeRepository.Get(id));
-            if (employeeDto != null) employeeDto.OfficeDto = mapper.Map<OfficeDto>(officeRepository.Get(employeeDto.OfficeId));
-
-            return employeeDto;
-        }
+        public EmployeeDto GetEmployeeById(int id) => mapper.Map<EmployeeDto>(repository.Get(id));
 
         public EmployeeDto CreateEmployee(EmployeeDto employeeDto)
         {
             var employee = mapper.Map<Employee>(employeeDto);
 
-            return mapper.Map<EmployeeDto>(employeeRepository.Create(employee));
+            return mapper.Map<EmployeeDto>(repository.Create(employee));
         }
 
         public EmployeeDto UpdateEmployee(EmployeeDto employeeDto)
         {
             var employee = mapper.Map<Employee>(employeeDto);
 
-            return mapper.Map<EmployeeDto>(employeeRepository.Update(employee));
+            return mapper.Map<EmployeeDto>(repository.Update(employee));
         }
 
         public EmployeeDto DeleteEmployee(int id)
         {
-            return mapper.Map<EmployeeDto>(employeeRepository.Delete(id));
+            return mapper.Map<EmployeeDto>(repository.Delete(id));
         }
     }
 }

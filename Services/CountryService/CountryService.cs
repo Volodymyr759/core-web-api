@@ -1,11 +1,14 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
+using CoreWebApi.Library.Enums;
+using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
-namespace CoreWebApi.Services.CountryService
+namespace CoreWebApi.Services
 {
     public class CountryService : ICountryService
     {
@@ -18,19 +21,27 @@ namespace CoreWebApi.Services.CountryService
             this.repository = repository;
         }
 
-        public IEnumerable<CountryDto> GetAllCountries(int page, string sort, int limit = 10)
+        public async Task<SearchResult<CountryDto>> GetCountriesSearchResultAsync(int limit, int page, OrderType order)
         {
             // sorting only by Name
             Func<IQueryable<Country>, IOrderedQueryable<Country>> orderBy = null;
-            orderBy = sort == "asc" ? q => q.OrderBy(s => s.Name) : orderBy = q => q.OrderByDescending(s => s.Name);
+            orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Name) : orderBy = q => q.OrderByDescending(s => s.Name);
 
-            return mapper.Map<IEnumerable<CountryDto>>(repository.GetAll(limit, page, null, orderBy));
+            var countries = await repository.GetAllAsync(null, orderBy);
+
+            return new SearchResult<CountryDto>
+            {
+                CurrentPageNumber = page,
+                Order = order,
+                PageSize = limit,
+                PageCount = Convert.ToInt32(Math.Ceiling((double)countries.Count() / limit)),
+                SearchCriteria = "",
+                TotalItemCount = countries.Count(),
+                ItemList = (List<CountryDto>)mapper.Map<IEnumerable<CountryDto>>(countries.Skip((page - 1) * limit).Take(limit))
+            };
         }
 
-        public CountryDto GetCountryById(int id)
-        {
-            return mapper.Map<CountryDto>(repository.Get(t => t.Id == id));
-        }
+        public CountryDto GetCountryById(int id) => mapper.Map<CountryDto>(repository.Get(id));
 
         public CountryDto CreateCountry(CountryDto countryDto)
         {
@@ -41,14 +52,10 @@ namespace CoreWebApi.Services.CountryService
 
         public CountryDto UpdateCountry(CountryDto countryDto)
         {
-            var country = mapper.Map<Country>(countryDto);
-
-            return mapper.Map<CountryDto>(repository.Update(country));
+            repository.Update(mapper.Map<Country>(countryDto));
+            return countryDto;
         }
 
-        public CountryDto DeleteCountry(int id)
-        {
-            return mapper.Map<CountryDto>(repository.Delete(id));
-        }
+        public CountryDto DeleteCountry(int id) => mapper.Map<CountryDto>(repository.Delete(id));
     }
 }

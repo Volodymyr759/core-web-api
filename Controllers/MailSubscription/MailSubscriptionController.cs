@@ -1,12 +1,12 @@
-﻿using CoreWebApi.Services.MailSubscriptionService;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using CoreWebApi.Library.ResponseError;
 using CoreWebApi.Library.Enums;
 using System.Threading.Tasks;
+using CoreWebApi.Services;
 
-namespace CoreWebApi.Controllers.MailSubscription
+namespace CoreWebApi.Controllers
 {
     [ApiController, Authorize, Produces("application/json"), Route("api/[controller]/[action]"), ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public class MailSubscriptionController : ControllerBase

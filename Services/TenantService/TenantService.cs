@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace CoreWebApi.Services.TenantService
+namespace CoreWebApi.Services
 {
     public class TenantService : ITenantService
     {
@@ -32,10 +32,7 @@ namespace CoreWebApi.Services.TenantService
             return mapper.Map<IEnumerable<TenantDto>>(repository.GetAll(limit, page, searchQuery, orderBy));
         }
 
-        public TenantDto GetTenantById(int id)
-        {
-            return mapper.Map<TenantDto>(repository.Get(t => t.Id == id));
-        }
+        public TenantDto GetTenantById(int id) => mapper.Map<TenantDto>(repository.Get(id));
 
         public TenantDto CreateTenant(CreateTenantDto createTenantDto)
         {

@@ -2,7 +2,7 @@
 using CoreWebApi.Library.SearchResult;
 using System.Threading.Tasks;
 
-namespace CoreWebApi.Services.CompanyServiceBL
+namespace CoreWebApi.Services
 {
     public interface ICompanyServiceBL
     {

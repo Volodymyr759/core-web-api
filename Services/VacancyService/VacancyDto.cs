@@ -1,10 +1,7 @@
-﻿using CoreWebApi.Services.CandidateService;
-using CoreWebApi.Services.OfficeService;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace CoreWebApi.Services.VacancyService
+namespace CoreWebApi.Services
 {
     public class VacancyDto
     {
@@ -19,7 +16,7 @@ namespace CoreWebApi.Services.VacancyService
 
         public int Previews { get; set; } = 0;
 
-        public Boolean IsActive { get; set; } = true;
+        public bool IsActive { get; set; } = true;
 
         public IEnumerable<CandidateDto> CandidateDtos { get; set; }
 

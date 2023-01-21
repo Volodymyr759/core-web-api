@@ -3,28 +3,24 @@ using CoreWebApi.Data;
 using CoreWebApi.Library.Enums;
 using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
-using CoreWebApi.Services.MailSubscriberService;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CoreWebApi.Services.MailSubscriptionService
+namespace CoreWebApi.Services
 {
     public class MailSubscriptionService : IMailSubscriptionService
     {
         private readonly IMapper mapper;
-        private readonly IRepository<MailSubscription> subscriptionRepository;
-        private readonly IRepository<MailSubscriber> subscriberRepository;
+        private readonly IRepository<MailSubscription> repository;
 
         public MailSubscriptionService(
             IMapper mapper,
-            IRepository<MailSubscription> subscriptionRepository,
-            IRepository<MailSubscriber> subscriberRepository)
+            IRepository<MailSubscription> repository)
         {
             this.mapper = mapper;
-            this.subscriptionRepository = subscriptionRepository;
-            this.subscriberRepository = subscriberRepository;
+            this.repository = repository;
         }
 
         public async Task<SearchResult<MailSubscriptionDto>> GetMailSubscriptionsSearchResultAsync(int limit, int page, OrderType order)
@@ -33,7 +29,7 @@ namespace CoreWebApi.Services.MailSubscriptionService
             Func<IQueryable<MailSubscription>, IOrderedQueryable<MailSubscription>> orderBy = null;
             orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Title) : orderBy = q => q.OrderByDescending(s => s.Title);
 
-            var mailSubscriptions = await subscriptionRepository.GetAllAsync(null, orderBy);
+            var mailSubscriptions = await repository.GetAllAsync(null, orderBy);
 
             return new SearchResult<MailSubscriptionDto>
             {
@@ -47,31 +43,22 @@ namespace CoreWebApi.Services.MailSubscriptionService
             };
         }
 
-        public MailSubscriptionDto GetMailSubscriptionById(int id)
-        {
-            var subscriptionDto = mapper.Map<MailSubscriptionDto>(subscriptionRepository.Get(t => t.Id == id));
-            subscriptionDto.MailSubscriberDtos = mapper.Map<IEnumerable<MailSubscriberDto>>(subscriberRepository.GetAll());
-
-            return subscriptionDto;
-        }
+        public MailSubscriptionDto GetMailSubscriptionById(int id) => mapper.Map<MailSubscriptionDto>(repository.Get(id));
 
         public MailSubscriptionDto CreateMailSubscription(MailSubscriptionDto mailSubscriptionDto)
         {
             var subscription = mapper.Map<MailSubscription>(mailSubscriptionDto);
 
-            return mapper.Map<MailSubscriptionDto>(subscriptionRepository.Create(subscription));
+            return mapper.Map<MailSubscriptionDto>(repository.Create(subscription));
         }
 
         public MailSubscriptionDto UpdateMailSubscription(MailSubscriptionDto mailSubscriptionDto)
         {
             var subscription = mapper.Map<MailSubscription>(mailSubscriptionDto);
 
-            return mapper.Map<MailSubscriptionDto>(subscriptionRepository.Update(subscription));
+            return mapper.Map<MailSubscriptionDto>(repository.Update(subscription));
         }
 
-        public MailSubscriptionDto DeleteMailSubscription(int id)
-        {
-            return mapper.Map<MailSubscriptionDto>(subscriptionRepository.Delete(id));
-        }
+        public MailSubscriptionDto DeleteMailSubscription(int id) => mapper.Map<MailSubscriptionDto>(repository.Delete(id));
     }
 }

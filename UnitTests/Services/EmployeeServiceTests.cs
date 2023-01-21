@@ -3,8 +3,7 @@ using CoreWebApi.Data;
 using CoreWebApi.Library.Enums;
 using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
-using CoreWebApi.Services.EmployeeService;
-using CoreWebApi.Services.OfficeService;
+using CoreWebApi.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
@@ -19,8 +18,7 @@ namespace UnitTests.Services
         #region Private Members
 
         private string errorMessage;
-        private Mock<IRepository<Employee>> mockEmployeeRepository;
-        private Mock<IRepository<Office>> mockOfficeRepository;
+        private Mock<IRepository<Employee>> mockRepository;
         private Mock<IMapper> mockMapper;
         private EmployeeService employeeService;
 
@@ -32,13 +30,12 @@ namespace UnitTests.Services
         public void EmployeeServiceTestsInitialize()
         {
             errorMessage = "";
-            mockEmployeeRepository = new Mock<IRepository<Employee>>();
-            mockOfficeRepository = new Mock<IRepository<Office>>();
+            mockRepository = new Mock<IRepository<Employee>>();
             mockMapper = new Mock<IMapper>();
             employeeService = new EmployeeService(
                 mockMapper.Object,
-                mockEmployeeRepository.Object,
-                mockOfficeRepository.Object);
+                mockRepository.Object
+                );
         }
 
         [TestCleanup()]
@@ -75,7 +72,7 @@ namespace UnitTests.Services
             SearchResult<EmployeeDto> searchResult = null;
             int page = 1;
             int limit = 3;
-            mockEmployeeRepository.Setup(repo => repo.GetAllAsync(null, null)).ReturnsAsync(GetTestEmployees());
+            mockRepository.Setup(repo => repo.GetAllAsync(null, null)).ReturnsAsync(GetTestEmployees());
             mockMapper.Setup(x => x.Map<IEnumerable<EmployeeDto>>(It.IsAny<IEnumerable<Employee>>())).Returns(GetTestEmployeeDtos());
 
             try
@@ -100,9 +97,8 @@ namespace UnitTests.Services
             //Arrange
             int id = 1;// correct id
             var existingEmployee = GetTestEmployees().Find(c => c.Id == id);
-            mockEmployeeRepository.Setup(e => e.Get(e => e.Id == id)).Returns(existingEmployee);
+            mockRepository.Setup(e => e.Get(id)).Returns(existingEmployee);
             mockMapper.Setup(x => x.Map<EmployeeDto>(It.IsAny<Employee>())).Returns(GetTestEmployeeDtos().Find(e => e.Id == id));
-            mockOfficeRepository.Setup(r => r.Get(t => t.Id == id)).Returns(new Office());
             mockMapper.Setup(x => x.Map<OfficeDto>(It.IsAny<Office>())).Returns(new OfficeDto());
 
             EmployeeDto employeeDto = null;
@@ -120,7 +116,6 @@ namespace UnitTests.Services
             //Assert
             Assert.IsNotNull(employeeDto, errorMessage);
             Assert.IsInstanceOfType(employeeDto, typeof(EmployeeDto), errorMessage);
-            Assert.IsNotNull(employeeDto.OfficeDto, errorMessage);
         }
 
         [TestMethod]
@@ -128,7 +123,7 @@ namespace UnitTests.Services
         {
             //Arrange
             int id = int.MaxValue - 1;// wrong id
-            mockEmployeeRepository.Setup(r => r.Get(t => t.Id == id)).Returns(value: null);
+            mockRepository.Setup(r => r.Get(id)).Returns(value: null);
             EmployeeDto employeeDto = null;
 
             // Act
@@ -153,7 +148,7 @@ namespace UnitTests.Services
             var newEmployeeDto = new EmployeeDto() { FullName = "John Done", Email = "john@gmail.com", Position = "CEO", Description = "CEO description", AvatarUrl = "https://www.somewhere.com/1", OfficeId = 1 }; ;
             mockMapper.Setup(x => x.Map<Employee>(It.IsAny<EmployeeDto>())).Returns(new Employee());
             // pass the instance to repo, which should return model with created id:
-            mockEmployeeRepository.Setup(r => r.Create(new Employee())).Returns(new Employee()
+            mockRepository.Setup(r => r.Create(new Employee())).Returns(new Employee()
             {
                 FullName = newEmployeeDto.FullName,
                 Email = newEmployeeDto.Email,
@@ -197,7 +192,7 @@ namespace UnitTests.Services
             //Arrange the same scenario like in 'Create' method
             var employeeDtoToUpdate = new EmployeeDto() { Id = 1, FullName = "John Done", Email = "john@gmail.com", Position = "CEO", Description = "CEO description", AvatarUrl = "https://www.somewhere.com/1", OfficeId = 1 };
             mockMapper.Setup(x => x.Map<Employee>(It.IsAny<EmployeeDto>())).Returns(new Employee());
-            mockEmployeeRepository.Setup(r => r.Update(new Employee())).Returns(new Employee()
+            mockRepository.Setup(r => r.Update(new Employee())).Returns(new Employee()
             {
                 Id = int.MaxValue,
                 FullName = employeeDtoToUpdate.FullName,
@@ -241,7 +236,7 @@ namespace UnitTests.Services
             // Arrange scenario:
             // service gets id and passes it to the repo:
             int id = 3;
-            mockEmployeeRepository.Setup(r => r.Delete(id)).Returns(GetTestEmployees().Find(c => c.Id == id));
+            mockRepository.Setup(r => r.Delete(id)).Returns(GetTestEmployees().Find(c => c.Id == id));
             // since repo.delete(int id) returns origin Employee-object - possible to map it to dto and give it back:
             mockMapper.Setup(x => x.Map<EmployeeDto>(It.IsAny<Employee>())).Returns(GetTestEmployeeDtos().Find(c => c.Id == id));
 

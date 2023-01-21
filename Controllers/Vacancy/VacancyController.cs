@@ -1,10 +1,12 @@
-﻿using CoreWebApi.Library.ResponseError;
-using CoreWebApi.Services.VacancyService;
+﻿using CoreWebApi.Library.Enums;
+using CoreWebApi.Library.ResponseError;
+using CoreWebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
-namespace CoreWebApi.Controllers.Vacancy
+namespace CoreWebApi.Controllers
 {
     [ApiController, Authorize, Produces("application/json"), Route("api/[controller]/[action]"), ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public class VacancyController : ControllerBase
@@ -23,25 +25,41 @@ namespace CoreWebApi.Controllers.Vacancy
         /// <summary>
         /// Gets a list of VacancyDto's with pagination params and values for search and sorting.
         /// </summary>
-        /// <param name="limit" default="10">number of items per page</param>
-        /// <param name="page" default="1">requested page</param>
+        /// <param name="limit">Number of items per page</param>
+        /// <param name="page">Requested page</param>
         /// <param name="search">part of Title for searching</param>
-        /// <param name="sort_field" default="id">field name for sorting</param>
-        /// <param name="sort" default="desc">sort direction: asc or desc</param>
+        /// <param name="sort_field">Field name for sorting</param>
+        /// <param name="order">sort direction: 0 - Ascending or 1 - Descending</param>
         /// <returns>Status 200 and list of VacancyDto's</returns>
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/Vacancy/GetAll/?limit=10&amp;page=1&amp;search=j&amp;sort_field=Id&amp;sort=desc
+        ///     GET /api/Vacancy/get/?limit=10;page=1;search=;sort_field=Idorder=0
         ///     
         /// </remarks>
         /// <response code="200">list of VacancyDto's</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult GetAll(int limit = 10, int page = 1, string search = "", string sort_field = "Id", string sort = "desc")
-        {
-            return Ok(vacancyService.GetAllVacancies(limit, page, search, sort_field, sort));
-        }
+        public async Task<IActionResult> GetAsync(int limit, int page, string search, string sort_field, OrderType order) =>
+            Ok(await vacancyService.GetVacanciesSearchResultAsync(limit, page, search, sort_field, order));
+
+        /// <summary>
+        /// Gets a list of VacancyDto's for public pages.
+        /// </summary>
+        /// <param name="page">Requested page</param>
+        /// <returns>Status 200 and list of VacancyDto's</returns>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET /api/Vacancy/getpublic/?limit=10;page=1;search=;sort_field=Idorder=0
+        ///     
+        /// </remarks>
+        /// <response code="200">list of VacancyDto's</response>
+        [HttpGet]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetPublicAsync(int page) =>
+            Ok(await vacancyService.GetVacanciesSearchResultAsync(limit: 10, page, search: "", sort_field: "Id", order: OrderType.Descending));
 
         /// <summary>
         /// Gets a specific VacancyDto Item.

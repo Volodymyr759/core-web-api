@@ -3,7 +3,7 @@ using CoreWebApi.Data;
 using CoreWebApi.Library.Enums;
 using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
-using CoreWebApi.Services.CompanyServiceBL;
+using CoreWebApi.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
@@ -98,7 +98,7 @@ namespace UnitTests.Services
             //Arrange
             int id = 1;// correct id
             var existingCompanyService = ((List<CompanyService>)GetTestCompanyServices()).Find(c => c.Id == id);
-            mockCompanyServiceRepository.Setup(r => r.Get(t => t.Id == id)).Returns(existingCompanyService);
+            mockCompanyServiceRepository.Setup(r => r.Get(id)).Returns(existingCompanyService);
             mockMapper.Setup(x => x.Map<CompanyServiceDto>(It.IsAny<CompanyService>()))
                 .Returns(((List<CompanyServiceDto>)GetTestCompanyServiceDtos()).Find(c => c.Id == id));
             CompanyServiceDto companyServiceDto = null;
@@ -123,7 +123,7 @@ namespace UnitTests.Services
         {
             //Arrange
             int id = int.MaxValue - 1;// wrong id
-            mockCompanyServiceRepository.Setup(r => r.Get(t => t.Id == id)).Returns(value: null);
+            mockCompanyServiceRepository.Setup(r => r.Get(id)).Returns(value: null);
             CompanyServiceDto companyServiceDto = null;
 
             try

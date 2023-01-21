@@ -1,35 +1,30 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
+using CoreWebApi.Library.Enums;
+using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
-using CoreWebApi.Services.CandidateService;
-using CoreWebApi.Services.OfficeService;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
-namespace CoreWebApi.Services.VacancyService
+namespace CoreWebApi.Services
 {
     public class VacancyService : IVacancyService
     {
         private readonly IMapper mapper;
-        private readonly IRepository<Vacancy> vacancyRepository;
-        private readonly IRepository<Office> officeRepository;
-        private readonly IRepository<Candidate> candidateRepository;
+        private readonly IRepository<Vacancy> repository;
 
         public VacancyService(
             IMapper mapper,
-            IRepository<Vacancy> vacancyRepository,
-            IRepository<Office> officeRepository,
-            IRepository<Candidate> candidateRepository)
+            IRepository<Vacancy> repository)
         {
             this.mapper = mapper;
-            this.vacancyRepository = vacancyRepository;
-            this.officeRepository = officeRepository;
-            this.candidateRepository = candidateRepository;
+            this.repository = repository;
         }
 
-        public IEnumerable<VacancyDto> GetAllVacancies(int limit, int page, string search, string sort_field, string sort)
+        public async Task<SearchResult<VacancyDto>> GetVacanciesSearchResultAsync(int limit, int page, string search, string sort_field, OrderType order)
         {
             // search by Title
             Expression<Func<Vacancy, bool>> searchQuery = null;
@@ -37,40 +32,38 @@ namespace CoreWebApi.Services.VacancyService
 
             // sorting - newest first
             Func<IQueryable<Vacancy>, IOrderedQueryable<Vacancy>> orderBy = null;
-            orderBy = sort == "asc" ? q => q.OrderBy(s => s.Id) : orderBy = q => q.OrderByDescending(s => s.Id);
+            orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Id) : orderBy = q => q.OrderByDescending(s => s.Id);
 
-            return mapper.Map<IEnumerable<VacancyDto>>(vacancyRepository.GetAll(limit, page, searchQuery, orderBy));
-        }
+            var vacancies = await repository.GetAllAsync(searchQuery, orderBy);
 
-        public VacancyDto GetVacancyById(int id)
-        {
-            var vacancyDto = mapper.Map<VacancyDto>(vacancyRepository.Get(id));
-            if (vacancyDto != null)
+            return new SearchResult<VacancyDto>
             {
-                vacancyDto.CandidateDtos = mapper.Map<IEnumerable<CandidateDto>>(candidateRepository.GetAll().Where(c => c.VacancyId == vacancyDto.Id));
-                vacancyDto.OfficeDto = mapper.Map<OfficeDto>(officeRepository.Get(vacancyDto.OfficeId));
-            }
-
-            return vacancyDto;
+                CurrentPageNumber = page,
+                Order = order,
+                PageSize = limit,
+                PageCount = Convert.ToInt32(Math.Ceiling((double)vacancies.Count() / limit)),
+                SearchCriteria = string.Empty,
+                TotalItemCount = vacancies.Count(),
+                ItemList = (List<VacancyDto>)mapper.Map<IEnumerable<VacancyDto>>(vacancies.Skip((page - 1) * limit).Take(limit))
+            };
         }
+
+        public VacancyDto GetVacancyById(int id) => mapper.Map<VacancyDto>(repository.Get(id));
 
         public VacancyDto CreateVacancy(VacancyDto vacancyDto)
         {
             var vacancy = mapper.Map<Vacancy>(vacancyDto);
 
-            return mapper.Map<VacancyDto>(vacancyRepository.Create(vacancy));
+            return mapper.Map<VacancyDto>(repository.Create(vacancy));
         }
 
         public VacancyDto UpdateVacancy(VacancyDto vacancyDto)
         {
             var vacancy = mapper.Map<Vacancy>(vacancyDto);
 
-            return mapper.Map<VacancyDto>(vacancyRepository.Update(vacancy));
+            return mapper.Map<VacancyDto>(repository.Update(vacancy));
         }
 
-        public VacancyDto DeleteVacancy(int id)
-        {
-            return mapper.Map<VacancyDto>(vacancyRepository.Delete(id));
-        }
+        public VacancyDto DeleteVacancy(int id) => mapper.Map<VacancyDto>(repository.Delete(id));
     }
 }

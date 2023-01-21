@@ -1,12 +1,11 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
 using CoreWebApi.Models;
-using CoreWebApi.Services.MailSubscriptionService;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CoreWebApi.Services.MailSubscriberService
+namespace CoreWebApi.Services
 {
     public class MailSubscriberService : IMailSubscriberService
     {

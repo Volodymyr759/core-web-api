@@ -1,5 +1,5 @@
-﻿using CoreWebApi.Controllers.Employee;
-using CoreWebApi.Services.EmployeeService;
+﻿using CoreWebApi.Controllers;
+using CoreWebApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;

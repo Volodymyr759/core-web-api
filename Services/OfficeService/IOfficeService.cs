@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using CoreWebApi.Library.Enums;
+using CoreWebApi.Library.SearchResult;
+using System.Threading.Tasks;
 
-namespace CoreWebApi.Services.OfficeService
+namespace CoreWebApi.Services
 {
     public interface IOfficeService
     {
-        IEnumerable<OfficeDto> GetAllOffices(int page, string sort, int limit);
+        Task<SearchResult<OfficeDto>> GetOfficesSearchResultAsync(int limit, int page, OrderType order);
         OfficeDto GetOfficeById(int id);
         OfficeDto CreateOffice(OfficeDto officeDto);
         OfficeDto UpdateOffice(OfficeDto officeDto);

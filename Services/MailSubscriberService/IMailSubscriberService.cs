@@ -1,7 +1,6 @@
-﻿using CoreWebApi.Services.MailSubscriptionService;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace CoreWebApi.Services.MailSubscriberService
+namespace CoreWebApi.Services
 {
     public interface IMailSubscriberService
     {

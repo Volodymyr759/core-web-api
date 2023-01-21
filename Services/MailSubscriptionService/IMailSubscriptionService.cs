@@ -1,9 +1,8 @@
 ﻿using CoreWebApi.Library.Enums;
 using CoreWebApi.Library.SearchResult;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace CoreWebApi.Services.MailSubscriptionService
+namespace CoreWebApi.Services
 {
     public interface IMailSubscriptionService
     {

@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using CoreWebApi.Library.Enums;
+using CoreWebApi.Library.SearchResult;
+using System.Threading.Tasks;
 
-namespace CoreWebApi.Services.CandidateService
+namespace CoreWebApi.Services
 {
     public interface ICandidateService
     {
-        IEnumerable<CandidateDto> GetAllCandidates(int limit, int page, string search, string sort_field, string sort);
+        Task<SearchResult<CandidateDto>> GetCandidatesSearchResultAsync(int limit, int page, string search, string sort_field, OrderType order);
         CandidateDto GetCandidateById(int id);
         CandidateDto CreateCandidate(CandidateDto candidateDto);
         CandidateDto UpdateCandidate(CandidateDto candidateDto);

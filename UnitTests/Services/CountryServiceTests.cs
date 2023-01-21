@@ -1,11 +1,13 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
+using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
-using CoreWebApi.Services.CountryService;
+using CoreWebApi.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace UnitTests.Services
 {
@@ -16,7 +18,7 @@ namespace UnitTests.Services
 
         private string errorMessage;
 
-        private Mock<IRepository<Country>> mockCountryRepository;
+        private Mock<IRepository<Country>> mockRepository;
 
         private Mock<IMapper> mockMapper;
 
@@ -30,9 +32,9 @@ namespace UnitTests.Services
         public void CountryServiceTestsInitialize()
         {
             errorMessage = "";
-            mockCountryRepository = new Mock<IRepository<Country>>();
+            mockRepository = new Mock<IRepository<Country>>();
             mockMapper = new Mock<IMapper>();
-            countryService = new CountryService(mockMapper.Object, mockCountryRepository.Object);
+            countryService = new CountryService(mockMapper.Object, mockRepository.Object);
         }
 
         [TestCleanup()]
@@ -62,19 +64,19 @@ namespace UnitTests.Services
         #endregion
 
         [TestMethod]
-        public void GetAllCountries_ReturnsListOfCountries()
+        public async Task GetCoutriesSearchResultAsync_ReturnsSearchResultWithCoutries()
         {
             //Arrange
-            IEnumerable<CountryDto> countryDtos = null;
-            int page = 1;
+            SearchResult<CountryDto> searchResult = null;
             int limit = 3;
-            mockCountryRepository.Setup(repo => repo.GetAll()).Returns(GetTestCountries());
+            int page = 1;
+            mockRepository.Setup(repo => repo.GetAllAsync(null, null)).ReturnsAsync(GetTestCountries());
             mockMapper.Setup(x => x.Map<IEnumerable<CountryDto>>(It.IsAny<IEnumerable<Country>>())).Returns(GetTestCountryDtos());
 
             try
             {
                 // Act
-                countryDtos = countryService.GetAllCountries(page, "asc", limit);
+                searchResult = await countryService.GetCountriesSearchResultAsync(limit, page, 0);
             }
             catch (Exception ex)
             {
@@ -82,9 +84,9 @@ namespace UnitTests.Services
             }
 
             //Assert
-            Assert.IsNotNull(countryDtos, errorMessage);
-            Assert.IsTrue(((List<CountryDto>)countryDtos).Count == limit, errorMessage);
-            Assert.IsInstanceOfType(countryDtos, typeof(IEnumerable<CountryDto>), errorMessage);
+            Assert.IsNotNull(searchResult, errorMessage);
+            Assert.IsTrue(searchResult.ItemList.Count == limit, errorMessage);
+            Assert.IsInstanceOfType(searchResult, typeof(SearchResult<CountryDto>), errorMessage);
         }
 
         [TestMethod]
@@ -93,9 +95,8 @@ namespace UnitTests.Services
             //Arrange
             int id = 1;// correct id
             var existingCountry = GetTestCountries().Find(c => c.Id == id);
-            mockCountryRepository.Setup(r => r.Get(t => t.Id == id)).Returns(existingCountry);
-            mockMapper.Setup(x => x.Map<CountryDto>(It.IsAny<Country>()))
-                .Returns(GetTestCountryDtos().Find(c => c.Id == id));
+            mockRepository.Setup(r => r.Get(id)).Returns(existingCountry);
+            mockMapper.Setup(x => x.Map<CountryDto>(It.IsAny<Country>())).Returns(GetTestCountryDtos().Find(c => c.Id == id));
             CountryDto countryDto = null;
 
             try
@@ -118,7 +119,7 @@ namespace UnitTests.Services
         {
             //Arrange
             int id = int.MaxValue - 1;// wrong id
-            mockCountryRepository.Setup(r => r.Get(t => t.Id == id)).Returns(value: null);
+            mockRepository.Setup(r => r.Get(id)).Returns(value: null);
             CountryDto countryDto = null;
 
             try
@@ -143,7 +144,7 @@ namespace UnitTests.Services
             var newCountryDto = new CountryDto() { Name = "France", Code = "FRA" };
             mockMapper.Setup(x => x.Map<Country>(It.IsAny<CountryDto>())).Returns(new Country());
             // pass the instance to repo, which should return model with created id:
-            mockCountryRepository.Setup(r => r.Create(new Country())).Returns(new Country()
+            mockRepository.Setup(r => r.Create(new Country())).Returns(new Country()
             {
                 Id = int.MaxValue,
                 Name = newCountryDto.Name,
@@ -181,7 +182,7 @@ namespace UnitTests.Services
             // the same scenario like in 'Create' method
             var countryDtoToUpdate = new CountryDto() { Id = 1, Name = "Bulgary", Code = "BUL" };
             mockMapper.Setup(x => x.Map<Country>(It.IsAny<CountryDto>())).Returns(new Country());
-            mockCountryRepository.Setup(r => r.Update(new Country())).Returns(new Country()
+            mockRepository.Setup(r => r.Update(new Country())).Returns(new Country()
             {
                 Id = countryDtoToUpdate.Id,
                 Name = countryDtoToUpdate.Name,
@@ -217,7 +218,7 @@ namespace UnitTests.Services
             // Arrange scenario:
             // service gets id and passes it to the repo:
             int id = 3;
-            mockCountryRepository.Setup(r => r.Delete(id)).Returns(GetTestCountries().Find(c => c.Id == id));
+            mockRepository.Setup(r => r.Delete(id)).Returns(GetTestCountries().Find(c => c.Id == id));
             // since repo.delete(int id) returns origin Country-object - possible to map it to dto object and give it back:
             mockMapper.Setup(x => x.Map<CountryDto>(It.IsAny<Country>())).Returns(GetTestCountryDtos().Find(c => c.Id == id));
 

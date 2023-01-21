@@ -1,11 +1,11 @@
 ﻿using CoreWebApi.Library.ResponseError;
-using CoreWebApi.Services.MailSubscriberService;
+using CoreWebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CoreWebApi.Controllers.MailSubscriber
+namespace CoreWebApi.Controllers
 {
     [ApiController, Authorize, Produces("application/json"), Route("api/[controller]/[action]"), ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public class MailSubscriberController : ControllerBase

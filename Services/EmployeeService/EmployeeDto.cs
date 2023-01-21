@@ -1,7 +1,6 @@
-﻿using CoreWebApi.Services.OfficeService;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace CoreWebApi.Services.EmployeeService
+namespace CoreWebApi.Services
 {
     public class EmployeeDto
     {

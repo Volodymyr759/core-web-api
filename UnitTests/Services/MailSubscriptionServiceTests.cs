@@ -3,7 +3,7 @@ using CoreWebApi.Data;
 using CoreWebApi.Library.Enums;
 using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
-using CoreWebApi.Services.MailSubscriptionService;
+using CoreWebApi.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
@@ -18,8 +18,7 @@ namespace UnitTests.Services
         #region Private Members
 
         private string errorMessage;
-        private Mock<IRepository<MailSubscription>> mockMailSubscriptionRepository;
-        private Mock<IRepository<MailSubscriber>> mockMailSubscriberRepository;
+        private Mock<IRepository<MailSubscription>> mockRepository;
         private Mock<IMapper> mockMapper;
         private MailSubscriptionService mailSubscriptionService;
 
@@ -31,13 +30,11 @@ namespace UnitTests.Services
         public void MailSubscriptionServiceTestsInitialize()
         {
             errorMessage = "";
-            mockMailSubscriptionRepository = new Mock<IRepository<MailSubscription>>();
-            mockMailSubscriberRepository = new Mock<IRepository<MailSubscriber>>();
+            mockRepository = new Mock<IRepository<MailSubscription>>();
             mockMapper = new Mock<IMapper>();
             mailSubscriptionService = new MailSubscriptionService(
                 mockMapper.Object,
-                mockMailSubscriptionRepository.Object,
-                mockMailSubscriberRepository.Object);
+                mockRepository.Object);
         }
 
         [TestCleanup()]
@@ -73,7 +70,7 @@ namespace UnitTests.Services
             SearchResult<MailSubscriptionDto> searchResult = null;
             int page = 1;
             int limit = 3;
-            mockMailSubscriptionRepository.Setup(repo => repo.GetAll()).Returns(GetTestMailSubscriptions());
+            mockRepository.Setup(repo => repo.GetAllAsync(null, null)).ReturnsAsync(GetTestMailSubscriptions());
             mockMapper.Setup(x => x.Map<IEnumerable<MailSubscriptionDto>>(It.IsAny<IEnumerable<MailSubscription>>())).Returns(GetTestMailSubscriptionDtos());
 
             try
@@ -99,7 +96,7 @@ namespace UnitTests.Services
             // The method should return MailSubscription (choosed by id) with list of subscribers (if any).
             int id = 1;// correct id
             var existingMailSubscription = ((List<MailSubscription>)GetTestMailSubscriptions()).Find(c => c.Id == id);
-            mockMailSubscriptionRepository.Setup(r => r.Get(t => t.Id == id)).Returns(existingMailSubscription);
+            mockRepository.Setup(r => r.Get(id)).Returns(existingMailSubscription);
             mockMapper.Setup(x => x.Map<MailSubscriptionDto>(It.IsAny<MailSubscription>()))
                 .Returns(((List<MailSubscriptionDto>)GetTestMailSubscriptionDtos()).Find(c => c.Id == id));
 
@@ -118,7 +115,6 @@ namespace UnitTests.Services
             //Assert
             Assert.IsNotNull(mailSubscriptionDto, errorMessage);
             Assert.IsInstanceOfType(mailSubscriptionDto, typeof(MailSubscriptionDto), errorMessage);
-            Assert.IsNotNull(mailSubscriptionDto.MailSubscriberDtos, errorMessage);
         }
 
         [TestMethod]
@@ -126,7 +122,7 @@ namespace UnitTests.Services
         {
             //Arrange
             int id = int.MaxValue - 1;// wrong id
-            mockMailSubscriptionRepository.Setup(r => r.Get(t => t.Id == id)).Returns(value: null);
+            mockRepository.Setup(r => r.Get(id)).Returns(value: null);
             MailSubscriptionDto mailSubscriptionDto = null;
 
             try
@@ -152,7 +148,7 @@ namespace UnitTests.Services
             var newMailSubscriptionDto = new MailSubscriptionDto() { Title = "New Test subscription", Content = "Content of new test subscription" };
             mockMapper.Setup(x => x.Map<MailSubscription>(It.IsAny<MailSubscriptionDto>())).Returns(new MailSubscription());
             // pass the instance to repo, which should return MailSubscription-model with created id:
-            mockMailSubscriptionRepository.Setup(r => r.Create(new MailSubscription())).Returns(new MailSubscription()
+            mockRepository.Setup(r => r.Create(new MailSubscription())).Returns(new MailSubscription()
             {
                 Id = int.MaxValue,
                 Title = newMailSubscriptionDto.Title,
@@ -190,7 +186,7 @@ namespace UnitTests.Services
             // the same scenario like in 'Create' method
             var mailSubscriptionDtoToUpdate = new MailSubscriptionDto() { Id = 1, Title = "New Test subscription", Content = "Content of new test subscription" };
             mockMapper.Setup(x => x.Map<MailSubscription>(It.IsAny<MailSubscriptionDto>())).Returns(new MailSubscription());
-            mockMailSubscriptionRepository.Setup(r => r.Update(new MailSubscription())).Returns(new MailSubscription()
+            mockRepository.Setup(r => r.Update(new MailSubscription())).Returns(new MailSubscription()
             {
                 Id = mailSubscriptionDtoToUpdate.Id,
                 Title = mailSubscriptionDtoToUpdate.Title,
@@ -226,7 +222,7 @@ namespace UnitTests.Services
             // Arrange scenario:
             // service gets id and passes it to the repo:
             int id = 3;
-            mockMailSubscriptionRepository.Setup(r => r.Delete(id)).Returns(((List<MailSubscription>)GetTestMailSubscriptions()).Find(c => c.Id == id));
+            mockRepository.Setup(r => r.Delete(id)).Returns(((List<MailSubscription>)GetTestMailSubscriptions()).Find(c => c.Id == id));
             // since repo.delete(int id) returns origin MailSubscription-object - possible to map it to dto object and give it back:
             mockMapper.Setup(x => x.Map<MailSubscriptionDto>(It.IsAny<MailSubscription>())).Returns(((List<MailSubscriptionDto>)GetTestMailSubscriptionDtos()).Find(c => c.Id == id));
 

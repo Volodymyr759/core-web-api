@@ -1,10 +1,12 @@
-﻿using CoreWebApi.Library.ResponseError;
-using CoreWebApi.Services.OfficeService;
+﻿using CoreWebApi.Library.Enums;
+using CoreWebApi.Library.ResponseError;
+using CoreWebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
-namespace CoreWebApi.Controllers.Office
+namespace CoreWebApi.Controllers
 {
     [ApiController, Authorize, Produces("application/json"), Route("api/[controller]/[action]"), ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public class OfficeController : ControllerBase
@@ -23,23 +25,41 @@ namespace CoreWebApi.Controllers.Office
         /// <summary>
         /// Gets a list of OfficeDto's with values for pagination (page number, limit) and sorting by Title.
         /// </summary>
-        /// <param name="page" default="1">requested page</param>
-        /// <param name="sort" default="asc">sort direction: asc or desc</param>
-        /// <param name="limit" default="10">number of items per page</param>
+        /// <param name="limit">Number of items per page</param>
+        /// <param name="page">Requested page</param>
+        /// <param name="order">sort direction: 0 - Ascending or 1 - Descending</param>
+        /// 
         /// <returns>Status 200 and list of OfficeDto's</returns>
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/Office/GetAll;page=1;sort=asc;limit=3
+        ///     GET /api/office/get?limit=3;page=1;order=0
         ///     
         /// </remarks>
         /// <response code="200">list of OfficeDto's</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult GetAll(int page = 1, string sort = "asc", int limit = 10)
-        {
-            return Ok(officeService.GetAllOffices(page, sort, limit));
-        }
+        public async Task<IActionResult> GetAsync(int limit, int page, OrderType order) =>
+            Ok(await officeService.GetOfficesSearchResultAsync(limit, page, order));
+
+        /// <summary>
+        /// Gets a list of OfficeDto's for public pages.
+        /// </summary>
+        /// <param name="page">Requested page</param>
+        /// 
+        /// <returns>Status 200 and list of OfficeDto's</returns>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET /api/office/getpublic?page=1
+        ///     
+        /// </remarks>
+        /// <response code="200">List of OfficeDto's</response>
+        [HttpGet]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetPublicAsync(int page) =>
+            Ok(await officeService.GetOfficesSearchResultAsync(limit: 3, page, order: OrderType.Ascending));
 
         /// <summary>
         /// Gets a specific OfficeDto Item.

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace CoreWebApi.Services.CompanyServiceBL
+namespace CoreWebApi.Services
 {
     public class CompanyServiceDto
     {

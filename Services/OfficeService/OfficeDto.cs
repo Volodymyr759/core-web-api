@@ -1,10 +1,7 @@
-﻿using CoreWebApi.Services.CountryService;
-using CoreWebApi.Services.EmployeeService;
-using CoreWebApi.Services.VacancyService;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace CoreWebApi.Services.OfficeService
+namespace CoreWebApi.Services
 {
     public class OfficeDto
     {

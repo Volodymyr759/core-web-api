@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace CoreWebApi.Services.TenantService
+namespace CoreWebApi.Services
 {
     public class CreateTenantDto
     {

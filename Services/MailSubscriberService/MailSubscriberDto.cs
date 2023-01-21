@@ -1,8 +1,7 @@
-﻿using CoreWebApi.Services.MailSubscriptionService;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace CoreWebApi.Services.MailSubscriberService
+namespace CoreWebApi.Services
 {
     public class MailSubscriberDto
     {
