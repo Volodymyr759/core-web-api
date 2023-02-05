@@ -98,7 +98,7 @@ namespace CoreWebApi
 
             services.AddCors(options => options.AddPolicy("Cors", builder =>
             {
-                builder.WithOrigins("https://localhost:3000")
+                builder.WithOrigins("https://localhost:3000", "http://localhost:3000")
                 .AllowAnyOrigin()
                 .AllowAnyMethod()
                 .AllowAnyHeader();
