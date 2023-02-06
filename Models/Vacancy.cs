@@ -18,7 +18,7 @@ namespace CoreWebApi.Models
 
         public int Previews { get; set; } = 0;
 
-        public Boolean IsActive { get; set; } = true;
+        public bool IsActive { get; set; } = true;
 
         public virtual ICollection<Candidate> Candidates { get; set; }
 

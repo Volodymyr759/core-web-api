@@ -19,7 +19,7 @@ namespace CoreWebApi.Models
 
         public string Notes { get; set; }
 
-        public Boolean IsDismissed { get; set; } = false;
+        public bool IsDismissed { get; set; } = false;
 
         [Required(ErrorMessage = "JoinedAt date is required.")]
         public DateTime JoinedAt { get; set; }

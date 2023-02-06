@@ -43,9 +43,8 @@ namespace CoreWebApi.Services
                 .ForMember(dest => dest.CandidateDtos, act => act.MapFrom(src => src.Candidates))
                 .ForMember(dest => dest.OfficeDto, act => act.MapFrom(src => new OfficeDto()
                 {
-                    Id = src.Id,
+                    Id = src.OfficeId,
                     Name = src.Office.Name,
-                    Description = "",
                     Address = src.Office.Address
                 }));
 

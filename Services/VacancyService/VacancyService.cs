@@ -24,17 +24,23 @@ namespace CoreWebApi.Services
             this.repository = repository;
         }
 
-        public async Task<SearchResult<VacancyDto>> GetVacanciesSearchResultAsync(int limit, int page, string search, string sort_field, OrderType order)
+        public async Task<SearchResult<VacancyDto>> GetVacanciesSearchResultAsync(int limit, int page, string search, VacancyStatus? vacancyStatus, int? officeId, string sort_field, OrderType order)
         {
             // search by Title
             Expression<Func<Vacancy, bool>> searchQuery = null;
-            if (search.Trim().Length > 0) searchQuery = t => t.Title.Contains(search);
+            if (!string.IsNullOrEmpty(search)) searchQuery = t => t.Title.Contains(search);
 
             // sorting - newest first
             Func<IQueryable<Vacancy>, IOrderedQueryable<Vacancy>> orderBy = null;
             orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Id) : orderBy = q => q.OrderByDescending(s => s.Id);
 
             var vacancies = await repository.GetAllAsync(searchQuery, orderBy);
+            if (vacancyStatus != null)
+            {
+                if (vacancyStatus == VacancyStatus.Active) vacancies = vacancies.Where(v => v.IsActive == true);
+                else vacancies = vacancies.Where(v => v.IsActive == false);
+            }
+            if (officeId != null) vacancies = vacancies.Where(v => v.OfficeId == officeId);
 
             return new SearchResult<VacancyDto>
             {
@@ -42,7 +48,7 @@ namespace CoreWebApi.Services
                 Order = order,
                 PageSize = limit,
                 PageCount = Convert.ToInt32(Math.Ceiling((double)vacancies.Count() / limit)),
-                SearchCriteria = string.Empty,
+                SearchCriteria = search ?? string.Empty,
                 TotalItemCount = vacancies.Count(),
                 ItemList = (List<VacancyDto>)mapper.Map<IEnumerable<VacancyDto>>(vacancies.Skip((page - 1) * limit).Take(limit))
             };

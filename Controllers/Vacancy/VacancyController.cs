@@ -28,6 +28,8 @@ namespace CoreWebApi.Controllers
         /// <param name="limit">Number of items per page</param>
         /// <param name="page">Requested page</param>
         /// <param name="search">part of Title for searching</param>
+        /// <param name="vacancyStatus">Filter for isActive property: 0 - Active, 1 - Disabled, 2 - All</param>
+        /// <param name="officeId">Filter vacancies by OfficeId</param>
         /// <param name="sort_field">Field name for sorting</param>
         /// <param name="order">sort direction: 0 - Ascending or 1 - Descending</param>
         /// <returns>Status 200 and list of VacancyDto's</returns>
@@ -40,26 +42,29 @@ namespace CoreWebApi.Controllers
         /// <response code="200">list of VacancyDto's</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAsync(int limit, int page, string search, string sort_field, OrderType order) =>
-            Ok(await vacancyService.GetVacanciesSearchResultAsync(limit, page, search, sort_field, order));
+        public async Task<IActionResult> GetAsync(int limit, int page, string search, VacancyStatus vacancyStatus, int officeId, string sort_field, OrderType order) =>
+            Ok(await vacancyService.GetVacanciesSearchResultAsync(limit, page, search, vacancyStatus, officeId, sort_field, order));
 
         /// <summary>
         /// Gets a list of VacancyDto's for public pages.
         /// </summary>
         /// <param name="page">Requested page</param>
+        /// <param name="search">Search string to find the vacancy by title</param>
+        /// <param name="vacancyStatus">Filter for isActive property: 0 - Active, 1 - Disabled, 2 - All</param>
+        /// <param name="officeId">Filter vacancies by OfficeId</param>
         /// <returns>Status 200 and list of VacancyDto's</returns>
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/Vacancy/getpublic/?limit=10;page=1;search=;sort_field=Idorder=0
+        ///     GET /api/Vacancy/getpublic/?page=1;search=;vacancyStatus=0office=3
         ///     
         /// </remarks>
         /// <response code="200">list of VacancyDto's</response>
         [HttpGet]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetPublicAsync(int page) =>
-            Ok(await vacancyService.GetVacanciesSearchResultAsync(limit: 10, page, search: "", sort_field: "Id", order: OrderType.Descending));
+        public async Task<IActionResult> GetPublicAsync(int page, string search, VacancyStatus? vacancyStatus, int? officeId ) =>
+            Ok(await vacancyService.GetVacanciesSearchResultAsync(limit: 9, page, search, vacancyStatus, officeId, sort_field: "Id", order: OrderType.Descending));
 
         /// <summary>
         /// Gets a specific VacancyDto Item.
