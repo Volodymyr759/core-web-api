@@ -34,7 +34,7 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/employee/getall/?limit=10&amp;page=1&amp;search=j&amp;sort_field=Id&amp;sort=desc
+        ///     GET /api/employee/get/?limit=10&amp;page=1&amp;search=j&amp;sort_field=Id&amp;sort=desc
         ///     
         /// </remarks>
         /// <response code="200">list of EmployeeDto's</response>

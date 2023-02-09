@@ -138,6 +138,20 @@ namespace CoreWebApi.Data
             }
         }
 
+
+        public async Task<IEnumerable<TModel>> GetAllAsync()
+        {
+            try
+            {
+                IQueryable<TModel> dbSet = _set;
+                return await dbSet.ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new RetrieveEntitiesQueryFailedException(typeof(TModel), ex);
+            }
+        }
+
         public async Task<IEnumerable<TModel>> GetAllAsync(Expression<Func<TModel, bool>> query = null, Func<IQueryable<TModel>, IOrderedQueryable<TModel>> orderBy = null)
         {
             try
@@ -196,5 +210,6 @@ namespace CoreWebApi.Data
                 throw new UpdateEntityFailedException(typeof(TModel), ex);
             }
         }
+
     }
 }

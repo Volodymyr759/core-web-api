@@ -32,6 +32,8 @@ namespace CoreWebApi.Data
 
         public DbSet<Office> Offices { get; set; }
 
+        public DbSet<OfficeNameId> OfficeNameId { get; set; }
+
         public DbSet<Vacancy> Vacancies { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -45,6 +47,9 @@ namespace CoreWebApi.Data
             modelBuilder.Entity<IdentityUserLogin<string>>(entity => { entity.ToTable("UserLogins"); });
             modelBuilder.Entity<IdentityUserToken<string>>(entity => { entity.ToTable("UserTokens"); });
             modelBuilder.Entity<IdentityRoleClaim<string>>(entity => { entity.ToTable("RoleClaims"); });
+            modelBuilder.Entity<OfficeNameId>()
+                .ToView("vwOfficeNamesWithId")
+                .HasKey(t => t.Id);
         }
     }
 }

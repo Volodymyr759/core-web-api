@@ -40,10 +40,10 @@ namespace CoreWebApi.Controllers
         ///     
         /// </remarks>
         /// <response code="200">list of VacancyDto's</response>
-        [HttpGet]
+        [HttpGet, AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAsync(int limit, int page, string search, VacancyStatus vacancyStatus, int officeId, string sort_field, OrderType order) =>
-            Ok(await vacancyService.GetVacanciesSearchResultAsync(limit, page, search, vacancyStatus, officeId, sort_field, order));
+        public async Task<IActionResult> GetAsync(int limit, int page, string search, VacancyStatus vacancyStatus, int officeId, string sortfield, OrderType order) =>
+            Ok(await vacancyService.GetVacanciesSearchResultAsync(limit, page, search, vacancyStatus, officeId, sortfield, order));
 
         /// <summary>
         /// Gets a list of VacancyDto's for public pages.
@@ -64,7 +64,7 @@ namespace CoreWebApi.Controllers
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetPublicAsync(int page, string search, VacancyStatus? vacancyStatus, int? officeId ) =>
-            Ok(await vacancyService.GetVacanciesSearchResultAsync(limit: 9, page, search, vacancyStatus, officeId, sort_field: "Id", order: OrderType.Descending));
+            Ok(await vacancyService.GetVacanciesSearchResultAsync(limit: 9, page, search, vacancyStatus, officeId, sortfield: "Id", order: OrderType.Descending));
 
         /// <summary>
         /// Gets a specific VacancyDto Item.

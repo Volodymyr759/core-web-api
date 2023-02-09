@@ -62,6 +62,20 @@ namespace CoreWebApi.Controllers
             Ok(await officeService.GetOfficesSearchResultAsync(limit: 3, page, order: OrderType.Ascending));
 
         /// <summary>
+        /// Gets a list of OfficeNameIdDto's for public pages.
+        /// </summary>
+        /// <returns>Status 200 and list of OfficeNameIdDto's</returns>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET /api/office/getpublicofficenameids
+        ///     
+        /// </remarks>
+        /// <response code="200">List of OfficeNameIdDto's</response>
+        [HttpGet, AllowAnonymous, ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetPublicOfficeNameIdsAsync() => Ok(await officeService.GetOfficeIdNamesAsync());
+
+        /// <summary>
         /// Gets a specific OfficeDto Item.
         /// </summary>
         /// <param name="id">Identifier int id</param>

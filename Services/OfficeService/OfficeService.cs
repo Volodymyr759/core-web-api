@@ -14,13 +14,17 @@ namespace CoreWebApi.Services
     {
         private readonly IMapper mapper;
         private readonly IRepository<Office> repository;
+        private readonly IRepository<OfficeNameId> repositoryOfficeNameId;
 
         public OfficeService(
             IMapper mapper,
-            IRepository<Office> repository)
+            IRepository<Office> repository,
+            IRepository<OfficeNameId> repositoryOfficeNameId
+            )
         {
             this.mapper = mapper;
             this.repository = repository;
+            this.repositoryOfficeNameId = repositoryOfficeNameId;
         }
 
         public async Task<SearchResult<OfficeDto>> GetOfficesSearchResultAsync(int limit, int page, OrderType order)
@@ -43,6 +47,13 @@ namespace CoreWebApi.Services
             };
         }
 
+        public async Task<List<OfficeNameIdDto>> GetOfficeIdNamesAsync()
+        {
+            var officesNameIds = (List<OfficeNameIdDto>)mapper.Map<IEnumerable<OfficeNameIdDto>>(await repositoryOfficeNameId.GetAllAsync());
+
+            return officesNameIds.OrderBy(o => o.Name).ToList<OfficeNameIdDto>();
+        }
+
         public OfficeDto GetOfficeById(int id) => mapper.Map<OfficeDto>(repository.Get(id));
 
         public OfficeDto CreateOffice(OfficeDto officeDto)
@@ -60,5 +71,6 @@ namespace CoreWebApi.Services
         }
 
         public OfficeDto DeleteOffice(int id) => mapper.Map<OfficeDto>(repository.Delete(id));
+
     }
 }

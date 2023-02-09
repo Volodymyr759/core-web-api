@@ -6,7 +6,7 @@ namespace CoreWebApi.Services
 {
     public interface IVacancyService
     {
-        Task<SearchResult<VacancyDto>> GetVacanciesSearchResultAsync(int limit, int page, string search, VacancyStatus? vacancyStatus, int? officeId, string sort_field, OrderType order);
+        Task<SearchResult<VacancyDto>> GetVacanciesSearchResultAsync(int limit, int page, string search, VacancyStatus? vacancyStatus, int? officeId, string sortfield, OrderType order);
         VacancyDto GetVacancyById(int id);
         VacancyDto CreateVacancy(VacancyDto vacancyDto);
         VacancyDto UpdateVacancy(VacancyDto vacancyDto);

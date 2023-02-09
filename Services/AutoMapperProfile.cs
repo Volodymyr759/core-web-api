@@ -26,6 +26,7 @@ namespace CoreWebApi.Services
             CreateMap<Office, OfficeDto>()
                 .ForMember(dest => dest.VacancyDtos, act => act.MapFrom(src => src.Vacancies));
             CreateMap<OfficeDto, Office>();
+            CreateMap<OfficeNameId, OfficeNameIdDto>();
 
             CreateMap<Employee, EmployeeDto>()
                 .ForMember(dest => dest.OfficeDto, act => act.MapFrom(src => src.Office));

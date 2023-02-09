@@ -24,7 +24,7 @@ namespace CoreWebApi.Services
             this.repository = repository;
         }
 
-        public async Task<SearchResult<VacancyDto>> GetVacanciesSearchResultAsync(int limit, int page, string search, VacancyStatus? vacancyStatus, int? officeId, string sort_field, OrderType order)
+        public async Task<SearchResult<VacancyDto>> GetVacanciesSearchResultAsync(int limit, int page, string search, VacancyStatus? vacancyStatus, int? officeId, string sortfield, OrderType order)
         {
             // search by Title
             Expression<Func<Vacancy, bool>> searchQuery = null;
@@ -40,7 +40,7 @@ namespace CoreWebApi.Services
                 if (vacancyStatus == VacancyStatus.Active) vacancies = vacancies.Where(v => v.IsActive == true);
                 else vacancies = vacancies.Where(v => v.IsActive == false);
             }
-            if (officeId != null) vacancies = vacancies.Where(v => v.OfficeId == officeId);
+            if (officeId != 0) vacancies = vacancies.Where(v => v.OfficeId == officeId);
 
             return new SearchResult<VacancyDto>
             {

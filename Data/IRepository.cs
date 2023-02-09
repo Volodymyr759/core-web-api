@@ -16,6 +16,7 @@ namespace CoreWebApi.Data
         TModel Get(int id);
         Task<TModel> GetAsync(int id);
         IEnumerable<TModel> GetAll();
+        Task<IEnumerable<TModel>> GetAllAsync();
         TModel Update(TModel model);
         void UpdateAsync(TModel model);
         IEnumerable<TModel> GetAll(int limit, int page, Expression<Func<TModel, bool>> query = null, Func<IQueryable<TModel>, IOrderedQueryable<TModel>> orderBy = null);
