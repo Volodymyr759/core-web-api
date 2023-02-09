@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Microsoft.Data.SqlClient;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+
 
 namespace CoreWebApi.Data
 {
@@ -16,6 +18,7 @@ namespace CoreWebApi.Data
         TModel Get(int id);
         Task<TModel> GetAsync(int id);
         IEnumerable<TModel> GetAll();
+        IEnumerable<TModel> GetByStoredProcedure(string sqlQuery, SqlParameter[] parameters);
         Task<IEnumerable<TModel>> GetAllAsync();
         TModel Update(TModel model);
         void UpdateAsync(TModel model);

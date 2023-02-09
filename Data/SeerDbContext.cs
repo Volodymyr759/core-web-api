@@ -36,6 +36,8 @@ namespace CoreWebApi.Data
 
         public DbSet<Vacancy> Vacancies { get; set; }
 
+        public DbSet<VacancyTitleId> VacancyTitleId { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

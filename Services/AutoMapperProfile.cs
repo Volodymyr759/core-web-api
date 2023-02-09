@@ -50,7 +50,7 @@ namespace CoreWebApi.Services
                 }));
 
             CreateMap<VacancyDto, Vacancy>();
-
+            CreateMap<VacancyTitleId, VacancyTitleIdDto>();
 
             CreateMap<CreateTenantDto, Tenant>().ForMember(dest => dest.Id, act => act.Ignore());
         }

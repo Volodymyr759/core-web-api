@@ -63,7 +63,7 @@ namespace CoreWebApi.Controllers
         [HttpGet]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetPublicAsync(int page, string search, VacancyStatus? vacancyStatus, int? officeId ) =>
+        public async Task<IActionResult> GetPublicAsync(int page, string search, VacancyStatus? vacancyStatus, int? officeId) =>
             Ok(await vacancyService.GetVacanciesSearchResultAsync(limit: 9, page, search, vacancyStatus, officeId, sortfield: "Id", order: OrderType.Descending));
 
         /// <summary>
@@ -87,6 +87,23 @@ namespace CoreWebApi.Controllers
 
             return Ok(vacancyDto);
         }
+
+        /// <summary>
+        /// Gets a list of VacancyTitleIdDto's for public pages.
+        /// </summary>
+        /// <param name="title">Search string to find the vacancies by title</param>
+        /// <returns>Status 200 and list of VacancyDto's</returns>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET /api/Vacancy/VacancyGetTitleIds/?title=Test
+        ///     
+        /// </remarks>
+        /// <response code="200">list of VacancyDto's</response>
+        [HttpGet]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult GetVacancyTitleIds(string title) => Ok(vacancyService.GetVacancyTitleIdDto(title.ToLower()));
 
         /// <summary>
         /// Creates a new Vacancy item.

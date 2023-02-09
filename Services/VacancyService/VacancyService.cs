@@ -3,6 +3,7 @@ using CoreWebApi.Data;
 using CoreWebApi.Library.Enums;
 using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,13 +16,16 @@ namespace CoreWebApi.Services
     {
         private readonly IMapper mapper;
         private readonly IRepository<Vacancy> repository;
+        private readonly IRepository<VacancyTitleId> repositoryVacancyTitleId;
 
         public VacancyService(
             IMapper mapper,
-            IRepository<Vacancy> repository)
+            IRepository<Vacancy> repository,
+            IRepository<VacancyTitleId> repositoryVacancyTitleId)
         {
             this.mapper = mapper;
             this.repository = repository;
+            this.repositoryVacancyTitleId = repositoryVacancyTitleId;
         }
 
         public async Task<SearchResult<VacancyDto>> GetVacanciesSearchResultAsync(int limit, int page, string search, VacancyStatus? vacancyStatus, int? officeId, string sortfield, OrderType order)
@@ -54,6 +58,14 @@ namespace CoreWebApi.Services
             };
         }
 
+        public List<VacancyTitleIdDto> GetVacancyTitleIdDto(string title)
+        {
+            List<SqlParameter> parameters = new List<SqlParameter> { new SqlParameter { ParameterName = "@title", Value = title } };
+            var res = repositoryVacancyTitleId.GetByStoredProcedure("EXEC dbo.sp_getTitleIdVacancies @title", parameters.ToArray());
+
+            return mapper.Map<IEnumerable<VacancyTitleIdDto>>(res).ToList();
+        }
+
         public VacancyDto GetVacancyById(int id) => mapper.Map<VacancyDto>(repository.Get(id));
 
         public VacancyDto CreateVacancy(VacancyDto vacancyDto)
@@ -71,5 +83,6 @@ namespace CoreWebApi.Services
         }
 
         public VacancyDto DeleteVacancy(int id) => mapper.Map<VacancyDto>(repository.Delete(id));
+
     }
 }

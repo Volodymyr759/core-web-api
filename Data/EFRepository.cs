@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -139,6 +140,7 @@ namespace CoreWebApi.Data
         }
 
 
+
         public async Task<IEnumerable<TModel>> GetAllAsync()
         {
             try
@@ -211,5 +213,16 @@ namespace CoreWebApi.Data
             }
         }
 
+        public IEnumerable<TModel> GetByStoredProcedure(string sqlQuery, SqlParameter[] parameters)
+        {
+            try
+            {
+                return _set.FromSqlRaw<TModel>(sqlQuery, parameters).ToList<TModel>();
+            }
+            catch (Exception ex)
+            {
+                throw new RetrieveEntitiesQueryFailedException(typeof(TModel), ex);
+            }
+        }
     }
 }
