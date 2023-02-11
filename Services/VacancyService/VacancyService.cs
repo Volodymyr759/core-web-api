@@ -16,16 +16,16 @@ namespace CoreWebApi.Services
     {
         private readonly IMapper mapper;
         private readonly IRepository<Vacancy> repository;
-        private readonly IRepository<VacancyTitleId> repositoryVacancyTitleId;
+        private readonly IRepository<StringValue> repositoryStringValue;
 
         public VacancyService(
             IMapper mapper,
             IRepository<Vacancy> repository,
-            IRepository<VacancyTitleId> repositoryVacancyTitleId)
+            IRepository<StringValue> repositoryStringValue)
         {
             this.mapper = mapper;
             this.repository = repository;
-            this.repositoryVacancyTitleId = repositoryVacancyTitleId;
+            this.repositoryStringValue = repositoryStringValue;
         }
 
         public async Task<SearchResult<VacancyDto>> GetVacanciesSearchResultAsync(int limit, int page, string search, VacancyStatus? vacancyStatus, int? officeId, string sortfield, OrderType order)
@@ -58,15 +58,17 @@ namespace CoreWebApi.Services
             };
         }
 
-        public List<VacancyTitleIdDto> GetVacancyTitleIdDto(string title)
-        {
-            List<SqlParameter> parameters = new List<SqlParameter> { new SqlParameter { ParameterName = "@title", Value = title } };
-            var res = repositoryVacancyTitleId.GetByStoredProcedure("EXEC dbo.sp_getTitleIdVacancies @title", parameters.ToArray());
-
-            return mapper.Map<IEnumerable<VacancyTitleIdDto>>(res).ToList();
-        }
-
         public VacancyDto GetVacancyById(int id) => mapper.Map<VacancyDto>(repository.Get(id));
+
+        public async Task<IEnumerable<StringValue>> SearchVacanciesTitlesAsync(string searchValue)
+        {
+            var vacanciesTitles = searchValue == null ?
+                repositoryStringValue.GetAsync("EXEC dbo.sp_getVacanciesTitles", null) :
+                repositoryStringValue.GetAsync("EXEC dbo.sp_getVacanciesTitlesByParam @search",
+                    new SqlParameter[] { new SqlParameter { ParameterName = "@search", Value = searchValue } });
+
+            return await vacanciesTitles;
+        }
 
         public VacancyDto CreateVacancy(VacancyDto vacancyDto)
         {

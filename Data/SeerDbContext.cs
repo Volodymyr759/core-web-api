@@ -3,6 +3,7 @@ using CoreWebApi.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CoreWebApi.Data
 {
@@ -36,7 +37,8 @@ namespace CoreWebApi.Data
 
         public DbSet<Vacancy> Vacancies { get; set; }
 
-        public DbSet<VacancyTitleId> VacancyTitleId { get; set; }
+        [NotMapped]
+        public DbSet<StringValue> StringValue { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -52,6 +54,7 @@ namespace CoreWebApi.Data
             modelBuilder.Entity<OfficeNameId>()
                 .ToView("vwOfficeNamesWithId")
                 .HasKey(t => t.Id);
+            modelBuilder.Entity<StringValue>().HasNoKey();
         }
     }
 }

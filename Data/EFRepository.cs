@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -105,6 +106,21 @@ namespace CoreWebApi.Data
             }
         }
 
+        public async Task<IEnumerable<TModel>> GetAsync(string sqlQuery, SqlParameter[] parameters)
+        {
+            try
+            {
+                var result = parameters == null ? _set.FromSqlRaw(sqlQuery) :
+                    _set.FromSqlRaw(sqlQuery, parameters);
+
+                return await result.ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new RetrieveEntitiesQueryFailedException(typeof(TModel), ex);
+            }
+        }
+
         public IEnumerable<TModel> GetAll()
         {
             try
@@ -139,8 +155,6 @@ namespace CoreWebApi.Data
             }
         }
 
-
-
         public async Task<IEnumerable<TModel>> GetAllAsync()
         {
             try
@@ -160,7 +174,7 @@ namespace CoreWebApi.Data
             {
                 IQueryable<TModel> dbSet = _set;
 
-                if (query != null) dbSet =  dbSet.Where(query);
+                if (query != null) dbSet = dbSet.Where(query);
                 if (orderBy != null) dbSet = orderBy(dbSet);
 
                 return await dbSet.ToListAsync();
@@ -210,18 +224,6 @@ namespace CoreWebApi.Data
             catch (Exception ex)
             {
                 throw new UpdateEntityFailedException(typeof(TModel), ex);
-            }
-        }
-
-        public IEnumerable<TModel> GetByStoredProcedure(string sqlQuery, SqlParameter[] parameters)
-        {
-            try
-            {
-                return _set.FromSqlRaw<TModel>(sqlQuery, parameters).ToList<TModel>();
-            }
-            catch (Exception ex)
-            {
-                throw new RetrieveEntitiesQueryFailedException(typeof(TModel), ex);
             }
         }
     }

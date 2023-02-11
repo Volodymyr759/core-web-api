@@ -30,7 +30,7 @@ namespace CoreWebApi.Controllers
         /// <param name="search">part of Title for searching</param>
         /// <param name="vacancyStatus">Filter for isActive property: 0 - Active, 1 - Disabled, 2 - All</param>
         /// <param name="officeId">Filter vacancies by OfficeId</param>
-        /// <param name="sort_field">Field name for sorting</param>
+        /// <param name="sortfield">Field name for sorting</param>
         /// <param name="order">sort direction: 0 - Ascending or 1 - Descending</param>
         /// <returns>Status 200 and list of VacancyDto's</returns>
         /// <remarks>
@@ -89,21 +89,21 @@ namespace CoreWebApi.Controllers
         }
 
         /// <summary>
-        /// Gets a list of VacancyTitleIdDto's for public pages.
+        /// Gets the list of vacancies titles by search searchValue.
         /// </summary>
-        /// <param name="title">Search string to find the vacancies by title</param>
-        /// <returns>Status 200 and list of VacancyDto's</returns>
+        /// <param name="searchValue">Search parameter</param>
+        /// <returns>Status 200 and the list of vacancies titles. If searchValue is empty - returns all titles</returns>
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/Vacancy/VacancyGetTitleIds/?title=Test
+        ///     GET /api/vacancy/searchvacanciestitles?searchValue=Test
         ///     
         /// </remarks>
-        /// <response code="200">list of VacancyDto's</response>
+        /// <response code="200">List of vacancies titles</response>
         [HttpGet]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult GetVacancyTitleIds(string title) => Ok(vacancyService.GetVacancyTitleIdDto(title.ToLower()));
+        public async Task<IActionResult> SearchVacanciesTitles(string searchValue) => Ok(await vacancyService.SearchVacanciesTitlesAsync(searchValue));
 
         /// <summary>
         /// Creates a new Vacancy item.

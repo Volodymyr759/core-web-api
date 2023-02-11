@@ -1,6 +1,6 @@
 ﻿namespace CoreWebApi.Services
 {
-    public class VacancyTitleIdDto
+    public class StringValueDto
     {
         public int Id { get; set; }
 

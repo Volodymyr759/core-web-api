@@ -16,9 +16,17 @@ namespace CoreWebApi.Data
         TModel Delete(int id);
         void DeleteAsync(TModel model);
         TModel Get(int id);
+
+        /// <summary>
+        /// Gets a list of  StringValue objects
+        /// </summary>
+        /// <param name="sqlQuery">String line which containes call to stored procedures</param>
+        /// <param name="parameters">Array of params passed to the stored procedure, null or array with 1 or more parameters</param>
+        /// <returns>List of StringValue objects like { value: "title1" }</returns>
+        Task<IEnumerable<TModel>> GetAsync(string sqlQuery, SqlParameter[] parameters = null);
+
         Task<TModel> GetAsync(int id);
         IEnumerable<TModel> GetAll();
-        IEnumerable<TModel> GetByStoredProcedure(string sqlQuery, SqlParameter[] parameters);
         Task<IEnumerable<TModel>> GetAllAsync();
         TModel Update(TModel model);
         void UpdateAsync(TModel model);
