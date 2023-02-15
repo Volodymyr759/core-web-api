@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -106,13 +106,24 @@ namespace CoreWebApi.Data
             }
         }
 
+        public async Task<TModel> GetAsync(int id)
+        {
+            try
+            {
+                return await _set.FindAsync(id);
+            }
+            catch (Exception ex)
+            {
+                throw new RetrieveEntityFailedException<TModel>(id.ToString(), ex);
+            }
+        }
+
         public async Task<IEnumerable<TModel>> GetAsync(string sqlQuery, SqlParameter[] parameters)
         {
             try
             {
-                var result = parameters == null ? _set.FromSqlRaw(sqlQuery) :
+                IQueryable<TModel> result = parameters == null ? _set.FromSqlRaw(sqlQuery) :
                     _set.FromSqlRaw(sqlQuery, parameters);
-
                 return await result.ToListAsync();
             }
             catch (Exception ex)
@@ -185,18 +196,6 @@ namespace CoreWebApi.Data
             }
         }
 
-        public async Task<TModel> GetAsync(int id)
-        {
-            try
-            {
-                return await _set.FindAsync(id);
-            }
-            catch (Exception ex)
-            {
-                throw new RetrieveEntityFailedException<TModel>(id.ToString(), ex);
-            }
-        }
-
         public TModel Update(TModel model)
         {
             try
@@ -213,7 +212,21 @@ namespace CoreWebApi.Data
             return model;
         }
 
-        public async void UpdateAsync(TModel model)
+        public async Task<TModel> SaveAsync(TModel model)
+        {
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new UpdateEntityFailedException(typeof(TModel), ex);
+            }
+
+            return model;
+        }
+
+        public async Task UpdateAsync(TModel model)
         {
             try
             {
@@ -225,6 +238,14 @@ namespace CoreWebApi.Data
             {
                 throw new UpdateEntityFailedException(typeof(TModel), ex);
             }
+        }
+
+        public async Task<bool> IsExistAsync(string sqlQuery, SqlParameter[] parameters)
+        {
+            await _context.Database.ExecuteSqlRawAsync(sqlQuery, parameters);
+            var result = parameters[1].Value;
+
+            return int.Parse(result.ToString()) > 0;
         }
     }
 }

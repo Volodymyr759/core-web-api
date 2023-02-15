@@ -46,10 +46,13 @@ namespace CoreWebApi.Services
                 {
                     Id = src.OfficeId,
                     Name = src.Office.Name,
+                    Description = src.Office.Description,
                     Address = src.Office.Address
                 }));
 
-            CreateMap<VacancyDto, Vacancy>();
+            CreateMap<VacancyDto, Vacancy>()
+                .ForMember(dest => dest.Office, act => act.Ignore())
+                .ForMember(dest => dest.Candidates, act => act.Ignore());
 
             CreateMap<CreateTenantDto, Tenant>().ForMember(dest => dest.Id, act => act.Ignore());
         }

@@ -3,6 +3,7 @@ using CoreWebApi.Library.ResponseError;
 using CoreWebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -12,14 +13,14 @@ namespace CoreWebApi.Controllers
     public class VacancyController : ControllerBase
     {
         private readonly IVacancyService vacancyService;
-        private IResponseError responseBadRequestError;
-        private IResponseError responseNotFoundError;
+        private readonly IResponseError responseBadRequestError;
+        private readonly IResponseError responseNotFoundError;
 
         public VacancyController(IVacancyService vacancyService)
         {
             this.vacancyService = vacancyService;
-            responseBadRequestError = ResponseErrorFactory.getBadRequestError("");
-            responseNotFoundError = ResponseErrorFactory.getNotFoundError("");
+            responseBadRequestError = ResponseErrorFactory.getBadRequestError("Wrong vacancy data.");
+            responseNotFoundError = ResponseErrorFactory.getNotFoundError("Vacancy Not Found.");
         }
 
         /// <summary>
@@ -71,19 +72,22 @@ namespace CoreWebApi.Controllers
         /// </summary>
         /// <param name="id">Identifier int id</param>
         /// <returns>OK and VacancyDto</returns>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET /api/vacancy/getbyid/1
+        ///     
+        /// </remarks>
         /// <response code="200">Returns the requested VacancyDto item</response>
         /// <response code="404">If the vacancy with given id not found</response>
         [HttpGet("{id}")]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult GetById([FromRoute] int id)
         {
             var vacancyDto = vacancyService.GetVacancyById(id);
-            if (vacancyDto == null)
-            {
-                responseNotFoundError.Title = "Vacancy Not Found.";
-                return NotFound(responseNotFoundError);
-            }
+            if (vacancyDto == null) return NotFound(responseNotFoundError);
 
             return Ok(vacancyDto);
         }
@@ -129,11 +133,7 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult Create([FromBody] VacancyDto vacancyDto)
         {
-            if (!ModelState.IsValid)
-            {
-                responseBadRequestError.Title = "Wrong vacancy-data.";
-                return BadRequest(responseBadRequestError);
-            }
+            if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             return Created("/api/vacancy/create", vacancyService.CreateVacancy(vacancyDto));
         }
 
@@ -164,16 +164,8 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Update([FromBody] VacancyDto vacancyDto)
         {
-            if (!ModelState.IsValid)
-            {
-                responseBadRequestError.Title = "Wrong vacancy-data.";
-                return BadRequest(responseBadRequestError);
-            }
-            if (vacancyService.GetVacancyById(vacancyDto.Id) == null)
-            {
-                responseNotFoundError.Title = "Vacancy Not Found.";
-                return NotFound(responseNotFoundError);
-            }
+            if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
+            if (vacancyService.GetVacancyById(vacancyDto.Id) == null) return NotFound(responseNotFoundError);
 
             return Ok(vacancyService.UpdateVacancy(vacancyDto));
         }
@@ -185,20 +177,58 @@ namespace CoreWebApi.Controllers
         /// <returns>Status 200 and deleted VacancyDto object</returns>
         /// <response code="200">Returns the deleted VacancyDto item</response>
         /// <response code="404">If the vacancy with given id not found</response>
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}"), AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult Delete([FromRoute] int id)
+        public async Task<IActionResult> Delete([FromRoute] int id)
         {
             var vacancyToDelete = vacancyService.GetVacancyById(id);
-            if (vacancyToDelete == null)
-            {
-                responseNotFoundError.Title = "Vacancy Not Found.";
-                return NotFound(responseNotFoundError);
-            }
+            if (await IsExistAsync(id) == false) return NotFound(responseNotFoundError);
             vacancyService.DeleteVacancy(id);
 
             return Ok(vacancyToDelete);
         }
+
+        /// <summary>
+        /// Partly updates an existing Vacancy Item.
+        /// </summary>
+        /// <param name="id">Identifier int id</param>
+        /// <param name="patchDocument">Json Patch Document as array of operations</param>
+        /// <returns>Status 200 and updated VacancyDto object</returns>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     PATCH /api/vacancy/partialvacancyupdate/{id}
+        ///     [
+        ///         {
+        ///             "op": "replace",
+        ///             "path": "/previews",
+        ///             "value": "1"
+        ///         }
+        ///     ]
+        ///     
+        /// </remarks>
+        /// <response code="200">Returns the updated VacancyDto item</response>
+        /// <response code="400">If the argument is not valid</response>
+        /// <response code="404">If the vacancy with given id not found</response>
+        [HttpPatch("{id}")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> PartialVacancyUpdateAsync(int id, JsonPatchDocument<object> patchDocument)
+        {
+            if (await IsExistAsync(id) == false) return NotFound(responseNotFoundError);
+            try
+            {
+                return Ok(await vacancyService.PartialUpdateAsync(id, patchDocument));
+            }
+            catch
+            {
+                return BadRequest(responseBadRequestError);
+            }
+        }
+
+        private async Task<bool> IsExistAsync(int id) => await vacancyService.IsExistAsync(id);
     }
 }

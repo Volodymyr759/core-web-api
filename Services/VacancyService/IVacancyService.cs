@@ -1,6 +1,7 @@
 ﻿using CoreWebApi.Library.Enums;
 using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
+using Microsoft.AspNetCore.JsonPatch;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -14,5 +15,7 @@ namespace CoreWebApi.Services
         VacancyDto CreateVacancy(VacancyDto vacancyDto);
         VacancyDto UpdateVacancy(VacancyDto vacancyDto);
         VacancyDto DeleteVacancy(int id);
+        Task<VacancyDto> PartialUpdateAsync(int id, JsonPatchDocument<object> patchDocument);
+        Task<bool> IsExistAsync(int id);
     }
 }

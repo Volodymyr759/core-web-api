@@ -34,7 +34,10 @@ namespace CoreWebApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<SeerDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+                {
+                    options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+                    options.EnableSensitiveDataLogging();
+                });
             services.AddScoped(typeof(IRepository<>), typeof(EFRepository<>));
 
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());

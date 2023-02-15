@@ -107,7 +107,7 @@ namespace CoreWebApi.Controllers
         /// <response code="200">Returns the updated TenantDto item</response>
         /// <response code="400">If the argument is not valid</response>
         /// <response code="404">If the tenant with given id not found</response>
-        [HttpPut]
+        [HttpPut, AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -158,6 +158,7 @@ namespace CoreWebApi.Controllers
         /// <response code="400">If the argument is not valid</response>
         /// <response code="404">If the tenant with given id not found</response>
         [HttpPatch("{id}")]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

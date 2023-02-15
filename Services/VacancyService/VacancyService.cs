@@ -3,9 +3,11 @@ using CoreWebApi.Data;
 using CoreWebApi.Library.Enums;
 using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -86,5 +88,22 @@ namespace CoreWebApi.Services
 
         public VacancyDto DeleteVacancy(int id) => mapper.Map<VacancyDto>(repository.Delete(id));
 
+        public async Task<VacancyDto> PartialUpdateAsync(int id, JsonPatchDocument<object> patchDocument)
+        {
+            var vacancy = await repository.GetAsync(id);
+            patchDocument.ApplyTo(vacancy);
+            return mapper.Map<VacancyDto>(await repository.SaveAsync(vacancy));
+        }
+
+        public async Task<bool> IsExistAsync(int id)
+        {
+            SqlParameter[] parameters =
+                {
+                   new SqlParameter("@id", SqlDbType.Int) { Value = id },
+                   new SqlParameter("@returnVal", SqlDbType.Int) {Direction = ParameterDirection.Output}
+                };
+
+            return await repository.IsExistAsync("EXEC @returnVal=sp_checkVacancyById @id, @returnVal", parameters);
+        }
     }
 }
