@@ -14,7 +14,7 @@ namespace CoreWebApi.Services
         Task<IEnumerable<StringValue>> SearchVacanciesTitlesAsync(string searchValue);
         VacancyDto CreateVacancy(VacancyDto vacancyDto);
         VacancyDto UpdateVacancy(VacancyDto vacancyDto);
-        VacancyDto DeleteVacancy(int id);
+        Task DeleteVacancyAsync(int id);
         Task<VacancyDto> PartialUpdateAsync(int id, JsonPatchDocument<object> patchDocument);
         Task<bool> IsExistAsync(int id);
     }

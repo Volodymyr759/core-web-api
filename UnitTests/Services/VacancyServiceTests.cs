@@ -19,6 +19,7 @@ namespace UnitTests.Services
 
         private string errorMessage;
         private Mock<IRepository<Vacancy>> mockRepository;
+        private Mock<IRepository<StringValue>> mockRepositoryStringValue;
         private Mock<IMapper> mockMapper;
         private VacancyService vacancyService;
 
@@ -31,10 +32,12 @@ namespace UnitTests.Services
         {
             errorMessage = "";
             mockRepository = new Mock<IRepository<Vacancy>>();
+            mockRepositoryStringValue = new Mock<IRepository<StringValue>>();
             mockMapper = new Mock<IMapper>();
             vacancyService = new VacancyService(
                 mockMapper.Object,
-                mockRepository.Object);
+                mockRepository.Object, 
+                mockRepositoryStringValue.Object);
         }
 
         [TestCleanup()]
@@ -77,7 +80,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                searchResult = await vacancyService.GetVacanciesSearchResultAsync(limit, page, search: "", null, null, sort_field: "Id", order: OrderType.Ascending);
+                searchResult = await vacancyService.GetVacanciesSearchResultAsync(limit, page, search: "", null, null, sortfield: "Id", order: OrderType.Ascending);
             }
             catch (Exception ex)
             {
@@ -225,7 +228,7 @@ namespace UnitTests.Services
         }
 
         [TestMethod]
-        public void DeleteVacancyById_ReturnsVacancyDto()
+        public async Task DeleteVacancyById_ReturnsVacancyDto()
         {
             // Arrange scenario:
             // service gets id and passes it to the repo:
@@ -239,7 +242,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                vacancyDto = vacancyService.DeleteVacancy(id);
+                await vacancyService.DeleteVacancyAsync(id);
             }
             catch (Exception ex)
             {

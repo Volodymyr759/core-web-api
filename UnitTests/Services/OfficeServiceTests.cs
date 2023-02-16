@@ -18,6 +18,7 @@ namespace UnitTests.Services
 
         private string errorMessage;
         private Mock<IRepository<Office>> mockRepository;
+        private Mock<IRepository<OfficeNameId>> mockRepositoryOfficeNameId;
         private Mock<IMapper> mockMapper;
         private OfficeService officeService;
 
@@ -30,10 +31,12 @@ namespace UnitTests.Services
         {
             errorMessage = "";
             mockRepository = new Mock<IRepository<Office>>();
+            mockRepositoryOfficeNameId = new Mock<IRepository<OfficeNameId>>();
             mockMapper = new Mock<IMapper>();
             officeService = new OfficeService(
                 mockMapper.Object,
-                mockRepository.Object);
+                mockRepository.Object,
+                mockRepositoryOfficeNameId.Object);
         }
 
         [TestCleanup()]

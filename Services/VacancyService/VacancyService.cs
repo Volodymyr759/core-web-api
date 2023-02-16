@@ -86,7 +86,7 @@ namespace CoreWebApi.Services
             return mapper.Map<VacancyDto>(repository.Update(vacancy));
         }
 
-        public VacancyDto DeleteVacancy(int id) => mapper.Map<VacancyDto>(repository.Delete(id));
+        public async Task DeleteVacancyAsync(int id) => await repository.DeleteAsync(id);
 
         public async Task<VacancyDto> PartialUpdateAsync(int id, JsonPatchDocument<object> patchDocument)
         {

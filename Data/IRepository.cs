@@ -13,7 +13,8 @@ namespace CoreWebApi.Data
         Task CreateAsync(TModel model);
         void Delete(TModel model);
         TModel Delete(int id);
-        void DeleteAsync(TModel model);
+        Task DeleteAsync(TModel model);
+        Task DeleteAsync(int id);
         TModel Get(int id);
 
         /// <summary>

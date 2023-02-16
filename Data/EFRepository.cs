@@ -81,12 +81,29 @@ namespace CoreWebApi.Data
             return model;
         }
 
-        public async void DeleteAsync(TModel model)
+        public async Task DeleteAsync(TModel model)
         {
             try
             {
                 _set.Remove(model);
                 await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new DeleteEntityFailedException(typeof(TModel), ex);
+            }
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            TModel model = await _set.FindAsync(id);
+            try
+            {
+                if (model != null)
+                {
+                    _set.Remove(model);
+                    await _context.SaveChangesAsync();
+                }
             }
             catch (Exception ex)
             {

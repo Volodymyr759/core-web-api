@@ -162,10 +162,10 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult Update([FromBody] VacancyDto vacancyDto)
+        public async Task<IActionResult> UpdateAsync([FromBody] VacancyDto vacancyDto)
         {
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
-            if (vacancyService.GetVacancyById(vacancyDto.Id) == null) return NotFound(responseNotFoundError);
+            if (await IsExistAsync(vacancyDto.Id) == false) return NotFound(responseNotFoundError);
 
             return Ok(vacancyService.UpdateVacancy(vacancyDto));
         }
@@ -180,13 +180,12 @@ namespace CoreWebApi.Controllers
         [HttpDelete("{id}"), AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Delete([FromRoute] int id)
+        public async Task<IActionResult> DeleteAsync([FromRoute] int id)
         {
-            var vacancyToDelete = vacancyService.GetVacancyById(id);
             if (await IsExistAsync(id) == false) return NotFound(responseNotFoundError);
-            vacancyService.DeleteVacancy(id);
+            await vacancyService.DeleteVacancyAsync(id);
 
-            return Ok(vacancyToDelete);
+            return Ok();
         }
 
         /// <summary>
