@@ -7,10 +7,10 @@ namespace CoreWebApi.Services
     public interface ICompanyServiceBL
     {
         Task<SearchResult<CompanyServiceDto>> GetCompanyServicesSearchResultAsync(int limit, int page, OrderType order);
-        CompanyServiceDto GetCompanyServiceById(int id);
+        Task<CompanyServiceDto> GetCompanyServiceByIdAsync(int id);
         CompanyServiceDto CreateCompanyService(CompanyServiceDto companyServiceDto);
         CompanyServiceDto UpdateCompanyService(CompanyServiceDto companyServiceDto);
-        CompanyServiceDto DeleteCompanyService(int id);
+        Task DeleteCompanyServiceAsync(int id);
         void SetIsActive(int id, bool isActive);
     }
 }

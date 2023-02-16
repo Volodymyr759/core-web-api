@@ -41,7 +41,7 @@ namespace CoreWebApi.Services
             };
         }
 
-        public CompanyServiceDto GetCompanyServiceById(int id) => mapper.Map<CompanyServiceDto>(repository.Get(id));
+        public async Task<CompanyServiceDto> GetCompanyServiceByIdAsync(int id) => mapper.Map<CompanyServiceDto>(await repository.GetAsync(id));
 
         public CompanyServiceDto CreateCompanyService(CompanyServiceDto companyServiceDto)
         {
@@ -68,9 +68,6 @@ namespace CoreWebApi.Services
             }
         }
 
-        public CompanyServiceDto DeleteCompanyService(int id)
-        {
-            return mapper.Map<CompanyServiceDto>(repository.Delete(id));
-        }
+        public async Task DeleteCompanyServiceAsync(int id) => await repository.DeleteAsync(id);
     }
 }

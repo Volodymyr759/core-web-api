@@ -33,6 +33,7 @@ namespace CoreWebApi.Data
 
         public DbSet<Office> Offices { get; set; }
 
+        [NotMapped]
         public DbSet<OfficeNameId> OfficeNameId { get; set; }
 
         public DbSet<Vacancy> Vacancies { get; set; }

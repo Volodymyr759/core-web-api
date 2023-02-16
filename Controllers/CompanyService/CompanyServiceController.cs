@@ -13,14 +13,14 @@ namespace CoreWebApi.Controllers
     public class CompanyServiceController : ControllerBase
     {
         private readonly ICompanyServiceBL companyServiceBL;
-        private IResponseError responseBadRequestError;
-        private IResponseError responseNotFoundError;
+        private readonly IResponseError responseBadRequestError;
+        private readonly IResponseError responseNotFoundError;
 
         public CompanyServiceController(ICompanyServiceBL companyServiceBL)
         {
             this.companyServiceBL = companyServiceBL;
-            responseBadRequestError = ResponseErrorFactory.getBadRequestError("");
-            responseNotFoundError = ResponseErrorFactory.getNotFoundError("");
+            responseBadRequestError = ResponseErrorFactory.getBadRequestError("Wrong company service data.");
+            responseNotFoundError = ResponseErrorFactory.getNotFoundError("Company Service Not Found.");
         }
 
         /// <summary>
@@ -37,47 +37,31 @@ namespace CoreWebApi.Controllers
         ///     
         /// </remarks>
         /// <response code="200">list of CompanyServiceDto's</response>
-        [HttpGet]
+        [HttpGet, AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAsync(int limit, int page, OrderType order) =>
             Ok(await companyServiceBL.GetCompanyServicesSearchResultAsync(limit, page, order));
-
-        /// <summary>
-        /// Gets a list of CompanyServiceDto's with values for pagination (page number, limit) and sorting by Title for public pages.
-        /// </summary>
-        /// <param name="page">Requested page</param>
-        /// <returns>Status 200 and list of CompanyServiceDto's</returns>
-        /// <remarks>
-        /// Sample request:
-        ///
-        ///     GET /api/companyservice/getpublic?page=1
-        ///     
-        /// </remarks>
-        /// <response code="200">list of CompanyServiceDto's</response>
-        [HttpGet]
-        [AllowAnonymous]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetPublicAsync(int page) =>
-            Ok(await companyServiceBL.GetCompanyServicesSearchResultAsync(limit: 3, page, order: OrderType.Ascending));
 
         /// <summary>
         /// Gets a specific CompanySeviceDto Item.
         /// </summary>
         /// <param name="id">Identifier int id</param>
         /// <returns>OK and CompanySeviceDto</returns>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET /api/companyservice/getbyid/1
+        ///     
+        /// </remarks>
         /// <response code="200">Returns the requested CompanySeviceDto item</response>
         /// <response code="404">If the company service with given id not found</response>
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult GetById([FromRoute] int id)
+        public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
         {
-            var companySeviceDto = companyServiceBL.GetCompanyServiceById(id);
-            if (companySeviceDto == null)
-            {
-                responseNotFoundError.Title = "Company Service Not Found.";
-                return NotFound(responseNotFoundError);
-            }
+            var companySeviceDto = await companyServiceBL.GetCompanyServiceByIdAsync(id);
+            if (companySeviceDto == null) return NotFound(responseNotFoundError);
 
             return Ok(companySeviceDto);
         }
@@ -105,11 +89,7 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult Create([FromBody] CompanyServiceDto companyServiceDto)
         {
-            if (!ModelState.IsValid)
-            {
-                responseBadRequestError.Title = "Wrong company service - data.";
-                return BadRequest(responseBadRequestError);
-            }
+            if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             return Created("api/companyservice/create", companyServiceBL.CreateCompanyService(companyServiceDto));
         }
 
@@ -137,18 +117,10 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult Update([FromBody] CompanyServiceDto companyServiceDto)
+        public async Task<IActionResult> UpdateAsync([FromBody] CompanyServiceDto companyServiceDto)
         {
-            if (!ModelState.IsValid)
-            {
-                responseBadRequestError.Title = "Wrong company service - data.";
-                return BadRequest(responseBadRequestError);
-            }
-            if (companyServiceBL.GetCompanyServiceById(companyServiceDto.Id) == null)
-            {
-                responseNotFoundError.Title = "Company Service Not Found.";
-                return NotFound(responseNotFoundError);
-            }
+            if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
+            if (await companyServiceBL.GetCompanyServiceByIdAsync(companyServiceDto.Id) == null) return NotFound(responseNotFoundError);
 
             return Ok(companyServiceBL.UpdateCompanyService(companyServiceDto));
         }
@@ -175,15 +147,10 @@ namespace CoreWebApi.Controllers
         [HttpPatch("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult SetIsActive([FromRoute] int id, [FromBody] JsonPatchDocument<CompanyServiceDto> patchDocument)
+        public async Task<IActionResult> SetIsActiveAsync([FromRoute] int id, [FromBody] JsonPatchDocument<CompanyServiceDto> patchDocument)
         {
-            var companyServiceDto = companyServiceBL.GetCompanyServiceById(id);
-            if (companyServiceDto == null)
-            {
-                responseNotFoundError.Title = "Company Service Not Found.";
-                return NotFound(responseNotFoundError);
-            }
-
+            var companyServiceDto = await companyServiceBL.GetCompanyServiceByIdAsync(id);
+            if (companyServiceDto == null) return NotFound(responseNotFoundError);
             patchDocument.ApplyTo(companyServiceDto, ModelState);
             if (!TryValidateModel(companyServiceDto)) return ValidationProblem(ModelState);
 
@@ -200,17 +167,13 @@ namespace CoreWebApi.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult Delete([FromRoute] int id)
+        public async Task<IActionResult> DeleteAsync([FromRoute] int id)
         {
-            var companyServiceToDelete = companyServiceBL.GetCompanyServiceById(id);
-            if (companyServiceToDelete == null)
-            {
-                responseNotFoundError.Title = "Company Service Not Found.";
-                return NotFound(responseNotFoundError);
-            }
-            companyServiceBL.DeleteCompanyService(id);
+            var companyServiceToDelete = await companyServiceBL.GetCompanyServiceByIdAsync(id);
+            if (companyServiceToDelete == null) return NotFound(responseNotFoundError);
+            await companyServiceBL.DeleteCompanyServiceAsync(id);
 
-            return Ok(companyServiceToDelete);
+            return Ok();
         }
     }
 }
