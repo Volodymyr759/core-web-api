@@ -63,9 +63,9 @@ namespace CoreWebApi.Controllers
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult GetById([FromRoute] int id)
+        public async Task<IActionResult> GetById([FromRoute] int id)
         {
-            var vacancyDto = vacancyService.GetVacancyById(id);
+            var vacancyDto = await vacancyService.GetVacancyByIdAsync(id);
             if (vacancyDto == null) return NotFound(responseNotFoundError);
 
             return Ok(vacancyDto);
@@ -110,10 +110,10 @@ namespace CoreWebApi.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult Create([FromBody] VacancyDto vacancyDto)
+        public async Task<IActionResult> Create([FromBody] VacancyDto vacancyDto)
         {
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
-            return Created("/api/vacancy/create", vacancyService.CreateVacancy(vacancyDto));
+            return Created("/api/vacancy/create", await vacancyService.CreateVacancyAsync(vacancyDto));
         }
 
         /// <summary>
@@ -145,8 +145,9 @@ namespace CoreWebApi.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             if (await IsExistAsync(vacancyDto.Id) == false) return NotFound(responseNotFoundError);
+            await vacancyService.UpdateVacancyAsync(vacancyDto);
 
-            return Ok(vacancyService.UpdateVacancy(vacancyDto));
+            return Ok(vacancyDto);
         }
 
         /// <summary>
@@ -156,7 +157,7 @@ namespace CoreWebApi.Controllers
         /// <returns>Status 200 and deleted VacancyDto object</returns>
         /// <response code="200">Returns the deleted VacancyDto item</response>
         /// <response code="404">If the vacancy with given id not found</response>
-        [HttpDelete("{id}"), AllowAnonymous]
+        [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteAsync([FromRoute] int id)

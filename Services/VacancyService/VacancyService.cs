@@ -60,7 +60,7 @@ namespace CoreWebApi.Services
             };
         }
 
-        public VacancyDto GetVacancyById(int id) => mapper.Map<VacancyDto>(repository.Get(id));
+        public async Task<VacancyDto> GetVacancyByIdAsync(int id) => mapper.Map<VacancyDto>(await repository.GetAsync(id));
 
         public async Task<IEnumerable<StringValue>> SearchVacanciesTitlesAsync(string searchValue)
         {
@@ -72,19 +72,15 @@ namespace CoreWebApi.Services
             return await vacanciesTitles;
         }
 
-        public VacancyDto CreateVacancy(VacancyDto vacancyDto)
+        public async Task<VacancyDto> CreateVacancyAsync(VacancyDto vacancyDto)
         {
             var vacancy = mapper.Map<Vacancy>(vacancyDto);
 
-            return mapper.Map<VacancyDto>(repository.Create(vacancy));
+            return mapper.Map<VacancyDto>(await repository.CreateAsync(vacancy));
         }
 
-        public VacancyDto UpdateVacancy(VacancyDto vacancyDto)
-        {
-            var vacancy = mapper.Map<Vacancy>(vacancyDto);
-
-            return mapper.Map<VacancyDto>(repository.Update(vacancy));
-        }
+        public async Task UpdateVacancyAsync(VacancyDto vacancyDto) =>
+            await repository.UpdateAsync(mapper.Map<Vacancy>(vacancyDto));
 
         public async Task DeleteVacancyAsync(int id) => await repository.DeleteAsync(id);
 

@@ -36,7 +36,7 @@ namespace CoreWebApi.Data
             return model;
         }
 
-        public async Task CreateAsync(TModel model)
+        public async Task<TModel> CreateAsync(TModel model)
         {
             try
             {
@@ -47,6 +47,8 @@ namespace CoreWebApi.Data
             {
                 throw new CreateEntityFailedException(typeof(TModel), ex);
             }
+
+            return model;
         }
 
         public void Delete(TModel model)
@@ -229,20 +231,6 @@ namespace CoreWebApi.Data
             return model;
         }
 
-        public async Task<TModel> SaveAsync(TModel model)
-        {
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                throw new UpdateEntityFailedException(typeof(TModel), ex);
-            }
-
-            return model;
-        }
-
         public async Task UpdateAsync(TModel model)
         {
             try
@@ -255,6 +243,20 @@ namespace CoreWebApi.Data
             {
                 throw new UpdateEntityFailedException(typeof(TModel), ex);
             }
+        }
+
+        public async Task<TModel> SaveAsync(TModel model)
+        {
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new UpdateEntityFailedException(typeof(TModel), ex);
+            }
+
+            return model;
         }
 
         public async Task<bool> IsExistAsync(string sqlQuery, SqlParameter[] parameters)

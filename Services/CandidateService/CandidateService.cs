@@ -3,8 +3,10 @@ using CoreWebApi.Data;
 using CoreWebApi.Library.Enums;
 using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -48,22 +50,29 @@ namespace CoreWebApi.Services
             };
         }
 
-        public CandidateDto GetCandidateById(int id) => mapper.Map<CandidateDto>(repository.Get(id));
+        public async Task<CandidateDto> GetCandidateByIdAsync(int id) => mapper.Map<CandidateDto>(await repository.GetAsync(id));
 
-        public CandidateDto CreateCandidate(CandidateDto candidateDto)
+        public async Task<CandidateDto> CreateCandidateAsync(CandidateDto candidateDto)
         {
             var candidate = mapper.Map<Candidate>(candidateDto);
 
-            return mapper.Map<CandidateDto>(repository.Create(candidate));
+            return mapper.Map<CandidateDto>(await repository.CreateAsync(candidate));
         }
 
-        public CandidateDto UpdateCandidate(CandidateDto candidateDto)
+        public async Task UpdateCandidateAsync(CandidateDto candidateDto) =>
+            await repository.UpdateAsync(mapper.Map<Candidate>(candidateDto));
+
+        public async Task DeleteCandidateAsync(int id) => await repository.DeleteAsync(id);
+
+        public async Task<bool> IsExistAsync(int id)
         {
-            var candidate = mapper.Map<Candidate>(candidateDto);
+            SqlParameter[] parameters =
+                {
+                   new SqlParameter("@id", SqlDbType.Int) { Value = id },
+                   new SqlParameter("@returnVal", SqlDbType.Int) {Direction = ParameterDirection.Output}
+                };
 
-            return mapper.Map<CandidateDto>(repository.Update(candidate));
+            return await repository.IsExistAsync("EXEC @returnVal=sp_checkCandidateById @id, @returnVal", parameters);
         }
-
-        public CandidateDto DeleteCandidate(int id) => mapper.Map<CandidateDto>(repository.Delete(id));
     }
 }

@@ -10,10 +10,10 @@ namespace CoreWebApi.Services
     public interface IVacancyService
     {
         Task<SearchResult<VacancyDto>> GetVacanciesSearchResultAsync(int limit, int page, string search, VacancyStatus? vacancyStatus, int? officeId, string sortfield, OrderType order);
-        VacancyDto GetVacancyById(int id);
+        Task<VacancyDto> GetVacancyByIdAsync(int id);
         Task<IEnumerable<StringValue>> SearchVacanciesTitlesAsync(string searchValue);
-        VacancyDto CreateVacancy(VacancyDto vacancyDto);
-        VacancyDto UpdateVacancy(VacancyDto vacancyDto);
+        Task<VacancyDto> CreateVacancyAsync(VacancyDto vacancyDto);
+        Task UpdateVacancyAsync(VacancyDto vacancyDto);
         Task DeleteVacancyAsync(int id);
         Task<VacancyDto> PartialUpdateAsync(int id, JsonPatchDocument<object> patchDocument);
         Task<bool> IsExistAsync(int id);

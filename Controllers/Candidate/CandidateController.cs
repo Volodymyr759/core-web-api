@@ -12,14 +12,14 @@ namespace CoreWebApi.Controllers
     public class CandidateController : ControllerBase
     {
         private readonly ICandidateService candidateService;
-        private IResponseError responseBadRequestError;
-        private IResponseError responseNotFoundError;
+        private readonly IResponseError responseBadRequestError;
+        private readonly IResponseError responseNotFoundError;
 
         public CandidateController(ICandidateService candidateService)
         {
             this.candidateService = candidateService;
-            responseBadRequestError = ResponseErrorFactory.getBadRequestError("");
-            responseNotFoundError = ResponseErrorFactory.getNotFoundError("");
+            responseBadRequestError = ResponseErrorFactory.getBadRequestError("Wrong candidate data.");
+            responseNotFoundError = ResponseErrorFactory.getNotFoundError("Candidate Not Found.");
         }
 
         /// <summary>
@@ -71,14 +71,10 @@ namespace CoreWebApi.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult GetById([FromRoute] int id)
+        public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
         {
-            var candidateDto = candidateService.GetCandidateById(id);
-            if (candidateDto == null)
-            {
-                responseNotFoundError.Title = "Candidate Not Found.";
-                return NotFound(responseNotFoundError);
-            }
+            var candidateDto = await candidateService.GetCandidateByIdAsync(id);
+            if (candidateDto == null) return NotFound(responseNotFoundError);
 
             return Ok(candidateDto);
         }
@@ -107,14 +103,10 @@ namespace CoreWebApi.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult Create([FromBody] CandidateDto candidateDto)
+        public async Task<IActionResult> CreateAsync([FromBody] CandidateDto candidateDto)
         {
-            if (!ModelState.IsValid)
-            {
-                responseBadRequestError.Title = "Wrong candidate-data.";
-                return BadRequest(responseBadRequestError);
-            }
-            return Created("/api/candidate/create", candidateService.CreateCandidate(candidateDto));
+            if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
+            return Created("/api/candidate/create", await candidateService.CreateCandidateAsync(candidateDto));
         }
 
         /// <summary>
@@ -144,20 +136,13 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult Update([FromBody] CandidateDto candidateDto)
+        public async Task<IActionResult> UpdateAsync([FromBody] CandidateDto candidateDto)
         {
-            if (!ModelState.IsValid)
-            {
-                responseBadRequestError.Title = "Wrong candidate-data.";
-                return BadRequest(responseBadRequestError);
-            }
-            if (candidateService.GetCandidateById(candidateDto.Id) == null)
-            {
-                responseNotFoundError.Title = "Candidate Not Found.";
-                return NotFound(responseNotFoundError);
-            }
+            if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
+            if (await IsExistAsync(candidateDto.Id) == false) return NotFound(responseNotFoundError);
+            await candidateService.UpdateCandidateAsync(candidateDto);
 
-            return Ok(candidateService.UpdateCandidate(candidateDto));
+            return Ok(candidateDto);
         }
 
         /// <summary>
@@ -170,17 +155,14 @@ namespace CoreWebApi.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult Delete([FromRoute] int id)
+        public async Task<IActionResult> DeleteAsync([FromRoute] int id)
         {
-            var candidateToDelete = candidateService.GetCandidateById(id);
-            if (candidateToDelete == null)
-            {
-                responseNotFoundError.Title = "Candidate Not Found.";
-                return NotFound(responseNotFoundError);
-            }
-            candidateService.DeleteCandidate(id);
+            if (await IsExistAsync(id) == false) return NotFound(responseNotFoundError);
+            await candidateService.DeleteCandidateAsync(id);
 
-            return Ok(candidateToDelete);
+            return Ok();
         }
+
+        private async Task<bool> IsExistAsync(int id) => await candidateService.IsExistAsync(id);
     }
 }
