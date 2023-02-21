@@ -3,8 +3,10 @@ using CoreWebApi.Data;
 using CoreWebApi.Library.Enums;
 using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -43,19 +45,15 @@ namespace CoreWebApi.Services
 
         public async Task<CompanyServiceDto> GetCompanyServiceByIdAsync(int id) => mapper.Map<CompanyServiceDto>(await repository.GetAsync(id));
 
-        public CompanyServiceDto CreateCompanyService(CompanyServiceDto companyServiceDto)
+        public async Task<CompanyServiceDto> CreateCompanyServiceAsync(CompanyServiceDto companyServiceDto)
         {
             var companyService = mapper.Map<CompanyService>(companyServiceDto);
 
-            return mapper.Map<CompanyServiceDto>(repository.Create(companyService));
+            return mapper.Map<CompanyServiceDto>(await repository.CreateAsync(companyService));
         }
 
-        public CompanyServiceDto UpdateCompanyService(CompanyServiceDto companyServiceDto)
-        {
-            var companyService = mapper.Map<CompanyService>(companyServiceDto);
-
-            return mapper.Map<CompanyServiceDto>(repository.Update(companyService));
-        }
+        public async Task UpdateCompanyServiceAsync(CompanyServiceDto companyServiceDto) =>
+            await repository.UpdateAsync(mapper.Map<CompanyService>(companyServiceDto));
 
         public void SetIsActive(int id, bool isActive)
         {
@@ -69,5 +67,16 @@ namespace CoreWebApi.Services
         }
 
         public async Task DeleteCompanyServiceAsync(int id) => await repository.DeleteAsync(id);
+
+        public async Task<bool> IsExistAsync(int id)
+        {
+            SqlParameter[] parameters =
+                {
+                   new SqlParameter("@id", SqlDbType.Int) { Value = id },
+                   new SqlParameter("@returnVal", SqlDbType.Int) {Direction = ParameterDirection.Output}
+                };
+
+            return await repository.IsExistAsync("EXEC @returnVal=sp_checkCompanyServiceById @id, @returnVal", parameters);
+        }
     }
 }

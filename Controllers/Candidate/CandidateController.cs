@@ -59,7 +59,7 @@ namespace CoreWebApi.Controllers
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetPublicAsync(int page) =>
-            Ok(await candidateService.GetCandidatesSearchResultAsync(limit: 10, page, search: "", sort_field: "Id", order: OrderType.Descending));
+            Ok(await candidateService.GetCandidatesSearchResultAsync(limit: 10, page, search: "", sortField: "Id", order: OrderType.Descending));
 
         /// <summary>
         /// Gets a specific CandidateDto Item.

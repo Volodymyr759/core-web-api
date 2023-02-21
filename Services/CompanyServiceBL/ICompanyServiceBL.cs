@@ -8,9 +8,10 @@ namespace CoreWebApi.Services
     {
         Task<SearchResult<CompanyServiceDto>> GetCompanyServicesSearchResultAsync(int limit, int page, OrderType order);
         Task<CompanyServiceDto> GetCompanyServiceByIdAsync(int id);
-        CompanyServiceDto CreateCompanyService(CompanyServiceDto companyServiceDto);
-        CompanyServiceDto UpdateCompanyService(CompanyServiceDto companyServiceDto);
+        Task<CompanyServiceDto> CreateCompanyServiceAsync(CompanyServiceDto companyServiceDto);
+        Task UpdateCompanyServiceAsync(CompanyServiceDto companyServiceDto);
         Task DeleteCompanyServiceAsync(int id);
         void SetIsActive(int id, bool isActive);
+        Task<bool> IsExistAsync(int id);
     }
 }

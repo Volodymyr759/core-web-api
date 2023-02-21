@@ -87,10 +87,10 @@ namespace CoreWebApi.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult Create([FromBody] CompanyServiceDto companyServiceDto)
+        public async Task<IActionResult> Create([FromBody] CompanyServiceDto companyServiceDto)
         {
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
-            return Created("api/companyservice/create", companyServiceBL.CreateCompanyService(companyServiceDto));
+            return Created("api/companyservice/create", await companyServiceBL.CreateCompanyServiceAsync(companyServiceDto));
         }
 
         /// <summary>
@@ -120,9 +120,10 @@ namespace CoreWebApi.Controllers
         public async Task<IActionResult> UpdateAsync([FromBody] CompanyServiceDto companyServiceDto)
         {
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
-            if (await companyServiceBL.GetCompanyServiceByIdAsync(companyServiceDto.Id) == null) return NotFound(responseNotFoundError);
+            if (await IsExistAsync(companyServiceDto.Id) == false) return NotFound(responseNotFoundError);
+            await companyServiceBL.UpdateCompanyServiceAsync(companyServiceDto);
 
-            return Ok(companyServiceBL.UpdateCompanyService(companyServiceDto));
+            return Ok(companyServiceDto);
         }
 
         /// <summary>
@@ -149,12 +150,15 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> SetIsActiveAsync([FromRoute] int id, [FromBody] JsonPatchDocument<CompanyServiceDto> patchDocument)
         {
-            var companyServiceDto = await companyServiceBL.GetCompanyServiceByIdAsync(id);
-            if (companyServiceDto == null) return NotFound(responseNotFoundError);
-            patchDocument.ApplyTo(companyServiceDto, ModelState);
-            if (!TryValidateModel(companyServiceDto)) return ValidationProblem(ModelState);
+            //var companyServiceDto = await companyServiceBL.GetCompanyServiceByIdAsync(id);
+            //if (await companyServiceBL.IsExistAsync(companyServiceDto.Id) == false) return NotFound(responseNotFoundError);
+            //patchDocument.ApplyTo(companyServiceDto, ModelState);
+            //if (!TryValidateModel(companyServiceDto)) return ValidationProblem(ModelState);
 
-            return Ok(companyServiceBL.UpdateCompanyService(companyServiceDto));
+            //return Ok(companyServiceBL.UpdateCompanyServiceAsync(companyServiceDto));
+            // todo: realize like Vacancy partial update!
+
+            return BadRequest();
         }
 
         /// <summary>
@@ -169,11 +173,12 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteAsync([FromRoute] int id)
         {
-            var companyServiceToDelete = await companyServiceBL.GetCompanyServiceByIdAsync(id);
-            if (companyServiceToDelete == null) return NotFound(responseNotFoundError);
+            if (await IsExistAsync(id) == false) return NotFound(responseNotFoundError);
             await companyServiceBL.DeleteCompanyServiceAsync(id);
 
             return Ok();
         }
+
+        private async Task<bool> IsExistAsync(int id) => await companyServiceBL.IsExistAsync(id);
     }
 }
