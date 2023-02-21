@@ -23,7 +23,7 @@ namespace CoreWebApi.Services
         {
             // search by FirstName or LastName
             Expression<Func<Tenant, bool>> searchQuery = null;
-            if (search.Trim().Length > 0) searchQuery = t => t.FirstName.Contains(search) || t.LastName.Contains(search);
+            if (!string.IsNullOrEmpty(search)) searchQuery = t => t.FirstName.Contains(search) || t.LastName.Contains(search);
 
             // sorting - newest first
             Func<IQueryable<Tenant>, IOrderedQueryable<Tenant>> orderBy = null;

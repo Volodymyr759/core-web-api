@@ -6,7 +6,7 @@ namespace CoreWebApi.Services
 {
     public interface ICandidateService
     {
-        Task<SearchResult<CandidateDto>> GetCandidatesSearchResultAsync(int limit, int page, string search, string sort_field, OrderType order);
+        Task<SearchResult<CandidateDto>> GetCandidatesSearchResultAsync(int limit, int page, string search, string sortField, OrderType order);
         Task<CandidateDto> GetCandidateByIdAsync(int id);
         Task<CandidateDto> CreateCandidateAsync(CandidateDto candidateDto);
         Task UpdateCandidateAsync(CandidateDto candidateDto);

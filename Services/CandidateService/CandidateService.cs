@@ -26,11 +26,11 @@ namespace CoreWebApi.Services
             this.repository = repository;
         }
 
-        public async Task<SearchResult<CandidateDto>> GetCandidatesSearchResultAsync(int limit, int page, string search, string sort_field, OrderType order)
+        public async Task<SearchResult<CandidateDto>> GetCandidatesSearchResultAsync(int limit, int page, string search, string sortField, OrderType order)
         {
             // search by Title
             Expression<Func<Candidate, bool>> searchQuery = null;
-            if (search.Trim().Length > 0) searchQuery = t => t.FullName.Contains(search);
+            if (!string.IsNullOrEmpty(search)) searchQuery = t => t.FullName.Contains(search);
 
             // sorting - newest first
             Func<IQueryable<Candidate>, IOrderedQueryable<Candidate>> orderBy = null;

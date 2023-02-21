@@ -458,8 +458,8 @@ namespace CoreWebApi.Controllers
         ///     
         ///     POST /api/account/login
         ///     {
-        ///         "email": "admin1@gmail.com",
-        ///         "password": "Password."
+        ///         "email": "vvv@gmail.com",
+        ///         "password": "Password1.",
         ///         "remember": "true"
         ///     }
         ///     

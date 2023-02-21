@@ -28,20 +28,20 @@ namespace CoreWebApi.Controllers
         /// <param name="limit">Number of items per page</param>
         /// <param name="page">Requested page</param>
         /// <param name="search">Part of full name for searching</param>
-        /// <param name="sort_field">Field name for sorting</param>
+        /// <param name="sortField">Field name for sorting</param>
         /// <param name="order">Sort direction: 0 - Ascending or 1 - Descending</param>
         /// <returns>Status 200 and list of EmployeeDto's</returns>
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/employee/get/?limit=10&amp;page=1&amp;search=j&amp;sort_field=Id&amp;sort=desc
+        ///     GET /api/employee/get/?limit=10&amp;page=1&amp;search=j&amp;sortField=Id&amp;sort=desc
         ///     
         /// </remarks>
         /// <response code="200">list of EmployeeDto's</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAsync(int limit, int page, string search, string sort_field, OrderType order) =>
-            Ok(await employeeService.GetEmployeesSearchResultAsync(limit, page, search ?? "", sort_field ?? "FullName", order));
+        public async Task<IActionResult> GetAsync(int limit, int page, string search, string sortField, OrderType order) =>
+            Ok(await employeeService.GetEmployeesSearchResultAsync(limit, page, search ?? "", sortField ?? "FullName", order));
 
         /// <summary>
         /// Gets a list of EmployeeDto's for public pages.

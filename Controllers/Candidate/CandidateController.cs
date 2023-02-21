@@ -28,7 +28,7 @@ namespace CoreWebApi.Controllers
         /// <param name="limit">Number of items per page</param>
         /// <param name="page">Requested page</param>
         /// <param name="search">Part of FullName for searching</param>
-        /// <param name="sort_field">field name for sorting</param>
+        /// <param name="sortField">field name for sorting</param>
         /// <param name="order">sort direction: 0 - Ascending or 1 - Descending</param>
         /// <returns>Status 200 and list of CandidateDto's</returns>
         /// <remarks>
@@ -40,8 +40,8 @@ namespace CoreWebApi.Controllers
         /// <response code="200">list of CandidateDto's</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAsync(int limit, int page, string search, string sort_field, OrderType order) =>
-            Ok(await candidateService.GetCandidatesSearchResultAsync(limit, page, search, sort_field, order));
+        public async Task<IActionResult> GetAsync(int limit, int page, string search, string sortField, OrderType order) =>
+            Ok(await candidateService.GetCandidatesSearchResultAsync(limit, page, search, sortField, order));
 
         /// <summary>
         /// Gets a list of CandidateDto's for public pages.
@@ -100,7 +100,7 @@ namespace CoreWebApi.Controllers
         /// </remarks>
         /// <response code="201">Returns the newly created CandidateDto item</response>
         /// <response code="400">If the argument is not valid</response>
-        [HttpPost]
+        [HttpPost, AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateAsync([FromBody] CandidateDto candidateDto)
