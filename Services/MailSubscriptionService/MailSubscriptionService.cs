@@ -3,8 +3,10 @@ using CoreWebApi.Data;
 using CoreWebApi.Library.Enums;
 using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -43,22 +45,29 @@ namespace CoreWebApi.Services
             };
         }
 
-        public MailSubscriptionDto GetMailSubscriptionById(int id) => mapper.Map<MailSubscriptionDto>(repository.Get(id));
+        public async Task<MailSubscriptionDto> GetMailSubscriptionByIdAsync(int id) => mapper.Map<MailSubscriptionDto>(await repository.GetAsync(id));
 
-        public MailSubscriptionDto CreateMailSubscription(MailSubscriptionDto mailSubscriptionDto)
+        public async Task<MailSubscriptionDto> CreateMailSubscriptionAsync(MailSubscriptionDto mailSubscriptionDto)
         {
             var subscription = mapper.Map<MailSubscription>(mailSubscriptionDto);
 
-            return mapper.Map<MailSubscriptionDto>(repository.Create(subscription));
+            return mapper.Map<MailSubscriptionDto>(await repository.CreateAsync(subscription));
         }
 
-        public MailSubscriptionDto UpdateMailSubscription(MailSubscriptionDto mailSubscriptionDto)
+        public async Task UpdateMailSubscriptionAsync(MailSubscriptionDto mailSubscriptionDto) =>
+            await repository.UpdateAsync(mapper.Map<MailSubscription>(mailSubscriptionDto));
+
+        public async Task DeleteMailSubscriptionAsync(int id) => await repository.DeleteAsync(id);
+
+        public async Task<bool> IsExistAsync(int id)
         {
-            var subscription = mapper.Map<MailSubscription>(mailSubscriptionDto);
+            SqlParameter[] parameters =
+                {
+                   new SqlParameter("@id", SqlDbType.Int) { Value = id },
+                   new SqlParameter("@returnVal", SqlDbType.Int) {Direction = ParameterDirection.Output}
+                };
 
-            return mapper.Map<MailSubscriptionDto>(repository.Update(subscription));
+            return await repository.IsExistAsync("EXEC @returnVal=sp_checkMailSubscriptionById @id, @returnVal", parameters);
         }
-
-        public MailSubscriptionDto DeleteMailSubscription(int id) => mapper.Map<MailSubscriptionDto>(repository.Delete(id));
     }
 }

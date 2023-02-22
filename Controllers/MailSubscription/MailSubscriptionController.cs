@@ -18,8 +18,8 @@ namespace CoreWebApi.Controllers
         public MailSubscriptionController(IMailSubscriptionService mailSubscriptionService)
         {
             this.mailSubscriptionService = mailSubscriptionService;
-            responseBadRequestError = ResponseErrorFactory.getBadRequestError("");
-            responseNotFoundError = ResponseErrorFactory.getNotFoundError("");
+            responseBadRequestError = ResponseErrorFactory.getBadRequestError("Wrong mail subscription data.");
+            responseNotFoundError = ResponseErrorFactory.getNotFoundError("Mail Subscription Not Found.");
         }
 
         /// <summary>
@@ -70,14 +70,10 @@ namespace CoreWebApi.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult GetById([FromRoute] int id)
+        public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
         {
-            var mailSubscriptionDto = mailSubscriptionService.GetMailSubscriptionById(id);
-            if (mailSubscriptionDto == null)
-            {
-                responseNotFoundError.Title = "Mail Subscription Not Found.";
-                return NotFound(responseNotFoundError);
-            }
+            var mailSubscriptionDto = await mailSubscriptionService.GetMailSubscriptionByIdAsync(id);
+            if (mailSubscriptionDto == null) return NotFound(responseNotFoundError);
 
             return Ok(mailSubscriptionDto);
         }
@@ -101,14 +97,10 @@ namespace CoreWebApi.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult Create([FromBody] MailSubscriptionDto mailSubscriptionDto)
+        public async Task<IActionResult> CreateAsync([FromBody] MailSubscriptionDto mailSubscriptionDto)
         {
-            if (!ModelState.IsValid)
-            {
-                responseBadRequestError.Title = "Wrong mail subscription - data.";
-                return BadRequest(responseBadRequestError);
-            }
-            return Created("/api/mailsubscription/create", mailSubscriptionService.CreateMailSubscription(mailSubscriptionDto));
+            if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
+            return Created("/api/mailsubscription/create", await mailSubscriptionService.CreateMailSubscriptionAsync(mailSubscriptionDto));
         }
 
         /// <summary>
@@ -133,20 +125,13 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult Update([FromBody] MailSubscriptionDto mailSubscriptionDto)
+        public async Task<IActionResult> UpdateAsync([FromBody] MailSubscriptionDto mailSubscriptionDto)
         {
-            if (!ModelState.IsValid)
-            {
-                responseBadRequestError.Title = "Wrong mail subscription - data.";
-                return BadRequest(responseBadRequestError);
-            }
-            if (mailSubscriptionService.GetMailSubscriptionById(mailSubscriptionDto.Id) == null)
-            {
-                responseNotFoundError.Title = "Mail Subscription Not Found.";
-                return NotFound(responseNotFoundError);
-            }
+            if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
+            if (await IsExistAsync(mailSubscriptionDto.Id) == false) return NotFound(responseNotFoundError);
+            await mailSubscriptionService.UpdateMailSubscriptionAsync(mailSubscriptionDto);
 
-            return Ok(mailSubscriptionService.UpdateMailSubscription(mailSubscriptionDto));
+            return Ok(mailSubscriptionDto);
         }
 
         /// <summary>
@@ -159,18 +144,14 @@ namespace CoreWebApi.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult Delete([FromRoute] int id)
+        public async Task<IActionResult> DeleteAsync([FromRoute] int id)
         {
-            var mailSubscriptionToDelete = mailSubscriptionService.GetMailSubscriptionById(id);
-            if (mailSubscriptionToDelete == null)
-            {
-                responseNotFoundError.Title = "Mail Subscription Not Found.";
-                return NotFound(responseNotFoundError);
-            }
-            mailSubscriptionService.DeleteMailSubscription(id);
+            if (await IsExistAsync(id) == false) return NotFound(responseNotFoundError);
+            await mailSubscriptionService.DeleteMailSubscriptionAsync(id);
 
-            return Ok(mailSubscriptionToDelete);
+            return Ok();
         }
 
+        private async Task<bool> IsExistAsync(int id) => await mailSubscriptionService.IsExistAsync(id);
     }
 }

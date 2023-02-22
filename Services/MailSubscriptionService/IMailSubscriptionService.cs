@@ -7,9 +7,10 @@ namespace CoreWebApi.Services
     public interface IMailSubscriptionService
     {
         Task<SearchResult<MailSubscriptionDto>> GetMailSubscriptionsSearchResultAsync(int limit, int page, OrderType order);
-        MailSubscriptionDto GetMailSubscriptionById(int id);
-        MailSubscriptionDto CreateMailSubscription(MailSubscriptionDto mailSubscriptionDto);
-        MailSubscriptionDto UpdateMailSubscription(MailSubscriptionDto mailSubscriptionDto);
-        MailSubscriptionDto DeleteMailSubscription(int id);
+        Task<MailSubscriptionDto> GetMailSubscriptionByIdAsync(int id);
+        Task<MailSubscriptionDto> CreateMailSubscriptionAsync(MailSubscriptionDto mailSubscriptionDto);
+        Task UpdateMailSubscriptionAsync(MailSubscriptionDto mailSubscriptionDto);
+        Task DeleteMailSubscriptionAsync(int id);
+        Task<bool> IsExistAsync(int id);
     }
 }
