@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace CoreWebApi.Controllers
 {
@@ -17,8 +18,8 @@ namespace CoreWebApi.Controllers
         public MailSubscriberController(IMailSubscriberService mailSubscriberService)
         {
             this.mailSubscriberService = mailSubscriberService;
-            responseBadRequestError = ResponseErrorFactory.getBadRequestError("");
-            responseNotFoundError = ResponseErrorFactory.getNotFoundError("");
+            responseBadRequestError = ResponseErrorFactory.getBadRequestError("Wrong mail subscriber data.");
+            responseNotFoundError = ResponseErrorFactory.getNotFoundError("Mail Subscriber Not Found.");
         }
 
         /// <summary>
@@ -31,16 +32,14 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/MailSubscriber/GetAll;page=1;sort=asc;limit=3
+        ///     GET /api/MailSubscriber/get;page=1;sort=asc;limit=3
         ///     
         /// </remarks>
         /// <response code="200">list of MailSubscriberDto's</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult GetAll(int page = 1, string sort = "asc", int limit = 10)
-        {
-            return Ok(mailSubscriberService.GetAllMailSubscribers(page, sort, limit));
-        }
+        public IActionResult Get(int page = 1, string sort = "asc", int limit = 10) =>
+            Ok(mailSubscriberService.GetAllMailSubscribers(page, sort, limit));
 
         /// <summary>
         /// Gets a specific MailSubscriberDto Item.
@@ -52,14 +51,10 @@ namespace CoreWebApi.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult GetById([FromRoute] int id)
+        public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
         {
-            var mailSubscriberDto = mailSubscriberService.GetMailSubscriberById(id);
-            if (mailSubscriberDto == null)
-            {
-                responseNotFoundError.Title = "Mail Subscriber Not Found.";
-                return NotFound(responseNotFoundError);
-            }
+            var mailSubscriberDto = await mailSubscriberService.GetMailSubscriberByIdAsync(id);
+            if (mailSubscriberDto == null) return NotFound(responseNotFoundError);
 
             return Ok(mailSubscriberDto);
         }
@@ -85,14 +80,10 @@ namespace CoreWebApi.Controllers
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult Subscribe([FromBody] MailSubscriberDto mailSubscriberDto)
+        public async Task<IActionResult> SubscribeAsync([FromBody] MailSubscriberDto mailSubscriberDto)
         {
-            if (!ModelState.IsValid)
-            {
-                responseBadRequestError.Title = "Wrong mail subscriber - data.";
-                return BadRequest(responseBadRequestError);
-            }
-            return Created("/api/nailsubscriber/subscribe", mailSubscriberService.CreateMailSubscriber(mailSubscriberDto));
+            if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
+            return Created("/api/nailsubscriber/subscribe", await mailSubscriberService.CreateMailSubscriberAsync(mailSubscriberDto));
         }
 
         /// <summary>
@@ -119,42 +110,37 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult Unsubscribe([FromRoute] int id, [FromBody] JsonPatchDocument<MailSubscriberDto> patchDocument)
+        public async Task<IActionResult> UnsubscribeAsync([FromRoute] int id, [FromBody] JsonPatchDocument<object> patchDocument)
         {
-            var mailSubscriberDto = mailSubscriberService.GetMailSubscriberById(id);
-            if (mailSubscriberDto == null)
+            if (await IsExistAsync(id) == false) return NotFound(responseNotFoundError);
+            try
             {
-                responseNotFoundError.Title = "Mail Subscriber Not Found.";
-                return NotFound(responseNotFoundError);
+                return Ok(await mailSubscriberService.PartialUpdateAsync(id, patchDocument));
             }
-
-            patchDocument.ApplyTo(mailSubscriberDto, ModelState);
-            if (!TryValidateModel(mailSubscriberDto)) return ValidationProblem(ModelState);
-
-            return Ok(mailSubscriberService.UpdateMailSubscriber(mailSubscriberDto));
+            catch
+            {
+                return BadRequest(responseBadRequestError);
+            }
         }
 
         /// <summary>
         /// Deletes a MailSubscriber Item.
         /// </summary>
         /// <param name="id">Identifier int id</param>
-        /// <returns>Status 200 and deleted MailSubscriberDto object</returns>
+        /// <returns>Status 200</returns>
         /// <response code="200">Returns the deleted MailSubscriberDto item</response>
         /// <response code="404">If the mail subscriber with given id not found</response>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult Delete([FromRoute] int id)
+        public async Task<IActionResult> DeleteAsync([FromRoute] int id)
         {
-            var mailSubscriberToDelete = mailSubscriberService.GetMailSubscriberById(id);
-            if (mailSubscriberToDelete == null)
-            {
-                responseNotFoundError.Title = "Mail Subscriber Not Found.";
-                return NotFound(responseNotFoundError);
-            }
-            mailSubscriberService.DeleteMailSubsriber(id);
+            if (await IsExistAsync(id) == false) return NotFound(responseNotFoundError);
+            await mailSubscriberService.DeleteMailSubsriberAsync(id);
 
-            return Ok(mailSubscriberToDelete);
+            return Ok();
         }
+
+        private async Task<bool> IsExistAsync(int id) => await mailSubscriberService.IsExistAsync(id);
     }
 }

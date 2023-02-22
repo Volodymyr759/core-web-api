@@ -1,14 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using CoreWebApi.Library.SearchResult;
+using Microsoft.AspNetCore.JsonPatch;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
 {
     public interface IMailSubscriberService
     {
         IEnumerable<MailSubscriberDto> GetAllMailSubscribers(int page, string sort, int limit);
-        MailSubscriberDto GetMailSubscriberById(int id);
-        IEnumerable<MailSubscriptionDto> GetSubscriptionsBySubscribersEmail(int page, string sort, int limit);
-        MailSubscriberDto CreateMailSubscriber(MailSubscriberDto mailSubscriberDto);
-        MailSubscriberDto UpdateMailSubscriber(MailSubscriberDto mailSubscriberDto);
-        MailSubscriberDto DeleteMailSubsriber(int id);
+        Task<MailSubscriberDto> GetMailSubscriberByIdAsync(int id);
+        Task<SearchResult<MailSubscriptionDto>> GetSubscriptionsBySubscribersEmailAsync(int page, string sort, int limit);
+        Task<MailSubscriberDto> CreateMailSubscriberAsync(MailSubscriberDto mailSubscriberDto);
+        Task UpdateMailSubscriberAsync(MailSubscriberDto mailSubscriberDto);
+        Task DeleteMailSubsriberAsync(int id);
+        Task<MailSubscriberDto> PartialUpdateAsync(int id, JsonPatchDocument<object> patchDocument);
+        Task<bool> IsExistAsync(int id);
     }
 }
