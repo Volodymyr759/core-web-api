@@ -3,8 +3,10 @@ using CoreWebApi.Data;
 using CoreWebApi.Library.Enums;
 using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -54,23 +56,28 @@ namespace CoreWebApi.Services
             return officesNameIds.OrderBy(o => o.Name).ToList<OfficeNameIdDto>();
         }
 
-        public OfficeDto GetOfficeById(int id) => mapper.Map<OfficeDto>(repository.Get(id));
+        public async Task<OfficeDto> GetOfficeByIdAsync(int id) => mapper.Map<OfficeDto>(await repository.GetAsync(id));
 
-        public OfficeDto CreateOffice(OfficeDto officeDto)
+        public async Task<OfficeDto> CreateOfficeAsync(OfficeDto officeDto)
         {
             var office = mapper.Map<Office>(officeDto);
 
-            return mapper.Map<OfficeDto>(repository.Create(office));
+            return mapper.Map<OfficeDto>(await repository.CreateAsync(office));
         }
 
-        public OfficeDto UpdateOffice(OfficeDto officeDto)
+        public async Task UpdateOfficeAsync(OfficeDto officeDto) => await repository.UpdateAsync(mapper.Map<Office>(officeDto));
+
+        public async Task DeleteOfficeAsync(int id) => await repository.DeleteAsync(id);
+
+        public async Task<bool> IsExistAsync(int id)
         {
-            repository.Update(mapper.Map<Office>(officeDto));
+            SqlParameter[] parameters =
+                {
+                   new SqlParameter("@id", SqlDbType.Int) { Value = id },
+                   new SqlParameter("@returnVal", SqlDbType.Int) {Direction = ParameterDirection.Output}
+                };
 
-            return officeDto;
+            return await repository.IsExistAsync("EXEC @returnVal=sp_sp_checkOfficeById @id, @returnVal", parameters);
         }
-
-        public OfficeDto DeleteOffice(int id) => mapper.Map<OfficeDto>(repository.Delete(id));
-
     }
 }

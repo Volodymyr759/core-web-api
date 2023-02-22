@@ -12,14 +12,14 @@ namespace CoreWebApi.Controllers
     public class OfficeController : ControllerBase
     {
         private readonly IOfficeService officeService;
-        private IResponseError responseBadRequestError;
-        private IResponseError responseNotFoundError;
+        private readonly IResponseError responseBadRequestError;
+        private readonly IResponseError responseNotFoundError;
 
         public OfficeController(IOfficeService officeService)
         {
             this.officeService = officeService;
-            responseBadRequestError = ResponseErrorFactory.getBadRequestError("");
-            responseNotFoundError = ResponseErrorFactory.getNotFoundError("");
+            responseBadRequestError = ResponseErrorFactory.getBadRequestError("Wrong office data.");
+            responseNotFoundError = ResponseErrorFactory.getNotFoundError("Office Not Found.");
         }
 
         /// <summary>
@@ -85,14 +85,10 @@ namespace CoreWebApi.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult GetById([FromRoute] int id)
+        public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
         {
-            var officeDto = officeService.GetOfficeById(id);
-            if (officeDto == null)
-            {
-                responseNotFoundError.Title = "Office Not Found.";
-                return NotFound(responseNotFoundError);
-            }
+            var officeDto = await officeService.GetOfficeByIdAsync(id);
+            if (officeDto == null) return NotFound(responseNotFoundError);
 
             return Ok(officeDto);
         }
@@ -120,14 +116,10 @@ namespace CoreWebApi.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult Create([FromBody] OfficeDto OfficeDto)
+        public async Task<IActionResult> CreateAsync([FromBody] OfficeDto officeDto)
         {
-            if (!ModelState.IsValid)
-            {
-                responseBadRequestError.Title = "Wrong office-data.";
-                return BadRequest(responseBadRequestError);
-            }
-            return Created("/api/office/create", officeService.CreateOffice(OfficeDto));
+            if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
+            return Created("/api/office/create", await officeService.CreateOfficeAsync(officeDto));
         }
 
         /// <summary>
@@ -156,20 +148,13 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult Update([FromBody] OfficeDto OfficeDto)
+        public async Task<IActionResult> UpdateAsync([FromBody] OfficeDto officeDto)
         {
-            if (!ModelState.IsValid)
-            {
-                responseBadRequestError.Title = "Wrong office-data.";
-                return BadRequest(responseBadRequestError);
-            }
-            if (officeService.GetOfficeById(OfficeDto.Id) == null)
-            {
-                responseNotFoundError.Title = "Office Not Found.";
-                return NotFound(responseNotFoundError);
-            }
+            if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
+            if (await IsExistAsync(officeDto.Id) == false) return NotFound(responseNotFoundError);
+            await officeService.UpdateOfficeAsync(officeDto);
 
-            return Ok(officeService.UpdateOffice(OfficeDto));
+            return Ok(officeDto);
         }
 
         /// <summary>
@@ -182,17 +167,14 @@ namespace CoreWebApi.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult Delete([FromRoute] int id)
+        public async Task<IActionResult> DeleteAsync([FromRoute] int id)
         {
-            var officeToDelete = officeService.GetOfficeById(id);
-            if (officeToDelete == null)
-            {
-                responseNotFoundError.Title = "Office Not Found.";
-                return NotFound(responseNotFoundError);
-            }
-            officeService.DeleteOffice(id);
+            if (await IsExistAsync(id) == false) return NotFound(responseNotFoundError);
+            await officeService.DeleteOfficeAsync(id);
 
-            return Ok(officeToDelete);
+            return Ok();
         }
+
+        private async Task<bool> IsExistAsync(int id) => await officeService.IsExistAsync(id);
     }
 }
