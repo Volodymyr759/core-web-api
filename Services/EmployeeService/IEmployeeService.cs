@@ -7,9 +7,10 @@ namespace CoreWebApi.Services
     public interface IEmployeeService
     {
         Task<SearchResult<EmployeeDto>> GetEmployeesSearchResultAsync(int limit, int page, string search, string sort_field, OrderType order);
-        EmployeeDto GetEmployeeById(int id);
-        EmployeeDto CreateEmployee(EmployeeDto employeeDto);
-        EmployeeDto UpdateEmployee(EmployeeDto employeeDto);
-        EmployeeDto DeleteEmployee(int id);
+        Task<EmployeeDto> GetEmployeeByIdAsync(int id);
+        Task<EmployeeDto> CreateEmployeeAsync(EmployeeDto employeeDto);
+        Task UpdateEmployeeAsync(EmployeeDto employeeDto);
+        Task DeleteEmployeeAsync(int id);
+        Task<bool> IsExistAsync(int id);
     }
 }

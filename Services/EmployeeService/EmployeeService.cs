@@ -3,8 +3,10 @@ using CoreWebApi.Data;
 using CoreWebApi.Library.Enums;
 using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -48,25 +50,29 @@ namespace CoreWebApi.Services
             };
         }
 
-        public EmployeeDto GetEmployeeById(int id) => mapper.Map<EmployeeDto>(repository.Get(id));
+        public async Task<EmployeeDto> GetEmployeeByIdAsync(int id) => mapper.Map<EmployeeDto>(await repository.GetAsync(id));
 
-        public EmployeeDto CreateEmployee(EmployeeDto employeeDto)
+        public async Task<EmployeeDto> CreateEmployeeAsync(EmployeeDto employeeDto)
         {
             var employee = mapper.Map<Employee>(employeeDto);
 
-            return mapper.Map<EmployeeDto>(repository.Create(employee));
+            return mapper.Map<EmployeeDto>(await repository.CreateAsync(employee));
         }
 
-        public EmployeeDto UpdateEmployee(EmployeeDto employeeDto)
-        {
-            var employee = mapper.Map<Employee>(employeeDto);
+        public async Task UpdateEmployeeAsync(EmployeeDto employeeDto) =>
+            await repository.UpdateAsync(mapper.Map<Employee>(employeeDto));
 
-            return mapper.Map<EmployeeDto>(repository.Update(employee));
-        }
+        public async Task DeleteEmployeeAsync(int id) => await repository.DeleteAsync(id);
 
-        public EmployeeDto DeleteEmployee(int id)
+        public async Task<bool> IsExistAsync(int id)
         {
-            return mapper.Map<EmployeeDto>(repository.Delete(id));
+            SqlParameter[] parameters =
+                {
+                   new SqlParameter("@id", SqlDbType.Int) { Value = id },
+                   new SqlParameter("@returnVal", SqlDbType.Int) {Direction = ParameterDirection.Output}
+                };
+
+            return await repository.IsExistAsync("EXEC @returnVal=sp_checkEmployeeById @id, @returnVal", parameters);
         }
     }
 }

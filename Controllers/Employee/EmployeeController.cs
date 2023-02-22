@@ -18,8 +18,8 @@ namespace CoreWebApi.Controllers
         public EmployeeController(IEmployeeService employeeService)
         {
             this.employeeService = employeeService;
-            responseBadRequestError = ResponseErrorFactory.getBadRequestError("");
-            responseNotFoundError = ResponseErrorFactory.getNotFoundError("");
+            responseBadRequestError = ResponseErrorFactory.getBadRequestError("Wrong employee data.");
+            responseNotFoundError = ResponseErrorFactory.getNotFoundError("Employee Not Found.");
         }
 
         /// <summary>
@@ -71,14 +71,10 @@ namespace CoreWebApi.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult GetById([FromRoute] int id)
+        public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
         {
-            var employeeDto = employeeService.GetEmployeeById(id);
-            if (employeeDto == null)
-            {
-                responseNotFoundError.Title = "Employee Not Found.";
-                return NotFound(responseNotFoundError);
-            }
+            var employeeDto = await employeeService.GetEmployeeByIdAsync(id);
+            if (employeeDto == null) return NotFound(responseNotFoundError);
 
             return Ok(employeeDto);
         }
@@ -106,14 +102,11 @@ namespace CoreWebApi.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult Create([FromBody] EmployeeDto employeeDto)
+        public async Task<IActionResult> CreateAsync([FromBody] EmployeeDto employeeDto)
         {
-            if (!ModelState.IsValid)
-            {
-                responseBadRequestError.Title = "Wrong employee-data.";
-                return BadRequest(responseBadRequestError);
-            }
-            return Created("/api/Employee/create", employeeService.CreateEmployee(employeeDto));
+            if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
+
+            return Created("/api/Employee/create", await employeeService.CreateEmployeeAsync(employeeDto));
         }
 
         /// <summary>
@@ -142,20 +135,13 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult Update([FromBody] EmployeeDto employeeDto)
+        public async Task<IActionResult> UpdateAsync([FromBody] EmployeeDto employeeDto)
         {
-            if (!ModelState.IsValid)
-            {
-                responseBadRequestError.Title = "Wrong employee-data.";
-                return BadRequest(responseBadRequestError);
-            }
-            if (employeeService.GetEmployeeById(employeeDto.Id) == null)
-            {
-                responseNotFoundError.Title = "Employee Not Found.";
-                return NotFound(responseNotFoundError);
-            }
+            if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
+            if (await IsExistAsync(employeeDto.Id) == false) return NotFound(responseNotFoundError);
+            await employeeService.UpdateEmployeeAsync(employeeDto);
 
-            return Ok(employeeService.UpdateEmployee(employeeDto));
+            return Ok(employeeDto);
         }
 
         /// <summary>
@@ -168,17 +154,14 @@ namespace CoreWebApi.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult Delete([FromRoute] int id)
+        public async Task<IActionResult> DeleteAsync([FromRoute] int id)
         {
-            var employeeToDelete = employeeService.GetEmployeeById(id);
-            if (employeeToDelete == null)
-            {
-                responseNotFoundError.Title = "Employee Not Found.";
-                return NotFound(responseNotFoundError);
-            }
-            employeeService.DeleteEmployee(id);
+            if (await IsExistAsync(id) == false) return NotFound(responseNotFoundError);
+            await employeeService.DeleteEmployeeAsync(id);
 
-            return Ok(employeeToDelete);
+            return Ok();
         }
+
+        private async Task<bool> IsExistAsync(int id) => await employeeService.IsExistAsync(id);
     }
 }
