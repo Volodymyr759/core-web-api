@@ -1,5 +1,6 @@
 ﻿using CoreWebApi.Library.Enums;
 using CoreWebApi.Library.SearchResult;
+using Microsoft.AspNetCore.JsonPatch;
 using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
@@ -11,7 +12,7 @@ namespace CoreWebApi.Services
         Task<CompanyServiceDto> CreateCompanyServiceAsync(CompanyServiceDto companyServiceDto);
         Task UpdateCompanyServiceAsync(CompanyServiceDto companyServiceDto);
         Task DeleteCompanyServiceAsync(int id);
-        void SetIsActive(int id, bool isActive);
+        Task<CompanyServiceDto> PartialUpdateAsync(int id, JsonPatchDocument<object> patchDocument);
         Task<bool> IsExistAsync(int id);
     }
 }

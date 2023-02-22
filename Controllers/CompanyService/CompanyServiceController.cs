@@ -113,7 +113,7 @@ namespace CoreWebApi.Controllers
         /// <response code="200">Returns the updated CompanyServiceDto item</response>
         /// <response code="400">If the argument is not valid</response>
         /// <response code="404">If the company service with given id not found</response>
-        [HttpPut]
+        [HttpPut, AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -135,7 +135,7 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     PATCH /api/CompanyService/SetIsActive/{id}
+        ///     PATCH /api/CompanyService/partialserviceupdate/{id}
         ///     {
         ///        "op": "replace",
         ///        "path": "/isactive",
@@ -148,17 +148,17 @@ namespace CoreWebApi.Controllers
         [HttpPatch("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> SetIsActiveAsync([FromRoute] int id, [FromBody] JsonPatchDocument<CompanyServiceDto> patchDocument)
+        public async Task<IActionResult> PartialServiceUpdateAsync([FromRoute] int id, [FromBody] JsonPatchDocument<object> patchDocument)
         {
-            //var companyServiceDto = await companyServiceBL.GetCompanyServiceByIdAsync(id);
-            //if (await companyServiceBL.IsExistAsync(companyServiceDto.Id) == false) return NotFound(responseNotFoundError);
-            //patchDocument.ApplyTo(companyServiceDto, ModelState);
-            //if (!TryValidateModel(companyServiceDto)) return ValidationProblem(ModelState);
-
-            //return Ok(companyServiceBL.UpdateCompanyServiceAsync(companyServiceDto));
-            // todo: realize like Vacancy partial update!
-
-            return BadRequest();
+            if (await IsExistAsync(id) == false) return NotFound(responseNotFoundError);
+            try
+            {
+                return Ok(await companyServiceBL.PartialUpdateAsync(id, patchDocument));
+            }
+            catch
+            {
+                return BadRequest(responseBadRequestError);
+            }
         }
 
         /// <summary>

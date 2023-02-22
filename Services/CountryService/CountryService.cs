@@ -3,8 +3,10 @@ using CoreWebApi.Data;
 using CoreWebApi.Library.Enums;
 using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -41,21 +43,29 @@ namespace CoreWebApi.Services
             };
         }
 
-        public CountryDto GetCountryById(int id) => mapper.Map<CountryDto>(repository.Get(id));
+        public async Task<CountryDto> GetCountryByIdAsync(int id) => mapper.Map<CountryDto>(await repository.GetAsync(id));
 
-        public CountryDto CreateCountry(CountryDto countryDto)
+        public async Task<CountryDto> CreateCountryAsync(CountryDto countryDto)
         {
             var country = mapper.Map<Country>(countryDto);
 
-            return mapper.Map<CountryDto>(repository.Create(country));
+            return mapper.Map<CountryDto>(await repository.CreateAsync(country));
         }
 
-        public CountryDto UpdateCountry(CountryDto countryDto)
+        public async Task UpdateCountryAsync(CountryDto countryDto) =>
+            await repository.UpdateAsync(mapper.Map<Country>(countryDto));
+
+        public async Task DeleteCountryAsync(int id) => await repository.DeleteAsync(id);
+
+        public async Task<bool> IsExistAsync(int id)
         {
-            repository.Update(mapper.Map<Country>(countryDto));
-            return countryDto;
-        }
+            SqlParameter[] parameters =
+                {
+                   new SqlParameter("@id", SqlDbType.Int) { Value = id },
+                   new SqlParameter("@returnVal", SqlDbType.Int) {Direction = ParameterDirection.Output}
+                };
 
-        public CountryDto DeleteCountry(int id) => mapper.Map<CountryDto>(repository.Delete(id));
+            return await repository.IsExistAsync("EXEC @returnVal=sp_checkCountryById @id, @returnVal", parameters);
+        }
     }
 }

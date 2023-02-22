@@ -3,6 +3,7 @@ using CoreWebApi.Data;
 using CoreWebApi.Library.Enums;
 using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
@@ -55,15 +56,11 @@ namespace CoreWebApi.Services
         public async Task UpdateCompanyServiceAsync(CompanyServiceDto companyServiceDto) =>
             await repository.UpdateAsync(mapper.Map<CompanyService>(companyServiceDto));
 
-        public void SetIsActive(int id, bool isActive)
+        public async Task<CompanyServiceDto> PartialUpdateAsync(int id, JsonPatchDocument<object> patchDocument)
         {
-            var companyService = repository.Get(id);
-
-            if (companyService != null)
-            {
-                companyService.IsActive = isActive;
-                repository.Update(companyService);
-            }
+            var service = await repository.GetAsync(id);
+            patchDocument.ApplyTo(service);
+            return mapper.Map<CompanyServiceDto>(await repository.SaveAsync(service));
         }
 
         public async Task DeleteCompanyServiceAsync(int id) => await repository.DeleteAsync(id);

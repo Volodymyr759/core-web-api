@@ -12,14 +12,14 @@ namespace CoreWebApi.Controllers
     public class CountryController : ControllerBase
     {
         private readonly ICountryService countryService;
-        private IResponseError responseBadRequestError;
-        private IResponseError responseNotFoundError;
+        private readonly IResponseError responseBadRequestError;
+        private readonly IResponseError responseNotFoundError;
 
         public CountryController(ICountryService countryService)
         {
             this.countryService = countryService;
-            responseBadRequestError = ResponseErrorFactory.getBadRequestError("");
-            responseNotFoundError = ResponseErrorFactory.getNotFoundError("");
+            responseBadRequestError = ResponseErrorFactory.getBadRequestError("Wrong country data.");
+            responseNotFoundError = ResponseErrorFactory.getNotFoundError("Country Not Found.");
         }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace CoreWebApi.Controllers
         /// <response code="200">List of CountryDto's</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAsync(int limit, int page, OrderType order ) =>
+        public async Task<IActionResult> GetAsync(int limit, int page, OrderType order) =>
             Ok(await countryService.GetCountriesSearchResultAsync(limit, page, order));
 
         /// <summary>
@@ -71,14 +71,10 @@ namespace CoreWebApi.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult GetById([FromRoute] int id)
+        public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
         {
-            var companySeviceDto = countryService.GetCountryById(id);
-            if (companySeviceDto == null)
-            {
-                responseNotFoundError.Title = "Country Not Found.";
-                return NotFound(responseNotFoundError);
-            }
+            var companySeviceDto = await countryService.GetCountryByIdAsync(id);
+            if (companySeviceDto == null) return NotFound(responseNotFoundError);
 
             return Ok(companySeviceDto);
         }
@@ -102,14 +98,11 @@ namespace CoreWebApi.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult Create([FromBody] CountryDto CountryDto)
+        public async Task<IActionResult> CreateAsync([FromBody] CountryDto countryDto)
         {
-            if (!ModelState.IsValid)
-            {
-                responseBadRequestError.Title = "Wrong country-data.";
-                return BadRequest(responseBadRequestError);
-            }
-            return Created("/api/country/create", countryService.CreateCountry(CountryDto));
+            if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
+
+            return Created("/api/country/create", await countryService.CreateCountryAsync(countryDto));
         }
 
         /// <summary>
@@ -134,20 +127,13 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult Update([FromBody] CountryDto CountryDto)
+        public async Task<IActionResult> UpdateAsync([FromBody] CountryDto countryDto)
         {
-            if (!ModelState.IsValid)
-            {
-                responseBadRequestError.Title = "Wrong country-data.";
-                return BadRequest(responseBadRequestError);
-            }
-            if (countryService.GetCountryById(CountryDto.Id) == null)
-            {
-                responseNotFoundError.Title = "Country Not Found.";
-                return NotFound(responseNotFoundError);
-            }
+            if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
+            if (await IsExistAsync(countryDto.Id) == false) return NotFound(responseNotFoundError);
+            await countryService.UpdateCountryAsync(countryDto);
 
-            return Ok(countryService.UpdateCountry(CountryDto));
+            return Ok(countryDto);
         }
 
         /// <summary>
@@ -160,17 +146,14 @@ namespace CoreWebApi.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult Delete([FromRoute] int id)
+        public async Task<IActionResult> DeleteAsync([FromRoute] int id)
         {
-            var CountryToDelete = countryService.GetCountryById(id);
-            if (CountryToDelete == null)
-            {
-                responseNotFoundError.Title = "Country Not Found.";
-                return NotFound(responseNotFoundError);
-            }
-            countryService.DeleteCountry(id);
+            if (await IsExistAsync(id) == false) return NotFound(responseNotFoundError);
+            await countryService.DeleteCountryAsync(id);
 
-            return Ok(CountryToDelete);
+            return Ok();
         }
+
+        private async Task<bool> IsExistAsync(int id) => await countryService.IsExistAsync(id);
     }
 }
