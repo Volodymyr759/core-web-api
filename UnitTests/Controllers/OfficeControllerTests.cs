@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace UnitTests.Controllers
 {
@@ -82,17 +83,17 @@ namespace UnitTests.Controllers
         //}
 
         [TestMethod]
-        public void GetById_ReturnsOkWithOfficeDtoByCorrectId()
+        public async Task GetById_ReturnsOkWithOfficeDtoByCorrectId()
         {
             //Arrange
             int id = 1;// correct id
-            mockOfficeService.Setup(r => r.GetOfficeById(id)).Returns(GetTestOfficeDtoById(id));
+            mockOfficeService.Setup(r => r.GetOfficeByIdAsync(id)).ReturnsAsync(GetTestOfficeDtoById(id));
             OkObjectResult result = null;
 
             try
             {
                 // Act
-                result = officeController.GetById(id) as OkObjectResult;
+                result = await officeController.GetByIdAsync(id) as OkObjectResult;
             }
             catch (Exception ex)
             {
@@ -104,21 +105,21 @@ namespace UnitTests.Controllers
             Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(OfficeDto), errorMessage);
-            mockOfficeService.Verify(r => r.GetOfficeById(id));
+            mockOfficeService.Verify(r => r.GetOfficeByIdAsync(id));
         }
 
         [TestMethod]
-        public void GetById_ReturnsNotFoundByWrongId()
+        public async Task GetById_ReturnsNotFoundByWrongId()
         {
             //Arrange
             int id = int.MaxValue - 1;// wrong id
-            mockOfficeService.Setup(r => r.GetOfficeById(id)).Returns(value: null);
+            mockOfficeService.Setup(r => r.GetOfficeByIdAsync(id)).ReturnsAsync(value: null);
             NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = officeController.GetById(id) as NotFoundObjectResult;
+                result = await officeController.GetByIdAsync(id) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -128,22 +129,22 @@ namespace UnitTests.Controllers
             //Assert
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
-            mockOfficeService.Verify(r => r.GetOfficeById(id));
+            mockOfficeService.Verify(r => r.GetOfficeByIdAsync(id));
         }
 
         [TestMethod]
-        public void Create_ReturnsCreatedOfficeDtoByValidArg()
+        public async Task Create_ReturnsCreatedOfficeDtoByValidArg()
         {
             //Arrange
             int id = 1;
             var createOfficeDto = GetTestOfficeDtoById(id);
-            mockOfficeService.Setup(r => r.CreateOffice(createOfficeDto)).Returns(GetTestOfficeDtoById(id));
+            mockOfficeService.Setup(r => r.CreateOfficeAsync(createOfficeDto)).ReturnsAsync(GetTestOfficeDtoById(id));
             CreatedResult result = null;
 
             try
             {
                 // Act
-                result = officeController.Create(createOfficeDto) as CreatedResult;
+                result = await officeController.CreateAsync(createOfficeDto) as CreatedResult;
             }
             catch (Exception ex)
             {
@@ -155,11 +156,11 @@ namespace UnitTests.Controllers
             Assert.IsInstanceOfType(result, typeof(CreatedResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(OfficeDto), errorMessage);
-            mockOfficeService.Verify(r => r.CreateOffice(createOfficeDto));
+            mockOfficeService.Verify(r => r.CreateOfficeAsync(createOfficeDto));
         }
 
         [TestMethod]
-        public void Create_ReturnsBadRequestByInvalidArg()
+        public async Task Create_ReturnsBadRequestByInvalidArg()
         {
             //Arrange
             int id = 1;
@@ -170,7 +171,7 @@ namespace UnitTests.Controllers
             try
             {
                 // Act
-                result = officeController.Create(createOfficeDto) as BadRequestObjectResult;
+                result = await officeController.CreateAsync(createOfficeDto) as BadRequestObjectResult;
             }
             catch (Exception ex)
             {
@@ -183,19 +184,19 @@ namespace UnitTests.Controllers
         }
 
         [TestMethod]
-        public void Update_ReturnsOfficeDtoByValidArg()
+        public async Task Update_ReturnsOfficeDtoByValidArg()
         {
             //Arrange
             int id = 1;
             var officeDtoToUpdate = GetTestOfficeDtoById(id);
-            mockOfficeService.Setup(r => r.GetOfficeById(officeDtoToUpdate.Id)).Returns(officeDtoToUpdate);
-            mockOfficeService.Setup(r => r.UpdateOffice(officeDtoToUpdate)).Returns(officeDtoToUpdate);
+            mockOfficeService.Setup(r => r.IsExistAsync(id)).Returns(Task.FromResult(true));
+            mockOfficeService.Setup(r => r.UpdateOfficeAsync(officeDtoToUpdate)).Returns(Task.CompletedTask);
             OkObjectResult result = null;
 
             try
             {
                 // Act
-                result = officeController.Update(officeDtoToUpdate) as OkObjectResult;
+                result = await officeController.UpdateAsync(officeDtoToUpdate) as OkObjectResult;
             }
             catch (Exception ex)
             {
@@ -207,22 +208,23 @@ namespace UnitTests.Controllers
             Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(OfficeDto), errorMessage);
-            mockOfficeService.Verify(r => r.UpdateOffice(officeDtoToUpdate));
+            mockOfficeService.Verify(r => r.UpdateOfficeAsync(officeDtoToUpdate));
+            mockOfficeService.Verify(r => r.IsExistAsync(id));
         }
 
         [TestMethod]
-        public void Update_ReturnsNotFoundByWrongIdInArg()
+        public async Task Update_ReturnsNotFoundByWrongIdInArg()
         {
             //Arrange
             int id = 1;
             var officeDtoToUpdate = GetTestOfficeDtoById(id);
-            officeDtoToUpdate.Id = 0; // wrong id
+            mockOfficeService.Setup(r => r.IsExistAsync(id)).Returns(Task.FromResult(false));
             NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = officeController.Update(officeDtoToUpdate) as NotFoundObjectResult;
+                result = await officeController.UpdateAsync(officeDtoToUpdate) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -232,10 +234,11 @@ namespace UnitTests.Controllers
             //Assert
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
+            mockOfficeService.Verify(r => r.IsExistAsync(id));
         }
 
         [TestMethod]
-        public void Update_ReturnsBadRequestByWrongArg()
+        public async Task Update_ReturnsBadRequestByWrongArg()
         {
             //Arrange
             int id = 1;
@@ -246,7 +249,7 @@ namespace UnitTests.Controllers
             try
             {
                 // Act
-                result = officeController.Update(officeDtoToUpdate) as BadRequestObjectResult;
+                result = await officeController.UpdateAsync(officeDtoToUpdate) as BadRequestObjectResult;
             }
             catch (Exception ex)
             {
@@ -259,18 +262,18 @@ namespace UnitTests.Controllers
         }
 
         [TestMethod]
-        public void Delete_ReturnsOkWithOfficeDtoByCorrectId()
+        public async Task Delete_ReturnsOkByCorrectId()
         {
             //Arrange
             int id = 1;// correct id
-            var officeToDelete = GetTestOfficeDtoById(id);
-            mockOfficeService.Setup(r => r.GetOfficeById(id)).Returns(officeToDelete);
-            OkObjectResult result = null;
+            mockOfficeService.Setup(r => r.IsExistAsync(id)).Returns(Task.FromResult(true));
+            mockOfficeService.Setup(r => r.DeleteOfficeAsync(id)).Returns(Task.CompletedTask);
+            OkResult result = null;
 
             try
             {
                 // Act
-                result = officeController.Delete(id) as OkObjectResult;
+                result = await officeController.DeleteAsync(id) as OkResult;
             }
             catch (Exception ex)
             {
@@ -279,24 +282,23 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
-            Assert.IsNotNull(result.Value, errorMessage);
-            Assert.IsInstanceOfType(result.Value, typeof(OfficeDto), errorMessage);
-            mockOfficeService.Verify(r => r.GetOfficeById(id));
+            Assert.IsInstanceOfType(result, typeof(OkResult), errorMessage);
+            mockOfficeService.Verify(r => r.IsExistAsync(id));
+            mockOfficeService.Verify(r => r.DeleteOfficeAsync(id));
         }
 
         [TestMethod]
-        public void Delete_ReturnsNotFoundByWrongId()
+        public async Task Delete_ReturnsNotFoundByWrongId()
         {
             //Arrange
             int id = 0;// wrong id
-            mockOfficeService.Setup(r => r.GetOfficeById(id)).Returns(value: null);
+            mockOfficeService.Setup(r => r.IsExistAsync(id)).Returns(Task.FromResult(false));
             NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = officeController.Delete(id) as NotFoundObjectResult;
+                result = await officeController.DeleteAsync(id) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -306,7 +308,7 @@ namespace UnitTests.Controllers
             //Assert
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
-            mockOfficeService.Verify(r => r.GetOfficeById(id));
+            mockOfficeService.Verify(r => r.IsExistAsync(id));
         }
 
         #endregion

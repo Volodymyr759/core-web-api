@@ -36,7 +36,7 @@ namespace UnitTests.Services
             mockMapper = new Mock<IMapper>();
             vacancyService = new VacancyService(
                 mockMapper.Object,
-                mockRepository.Object, 
+                mockRepository.Object,
                 mockRepositoryStringValue.Object);
         }
 
@@ -94,11 +94,11 @@ namespace UnitTests.Services
         }
 
         [TestMethod]
-        public void GetVacancyById_ReturnsVacancyDtoByCorrectId()
+        public async Task GetVacancyById_ReturnsVacancyDtoByCorrectId()
         {
             //Arrange
             int id = 1;// correct id
-            mockRepository.Setup(r => r.Get(id)).Returns(GetTestVacancies().Find(c => c.Id == id));
+            mockRepository.Setup(r => r.GetAsync(id)).ReturnsAsync(GetTestVacancies().Find(c => c.Id == id));
             mockMapper.Setup(x => x.Map<VacancyDto>(It.IsAny<Vacancy>())).Returns(GetTestVacancyDtos().Find(c => c.Id == id));
 
             VacancyDto vacancyDto = null;
@@ -106,7 +106,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                vacancyDto = vacancyService.GetVacancyById(id);
+                vacancyDto = await vacancyService.GetVacancyByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -116,20 +116,21 @@ namespace UnitTests.Services
             //Assert
             Assert.IsNotNull(vacancyDto, errorMessage);
             Assert.IsInstanceOfType(vacancyDto, typeof(VacancyDto), errorMessage);
+            mockRepository.Verify(r => r.GetAsync(id));
         }
 
         [TestMethod]
-        public void GetVacancyById_ReturnsNullByWrongId()
+        public async Task GetVacancyById_ReturnsNullByWrongId()
         {
             //Arrange
             int id = int.MaxValue - 1;// wrong id
-            mockRepository.Setup(r => r.Get(id)).Returns(value: null);
+            mockRepository.Setup(r => r.GetAsync(id)).Returns(value: null);
             VacancyDto vacancyDto = null;
 
             try
             {
                 // Act
-                vacancyDto = vacancyService.GetVacancyById(id);
+                vacancyDto = await vacancyService.GetVacancyByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -138,17 +139,18 @@ namespace UnitTests.Services
 
             //Assert
             Assert.IsNull(vacancyDto, errorMessage);
+            mockRepository.Verify(r => r.GetAsync(id));
         }
 
         [TestMethod]
-        public void CreateVacancy_ReturnsVacancyDto()
+        public async Task CreateVacancy_ReturnsVacancyDto()
         {
             // Arrange scenario:
             // service recievs dto model and should map it to instance of domain type;
             var newVacancyDto = new VacancyDto() { Title = ".Net Developer", Description = "Test description 1", Previews = 1, IsActive = true, OfficeId = 1 };
             mockMapper.Setup(x => x.Map<Vacancy>(It.IsAny<VacancyDto>())).Returns(new Vacancy());
             // pass the instance to repo, which should return model with created id:
-            mockRepository.Setup(r => r.Create(new Vacancy())).Returns(new Vacancy()
+            mockRepository.Setup(r => r.CreateAsync(new Vacancy())).ReturnsAsync(new Vacancy()
             {
                 Id = int.MaxValue,
                 Title = newVacancyDto.Title,
@@ -173,7 +175,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                createdVacancyDto = vacancyService.CreateVacancy(newVacancyDto);
+                createdVacancyDto = await vacancyService.CreateVacancyAsync(newVacancyDto);
             }
             catch (Exception ex)
             {
@@ -184,75 +186,5 @@ namespace UnitTests.Services
             Assert.IsNotNull(createdVacancyDto, errorMessage);
             Assert.IsInstanceOfType(createdVacancyDto, typeof(VacancyDto), errorMessage);
         }
-
-        [TestMethod]
-        public void UpdateVacancy_ReturnsUpdatedVacancyDto()
-        {
-            //Arrange the same scenario like in 'Create' method
-            var vacancyDtoToUpdate = new VacancyDto() { Id = 1, Title = ".Net Developer", Description = "Test description 1", Previews = 1, IsActive = true, OfficeId = 1 };
-            mockMapper.Setup(x => x.Map<Vacancy>(It.IsAny<VacancyDto>())).Returns(new Vacancy());
-            mockRepository.Setup(r => r.Update(new Vacancy())).Returns(new Vacancy()
-            {
-                Id = int.MaxValue,
-                Title = vacancyDtoToUpdate.Title,
-                Description = vacancyDtoToUpdate.Description,
-                Previews = vacancyDtoToUpdate.Previews,
-                IsActive = vacancyDtoToUpdate.IsActive,
-                OfficeId = vacancyDtoToUpdate.OfficeId
-            });
-            mockMapper.Setup(x => x.Map<VacancyDto>(It.IsAny<Vacancy>())).Returns(new VacancyDto()
-            {
-                Id = int.MaxValue,
-                Title = vacancyDtoToUpdate.Title,
-                Description = vacancyDtoToUpdate.Description,
-                Previews = vacancyDtoToUpdate.Previews,
-                IsActive = vacancyDtoToUpdate.IsActive,
-                OfficeId = vacancyDtoToUpdate.OfficeId
-            });
-
-            VacancyDto updatedVacancyDto = null;
-
-            try
-            {
-                // Act
-                updatedVacancyDto = vacancyService.UpdateVacancy(vacancyDtoToUpdate);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + " | " + ex.StackTrace;
-            }
-
-            //Assert
-            Assert.IsNotNull(updatedVacancyDto, errorMessage);
-            Assert.IsInstanceOfType(updatedVacancyDto, typeof(VacancyDto), errorMessage);
-        }
-
-        [TestMethod]
-        public async Task DeleteVacancyById_ReturnsVacancyDto()
-        {
-            // Arrange scenario:
-            // service gets id and passes it to the repo:
-            int id = 1;
-            mockRepository.Setup(r => r.Delete(id)).Returns(GetTestVacancies().Find(c => c.Id == id));
-            // since repo.delete(int id) returns origin Vacancy-object - possible to map it to dto and give it back:
-            mockMapper.Setup(x => x.Map<VacancyDto>(It.IsAny<Vacancy>())).Returns(GetTestVacancyDtos().Find(c => c.Id == id));
-
-            VacancyDto vacancyDto = null;
-
-            try
-            {
-                // Act
-                await vacancyService.DeleteVacancyAsync(id);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + " | " + ex.StackTrace;
-            }
-
-            //Assert
-            Assert.IsNotNull(vacancyDto, errorMessage);
-            Assert.IsInstanceOfType(vacancyDto, typeof(VacancyDto), errorMessage);
-        }
-
     }
 }

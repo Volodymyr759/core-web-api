@@ -87,7 +87,7 @@ namespace CoreWebApi.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Create([FromBody] CompanyServiceDto companyServiceDto)
+        public async Task<IActionResult> CreateAsync([FromBody] CompanyServiceDto companyServiceDto)
         {
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             return Created("api/companyservice/create", await companyServiceBL.CreateCompanyServiceAsync(companyServiceDto));

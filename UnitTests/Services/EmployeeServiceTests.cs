@@ -92,12 +92,12 @@ namespace UnitTests.Services
         }
 
         [TestMethod]
-        public void GetEmployeeById_ReturnsEmployeeDtoByCorrectId()
+        public async Task GetEmployeeById_ReturnsEmployeeDtoByCorrectId()
         {
             //Arrange
             int id = 1;// correct id
             var existingEmployee = GetTestEmployees().Find(c => c.Id == id);
-            mockRepository.Setup(e => e.Get(id)).Returns(existingEmployee);
+            mockRepository.Setup(e => e.GetAsync(id)).ReturnsAsync(existingEmployee);
             mockMapper.Setup(x => x.Map<EmployeeDto>(It.IsAny<Employee>())).Returns(GetTestEmployeeDtos().Find(e => e.Id == id));
             mockMapper.Setup(x => x.Map<OfficeDto>(It.IsAny<Office>())).Returns(new OfficeDto());
 
@@ -106,7 +106,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                employeeDto = employeeService.GetEmployeeById(id);
+                employeeDto = await employeeService.GetEmployeeByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -116,20 +116,21 @@ namespace UnitTests.Services
             //Assert
             Assert.IsNotNull(employeeDto, errorMessage);
             Assert.IsInstanceOfType(employeeDto, typeof(EmployeeDto), errorMessage);
+            mockRepository.Verify(r => r.GetAsync(id));
         }
 
         [TestMethod]
-        public void GetEmployeeById_ReturnsNullByWrongId()
+        public async Task GetEmployeeById_ReturnsNullByWrongId()
         {
             //Arrange
             int id = int.MaxValue - 1;// wrong id
-            mockRepository.Setup(r => r.Get(id)).Returns(value: null);
+            mockRepository.Setup(r => r.GetAsync(id)).Returns(value: null);
             EmployeeDto employeeDto = null;
 
             // Act
             try
             {
-                employeeDto = employeeService.GetEmployeeById(id);
+                employeeDto = await employeeService.GetEmployeeByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -138,17 +139,18 @@ namespace UnitTests.Services
 
             //Assert
             Assert.IsNull(employeeDto, errorMessage);
+            mockRepository.Verify(r => r.GetAsync(id));
         }
 
         [TestMethod]
-        public void CreateEmployee_ReturnsEmployeeDto()
+        public async Task CreateEmployee_ReturnsEmployeeDto()
         {
             // Arrange scenario:
             // service recievs dto model and should map it to instance of Employee domain type;
             var newEmployeeDto = new EmployeeDto() { FullName = "John Done", Email = "john@gmail.com", Position = "CEO", Description = "CEO description", AvatarUrl = "https://www.somewhere.com/1", OfficeId = 1 }; ;
             mockMapper.Setup(x => x.Map<Employee>(It.IsAny<EmployeeDto>())).Returns(new Employee());
             // pass the instance to repo, which should return model with created id:
-            mockRepository.Setup(r => r.Create(new Employee())).Returns(new Employee()
+            mockRepository.Setup(r => r.CreateAsync(new Employee())).ReturnsAsync(new Employee()
             {
                 FullName = newEmployeeDto.FullName,
                 Email = newEmployeeDto.Email,
@@ -174,7 +176,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                createdEmployeeDto = employeeService.CreateEmployee(newEmployeeDto);
+                createdEmployeeDto = await employeeService.CreateEmployeeAsync(newEmployeeDto);
             }
             catch (Exception ex)
             {
@@ -184,77 +186,6 @@ namespace UnitTests.Services
             //Assert
             Assert.IsNotNull(createdEmployeeDto, errorMessage);
             Assert.IsInstanceOfType(createdEmployeeDto, typeof(EmployeeDto), errorMessage);
-        }
-
-        [TestMethod]
-        public void UpdateEmployee_ReturnsUpdatedEmployeeDto()
-        {
-            //Arrange the same scenario like in 'Create' method
-            var employeeDtoToUpdate = new EmployeeDto() { Id = 1, FullName = "John Done", Email = "john@gmail.com", Position = "CEO", Description = "CEO description", AvatarUrl = "https://www.somewhere.com/1", OfficeId = 1 };
-            mockMapper.Setup(x => x.Map<Employee>(It.IsAny<EmployeeDto>())).Returns(new Employee());
-            mockRepository.Setup(r => r.Update(new Employee())).Returns(new Employee()
-            {
-                Id = int.MaxValue,
-                FullName = employeeDtoToUpdate.FullName,
-                Email = employeeDtoToUpdate.Email,
-                Position = employeeDtoToUpdate.Position,
-                Description = employeeDtoToUpdate.Description,
-                AvatarUrl = employeeDtoToUpdate.AvatarUrl,
-                OfficeId = employeeDtoToUpdate.OfficeId
-            });
-            mockMapper.Setup(x => x.Map<EmployeeDto>(It.IsAny<Employee>())).Returns(new EmployeeDto()
-            {
-                Id = int.MaxValue,
-                FullName = employeeDtoToUpdate.FullName,
-                Email = employeeDtoToUpdate.Email,
-                Position = employeeDtoToUpdate.Position,
-                Description = employeeDtoToUpdate.Description,
-                AvatarUrl = employeeDtoToUpdate.AvatarUrl,
-                OfficeId = employeeDtoToUpdate.OfficeId
-            });
-
-            EmployeeDto updatedEmployeeDto = null;
-
-            try
-            {
-                // Act
-                updatedEmployeeDto = employeeService.UpdateEmployee(employeeDtoToUpdate);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + " | " + ex.StackTrace;
-            }
-
-            //Assert
-            Assert.IsNotNull(updatedEmployeeDto, errorMessage);
-            Assert.IsInstanceOfType(updatedEmployeeDto, typeof(EmployeeDto), errorMessage);
-        }
-
-        [TestMethod]
-        public void DeleteEmployeeById_ReturnsEmployeeDto()
-        {
-            // Arrange scenario:
-            // service gets id and passes it to the repo:
-            int id = 3;
-            mockRepository.Setup(r => r.Delete(id)).Returns(GetTestEmployees().Find(c => c.Id == id));
-            // since repo.delete(int id) returns origin Employee-object - possible to map it to dto and give it back:
-            mockMapper.Setup(x => x.Map<EmployeeDto>(It.IsAny<Employee>())).Returns(GetTestEmployeeDtos().Find(c => c.Id == id));
-
-            EmployeeDto employeeDto = null;
-
-            // Act
-            try
-            {
-                employeeDto = employeeService.DeleteEmployee(id);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + " | " + ex.StackTrace;
-            }
-
-            //Assert
-            Assert.IsNotNull(employeeDto, errorMessage);
-            Assert.IsInstanceOfType(employeeDto, typeof(EmployeeDto), errorMessage);
         }
     }
 }

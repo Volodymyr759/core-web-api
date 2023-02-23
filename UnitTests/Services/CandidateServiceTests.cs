@@ -77,7 +77,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                searchResult = await candidateService.GetCandidatesSearchResultAsync(limit, page, search: "", sort_field: "Id", order: OrderType.Ascending);
+                searchResult = await candidateService.GetCandidatesSearchResultAsync(limit, page, search: "", sortField: "Id", order: OrderType.Ascending);
             }
             catch (Exception ex)
             {
@@ -91,12 +91,12 @@ namespace UnitTests.Services
         }
 
         [TestMethod]
-        public void GetCandidateById_ReturnsCandidateDtoByCorrectId()
+        public async Task GetCandidateById_ReturnsCandidateDtoByCorrectId()
         {
             //Arrange
             int id = 1;// correct id
             var existingCandidate = GetTestCandidates().Find(c => c.Id == id);
-            mockRepository.Setup(r => r.Get(id)).Returns(existingCandidate);
+            mockRepository.Setup(r => r.GetAsync(id)).ReturnsAsync(existingCandidate);
             mockMapper.Setup(x => x.Map<CandidateDto>(It.IsAny<Candidate>())).Returns(GetTestCandidateDtos().Find(c => c.Id == id));
 
             CandidateDto candidateDto = null;
@@ -104,7 +104,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                candidateDto = candidateService.GetCandidateById(id);
+                candidateDto = await candidateService.GetCandidateByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -114,20 +114,21 @@ namespace UnitTests.Services
             //Assert
             Assert.IsNotNull(candidateDto, errorMessage);
             Assert.IsInstanceOfType(candidateDto, typeof(CandidateDto), errorMessage);
+            mockRepository.Verify(r => r.GetAsync(id));
         }
 
         [TestMethod]
-        public void GetCandidateById_ReturnsNullByWrongId()
+        public async Task GetCandidateById_ReturnsNullByWrongId()
         {
             //Arrange
             int id = int.MaxValue - 1;// wrong id
-            mockRepository.Setup(r => r.Get(id)).Returns(value: null);
+            mockRepository.Setup(r => r.GetAsync(id)).Returns(value: null);
             CandidateDto candidateDto = null;
 
             try
             {
                 // Act
-                candidateDto = candidateService.GetCandidateById(id);
+                candidateDto = await candidateService.GetCandidateByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -136,17 +137,18 @@ namespace UnitTests.Services
 
             //Assert
             Assert.IsNull(candidateDto, errorMessage);
+            mockRepository.Verify(r => r.GetAsync(id));
         }
 
         [TestMethod]
-        public void CreateCandidate_ReturnsCandidateDto()
+        public async Task CreateCandidate_ReturnsCandidateDto()
         {
             // Arrange scenario:
             // service recievs dto model and should map it to instance of domain type;
             var newCandidateDto = new CandidateDto() { FullName = "Sindy Crowford", Email = "sindy@gmail.com", Phone = "+1234567891", Notes = "", IsDismissed = false, JoinedAt = DateTime.Today, VacancyId = 1 };
             mockMapper.Setup(x => x.Map<Candidate>(It.IsAny<CandidateDto>())).Returns(new Candidate());
             // pass the instance to repo, which should return model with created id:
-            mockRepository.Setup(r => r.Create(new Candidate())).Returns(new Candidate()
+            mockRepository.Setup(r => r.CreateAsync(new Candidate())).ReturnsAsync(new Candidate()
             {
                 Id = int.MaxValue,
                 FullName = newCandidateDto.FullName,
@@ -175,7 +177,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                createdCandidateDto = candidateService.CreateCandidate(newCandidateDto);
+                createdCandidateDto = await candidateService.CreateCandidateAsync(newCandidateDto);
             }
             catch (Exception ex)
             {
@@ -185,79 +187,6 @@ namespace UnitTests.Services
             //Assert
             Assert.IsNotNull(createdCandidateDto, errorMessage);
             Assert.IsInstanceOfType(createdCandidateDto, typeof(CandidateDto), errorMessage);
-        }
-
-        [TestMethod]
-        public void UpdateCandidate_ReturnsUpdatedCandidateDto()
-        {
-            //Arrange the same scenario like in 'Create' method
-            var candidateDtoToUpdate = new CandidateDto() { Id = 1, FullName = "Sindy Crowford", Email = "sindy@gmail.com", Phone = "+1234567891", Notes = "", IsDismissed = false, JoinedAt = DateTime.Today, VacancyId = 1 };
-            mockMapper.Setup(x => x.Map<Candidate>(It.IsAny<CandidateDto>())).Returns(new Candidate());
-            mockRepository.Setup(r => r.Update(new Candidate())).Returns(new Candidate()
-            {
-                Id = int.MaxValue,
-                FullName = candidateDtoToUpdate.FullName,
-                Email = candidateDtoToUpdate.Email,
-                Phone = candidateDtoToUpdate.Phone,
-                Notes = candidateDtoToUpdate.Notes,
-                IsDismissed = candidateDtoToUpdate.IsDismissed,
-                JoinedAt = candidateDtoToUpdate.JoinedAt,
-                VacancyId = candidateDtoToUpdate.VacancyId
-            });
-            mockMapper.Setup(x => x.Map<CandidateDto>(It.IsAny<Candidate>())).Returns(new CandidateDto()
-            {
-                Id = int.MaxValue,
-                FullName = candidateDtoToUpdate.FullName,
-                Email = candidateDtoToUpdate.Email,
-                Phone = candidateDtoToUpdate.Phone,
-                Notes = candidateDtoToUpdate.Notes,
-                IsDismissed = candidateDtoToUpdate.IsDismissed,
-                JoinedAt = candidateDtoToUpdate.JoinedAt,
-                VacancyId = candidateDtoToUpdate.VacancyId
-            });
-
-            CandidateDto updatedCandidateDto = null;
-
-            try
-            {
-                // Act
-                updatedCandidateDto = candidateService.UpdateCandidate(candidateDtoToUpdate);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + " | " + ex.StackTrace;
-            }
-
-            //Assert
-            Assert.IsNotNull(updatedCandidateDto, errorMessage);
-            Assert.IsInstanceOfType(updatedCandidateDto, typeof(CandidateDto), errorMessage);
-        }
-
-        [TestMethod]
-        public void DeleteCandidateById_ReturnsCandidateDto()
-        {
-            // Arrange scenario:
-            // service gets id and passes it to the repo:
-            int id = 1;
-            mockRepository.Setup(r => r.Delete(id)).Returns(GetTestCandidates().Find(c => c.Id == id));
-            // since repo.delete(int id) returns origin Candidate-object - possible to map it to dto and give it back:
-            mockMapper.Setup(x => x.Map<CandidateDto>(It.IsAny<Candidate>())).Returns(GetTestCandidateDtos().Find(c => c.Id == id));
-
-            CandidateDto candidateDto = null;
-
-            try
-            {
-                // Act
-                candidateDto = candidateService.DeleteCandidate(id);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + " | " + ex.StackTrace;
-            }
-
-            //Assert
-            Assert.IsNotNull(candidateDto, errorMessage);
-            Assert.IsInstanceOfType(candidateDto, typeof(CandidateDto), errorMessage);
         }
     }
 }

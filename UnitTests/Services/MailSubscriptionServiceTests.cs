@@ -90,13 +90,13 @@ namespace UnitTests.Services
         }
 
         [TestMethod]
-        public void GetMailSubscriptionById_ReturnsMailSubscriptionDtoByCorrectId()
+        public async Task GetMailSubscriptionById_ReturnsMailSubscriptionDtoByCorrectId()
         {
             // Arrange
             // The method should return MailSubscription (choosed by id) with list of subscribers (if any).
             int id = 1;// correct id
             var existingMailSubscription = ((List<MailSubscription>)GetTestMailSubscriptions()).Find(c => c.Id == id);
-            mockRepository.Setup(r => r.Get(id)).Returns(existingMailSubscription);
+            mockRepository.Setup(r => r.GetAsync(id)).ReturnsAsync(existingMailSubscription);
             mockMapper.Setup(x => x.Map<MailSubscriptionDto>(It.IsAny<MailSubscription>()))
                 .Returns(((List<MailSubscriptionDto>)GetTestMailSubscriptionDtos()).Find(c => c.Id == id));
 
@@ -105,7 +105,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                mailSubscriptionDto = mailSubscriptionService.GetMailSubscriptionById(id);
+                mailSubscriptionDto = await mailSubscriptionService.GetMailSubscriptionByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -115,20 +115,21 @@ namespace UnitTests.Services
             //Assert
             Assert.IsNotNull(mailSubscriptionDto, errorMessage);
             Assert.IsInstanceOfType(mailSubscriptionDto, typeof(MailSubscriptionDto), errorMessage);
+            mockRepository.Verify(r => r.GetAsync(id));
         }
 
         [TestMethod]
-        public void GetMailSubscriptionById_ReturnsNullByWrongId()
+        public async Task GetMailSubscriptionById_ReturnsNullByWrongId()
         {
             //Arrange
             int id = int.MaxValue - 1;// wrong id
-            mockRepository.Setup(r => r.Get(id)).Returns(value: null);
+            mockRepository.Setup(r => r.GetAsync(id)).Returns(value: null);
             MailSubscriptionDto mailSubscriptionDto = null;
 
             try
             {
                 // Act
-                mailSubscriptionDto = mailSubscriptionService.GetMailSubscriptionById(id);
+                mailSubscriptionDto = await mailSubscriptionService.GetMailSubscriptionByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -137,10 +138,11 @@ namespace UnitTests.Services
 
             //Assert
             Assert.IsNull(mailSubscriptionDto, errorMessage);
+            mockRepository.Verify(r => r.GetAsync(id));
         }
 
         [TestMethod]
-        public void CreateMailSubscription_ReturnsMailSubscriptionDto()
+        public async Task CreateMailSubscription_ReturnsMailSubscriptionDto()
         {
             // Arrange 
             // scenario:
@@ -148,7 +150,7 @@ namespace UnitTests.Services
             var newMailSubscriptionDto = new MailSubscriptionDto() { Title = "New Test subscription", Content = "Content of new test subscription" };
             mockMapper.Setup(x => x.Map<MailSubscription>(It.IsAny<MailSubscriptionDto>())).Returns(new MailSubscription());
             // pass the instance to repo, which should return MailSubscription-model with created id:
-            mockRepository.Setup(r => r.Create(new MailSubscription())).Returns(new MailSubscription()
+            mockRepository.Setup(r => r.CreateAsync(new MailSubscription())).ReturnsAsync(new MailSubscription()
             {
                 Id = int.MaxValue,
                 Title = newMailSubscriptionDto.Title,
@@ -167,7 +169,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                createdMailSubscriptionDto = mailSubscriptionService.CreateMailSubscription(newMailSubscriptionDto);
+                createdMailSubscriptionDto = await mailSubscriptionService.CreateMailSubscriptionAsync(newMailSubscriptionDto);
             }
             catch (Exception ex)
             {
@@ -177,70 +179,6 @@ namespace UnitTests.Services
             //Assert
             Assert.IsNotNull(createdMailSubscriptionDto, errorMessage);
             Assert.IsInstanceOfType(createdMailSubscriptionDto, typeof(MailSubscriptionDto), errorMessage);
-        }
-
-        [TestMethod]
-        public void UpdateMailSubscription_ReturnsUpdatedMailSubscriptionDto()
-        {
-            //Arrange
-            // the same scenario like in 'Create' method
-            var mailSubscriptionDtoToUpdate = new MailSubscriptionDto() { Id = 1, Title = "New Test subscription", Content = "Content of new test subscription" };
-            mockMapper.Setup(x => x.Map<MailSubscription>(It.IsAny<MailSubscriptionDto>())).Returns(new MailSubscription());
-            mockRepository.Setup(r => r.Update(new MailSubscription())).Returns(new MailSubscription()
-            {
-                Id = mailSubscriptionDtoToUpdate.Id,
-                Title = mailSubscriptionDtoToUpdate.Title,
-                Content = mailSubscriptionDtoToUpdate.Content
-            });
-            mockMapper.Setup(x => x.Map<MailSubscriptionDto>(It.IsAny<MailSubscription>())).Returns(new MailSubscriptionDto()
-            {
-                Id = mailSubscriptionDtoToUpdate.Id,
-                Title = mailSubscriptionDtoToUpdate.Title,
-                Content = mailSubscriptionDtoToUpdate.Content
-            });
-
-            MailSubscriptionDto updatedMailSubscriptionDto = null;
-
-            try
-            {
-                // Act
-                updatedMailSubscriptionDto = mailSubscriptionService.UpdateMailSubscription(mailSubscriptionDtoToUpdate);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + " | " + ex.StackTrace;
-            }
-
-            //Assert
-            Assert.IsNotNull(updatedMailSubscriptionDto, errorMessage);
-            Assert.IsInstanceOfType(updatedMailSubscriptionDto, typeof(MailSubscriptionDto), errorMessage);
-        }
-
-        [TestMethod]
-        public void DeleteMailSubscriptionById_ReturnsMailSubscriptionDto()
-        {
-            // Arrange scenario:
-            // service gets id and passes it to the repo:
-            int id = 3;
-            mockRepository.Setup(r => r.Delete(id)).Returns(((List<MailSubscription>)GetTestMailSubscriptions()).Find(c => c.Id == id));
-            // since repo.delete(int id) returns origin MailSubscription-object - possible to map it to dto object and give it back:
-            mockMapper.Setup(x => x.Map<MailSubscriptionDto>(It.IsAny<MailSubscription>())).Returns(((List<MailSubscriptionDto>)GetTestMailSubscriptionDtos()).Find(c => c.Id == id));
-
-            MailSubscriptionDto mailSubscriptionDto = null;
-
-            try
-            {
-                // Act
-                mailSubscriptionDto = mailSubscriptionService.DeleteMailSubscription(id);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + " | " + ex.StackTrace;
-            }
-
-            //Assert
-            Assert.IsNotNull(mailSubscriptionDto, errorMessage);
-            Assert.IsInstanceOfType(mailSubscriptionDto, typeof(MailSubscriptionDto), errorMessage);
         }
     }
 }

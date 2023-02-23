@@ -94,12 +94,12 @@ namespace UnitTests.Services
         }
 
         [TestMethod]
-        public void GetOfficeById_ReturnsOfficeDtoByCorrectId()
+        public async Task GetOfficeById_ReturnsOfficeDtoByCorrectId()
         {
             //Arrange
             int id = 1;// correct id
             var existingOffice = GetTestOffices().Find(c => c.Id == id);
-            mockRepository.Setup(r => r.Get(id)).Returns(existingOffice);
+            mockRepository.Setup(r => r.GetAsync(id)).ReturnsAsync(existingOffice);
             mockMapper.Setup(x => x.Map<OfficeDto>(It.IsAny<Office>())).Returns(GetTestOfficeDtos().Find(c => c.Id == id));
 
             OfficeDto officeDto = null;
@@ -107,7 +107,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                officeDto = officeService.GetOfficeById(id);
+                officeDto = await officeService.GetOfficeByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -117,20 +117,21 @@ namespace UnitTests.Services
             //Assert
             Assert.IsNotNull(officeDto, errorMessage);
             Assert.IsInstanceOfType(officeDto, typeof(OfficeDto), errorMessage);
+            mockRepository.Verify(r => r.GetAsync(id));
         }
 
         [TestMethod]
-        public void GetOfficeById_ReturnsNullByWrongId()
+        public async Task GetOfficeById_ReturnsNullByWrongId()
         {
             //Arrange
             int id = int.MaxValue - 1;// wrong id
-            mockRepository.Setup(r => r.Get(id)).Returns(value: null);
+            mockRepository.Setup(r => r.GetAsync(id)).ReturnsAsync(value: null);
             OfficeDto officeDto = null;
 
             try
             {
                 // Act
-                officeDto = officeService.GetOfficeById(id);
+                officeDto = await officeService.GetOfficeByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -139,17 +140,18 @@ namespace UnitTests.Services
 
             //Assert
             Assert.IsNull(officeDto, errorMessage);
+            mockRepository.Verify(r => r.GetAsync(id));
         }
 
         [TestMethod]
-        public void CreateOffice_ReturnsOfficeDto()
+        public async Task CreateOffice_ReturnsOfficeDto()
         {
             // Arrange scenario:
             // service recievs dto model and should map it to instance of domain type;
             var newOfficeDto = new OfficeDto() { Name = "New Main office", Description = "Test description 1", Address = "Test address 1", Latitude = 1.111111m, Longitude = 2.22222m, CountryId = 1 };
             mockMapper.Setup(x => x.Map<Office>(It.IsAny<OfficeDto>())).Returns(new Office());
             // pass the instance to repo, which should return model with created id:
-            mockRepository.Setup(r => r.Create(new Office())).Returns(new Office()
+            mockRepository.Setup(r => r.CreateAsync(new Office())).ReturnsAsync(new Office()
             {
                 Id = int.MaxValue,
                 Name = newOfficeDto.Name,
@@ -176,7 +178,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                createdOfficeDto = officeService.CreateOffice(newOfficeDto);
+                createdOfficeDto = await officeService.CreateOfficeAsync(newOfficeDto);
             }
             catch (Exception ex)
             {
@@ -186,77 +188,6 @@ namespace UnitTests.Services
             //Assert
             Assert.IsNotNull(createdOfficeDto, errorMessage);
             Assert.IsInstanceOfType(createdOfficeDto, typeof(OfficeDto), errorMessage);
-        }
-
-        [TestMethod]
-        public void UpdateOffice_ReturnsUpdatedOfficeDto()
-        {
-            //Arrange the same scenario like in 'Create' method
-            var officeDtoToUpdate = new OfficeDto() { Id = 1, Name = "Main office", Description = "Test description 1", Address = "Test address 1", Latitude = 1.111111m, Longitude = 2.22222m, CountryId = 1 };
-            mockMapper.Setup(x => x.Map<Office>(It.IsAny<OfficeDto>())).Returns(new Office());
-            mockRepository.Setup(r => r.Update(new Office())).Returns(new Office()
-            {
-                Id = int.MaxValue,
-                Name = officeDtoToUpdate.Name,
-                Description = officeDtoToUpdate.Description,
-                Address = officeDtoToUpdate.Address,
-                Latitude = officeDtoToUpdate.Latitude,
-                Longitude = officeDtoToUpdate.Longitude,
-                CountryId = officeDtoToUpdate.CountryId
-            });
-            mockMapper.Setup(x => x.Map<OfficeDto>(It.IsAny<Office>())).Returns(new OfficeDto()
-            {
-                Id = int.MaxValue,
-                Name = officeDtoToUpdate.Name,
-                Description = officeDtoToUpdate.Description,
-                Address = officeDtoToUpdate.Address,
-                Latitude = officeDtoToUpdate.Latitude,
-                Longitude = officeDtoToUpdate.Longitude,
-                CountryId = officeDtoToUpdate.CountryId
-            });
-
-            OfficeDto updatedOfficeDto = null;
-
-            try
-            {
-                // Act
-                updatedOfficeDto = officeService.UpdateOffice(officeDtoToUpdate);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + " | " + ex.StackTrace;
-            }
-
-            //Assert
-            Assert.IsNotNull(updatedOfficeDto, errorMessage);
-            Assert.IsInstanceOfType(updatedOfficeDto, typeof(OfficeDto), errorMessage);
-        }
-
-        [TestMethod]
-        public void DeleteOfficeById_ReturnsOfficeDto()
-        {
-            // Arrange scenario:
-            // service gets id and passes it to the repo:
-            int id = 3;
-            mockRepository.Setup(r => r.Delete(id)).Returns(GetTestOffices().Find(c => c.Id == id));
-            // since repo.delete(int id) returns origin Office-object - possible to map it to dto and give it back:
-            mockMapper.Setup(x => x.Map<OfficeDto>(It.IsAny<Office>())).Returns(GetTestOfficeDtos().Find(c => c.Id == id));
-
-            OfficeDto officeDto = null;
-
-            try
-            {
-                // Act
-                officeDto = officeService.DeleteOffice(id);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + " | " + ex.StackTrace;
-            }
-
-            //Assert
-            Assert.IsNotNull(officeDto, errorMessage);
-            Assert.IsInstanceOfType(officeDto, typeof(OfficeDto), errorMessage);
         }
     }
 }

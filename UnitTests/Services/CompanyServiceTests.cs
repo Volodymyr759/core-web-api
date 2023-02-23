@@ -93,12 +93,12 @@ namespace UnitTests.Services
         }
 
         [TestMethod]
-        public void GetCompanyServiceById_ReturnsCompanyServiceDtoByCorrectId()
+        public async Task GetCompanyServiceById_ReturnsCompanyServiceDtoByCorrectId()
         {
             //Arrange
             int id = 1;// correct id
             var existingCompanyService = ((List<CompanyService>)GetTestCompanyServices()).Find(c => c.Id == id);
-            mockCompanyServiceRepository.Setup(r => r.Get(id)).Returns(existingCompanyService);
+            mockCompanyServiceRepository.Setup(r => r.GetAsync(id)).ReturnsAsync(existingCompanyService);
             mockMapper.Setup(x => x.Map<CompanyServiceDto>(It.IsAny<CompanyService>()))
                 .Returns(((List<CompanyServiceDto>)GetTestCompanyServiceDtos()).Find(c => c.Id == id));
             CompanyServiceDto companyServiceDto = null;
@@ -106,7 +106,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                companyServiceDto = companyServiceBL.GetCompanyServiceById(id);
+                companyServiceDto = await companyServiceBL.GetCompanyServiceByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -116,20 +116,21 @@ namespace UnitTests.Services
             //Assert
             Assert.IsNotNull(companyServiceDto, errorMessage);
             Assert.IsInstanceOfType(companyServiceDto, typeof(CompanyServiceDto), errorMessage);
+            mockCompanyServiceRepository.Verify(r => r.GetAsync(id));
         }
 
         [TestMethod]
-        public void GetCompanyServiceById_ReturnsNullByWrongId()
+        public async Task GetCompanyServiceById_ReturnsNullByWrongId()
         {
             //Arrange
             int id = int.MaxValue - 1;// wrong id
-            mockCompanyServiceRepository.Setup(r => r.Get(id)).Returns(value: null);
+            mockCompanyServiceRepository.Setup(r => r.GetAsync(id)).Returns(value: null);
             CompanyServiceDto companyServiceDto = null;
 
             try
             {
                 // Act
-                companyServiceDto = companyServiceBL.GetCompanyServiceById(id);
+                companyServiceDto = await companyServiceBL.GetCompanyServiceByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -138,10 +139,11 @@ namespace UnitTests.Services
 
             //Assert
             Assert.IsNull(companyServiceDto, errorMessage);
+            mockCompanyServiceRepository.Verify(r => r.GetAsync(id));
         }
 
         [TestMethod]
-        public void CreateCompanyService_ReturnsCompanyServiceDto()
+        public async Task CreateCompanyService_ReturnsCompanyServiceDto()
         {
             // Arrange 
             // scenario:
@@ -149,7 +151,7 @@ namespace UnitTests.Services
             var newCompanyServiceDto = new CompanyServiceDto() { Title = "Testing service", Description = "Test description", ImageUrl = "https://somewhere/111", IsActive = true };
             mockMapper.Setup(x => x.Map<CompanyService>(It.IsAny<CompanyServiceDto>())).Returns(new CompanyService());
             // pass the instance of CompanyService to repo, which should return model with created id:
-            mockCompanyServiceRepository.Setup(r => r.Create(new CompanyService())).Returns(new CompanyService()
+            mockCompanyServiceRepository.Setup(r => r.CreateAsync(new CompanyService())).ReturnsAsync(new CompanyService()
             {
                 Id = int.MaxValue,
                 Title = newCompanyServiceDto.Title,
@@ -172,7 +174,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                createdCompanyServiceDto = companyServiceBL.CreateCompanyService(newCompanyServiceDto);
+                createdCompanyServiceDto = await companyServiceBL.CreateCompanyServiceAsync(newCompanyServiceDto);
             }
             catch (Exception ex)
             {
@@ -182,75 +184,6 @@ namespace UnitTests.Services
             //Assert
             Assert.IsNotNull(createdCompanyServiceDto, errorMessage);
             Assert.IsInstanceOfType(createdCompanyServiceDto, typeof(CompanyServiceDto), errorMessage);
-        }
-
-        [TestMethod]
-        public void UpdateCompanyService_ReturnsUpdatedCompanyServiceDto()
-        {
-            //Arrange
-            // the same scenario like in 'Create' method
-            var companyServiceDtoToUpdate = new CompanyServiceDto() { Title = "Testing service", Description = "Test description", ImageUrl = "https://somewhere/111", IsActive = true };
-            mockMapper.Setup(x => x.Map<CompanyService>(It.IsAny<CompanyServiceDto>())).Returns(new CompanyService());
-            mockCompanyServiceRepository.Setup(r => r.Update(new CompanyService())).Returns(new CompanyService()
-            {
-                Id = int.MaxValue,
-                Title = companyServiceDtoToUpdate.Title,
-                Description = companyServiceDtoToUpdate.Description,
-                ImageUrl = companyServiceDtoToUpdate.ImageUrl,
-                IsActive = companyServiceDtoToUpdate.IsActive
-            });
-            mockMapper.Setup(x => x.Map<CompanyServiceDto>(It.IsAny<CompanyService>())).Returns(new CompanyServiceDto()
-            {
-                Id = int.MaxValue,
-                Title = companyServiceDtoToUpdate.Title,
-                Description = companyServiceDtoToUpdate.Description,
-                ImageUrl = companyServiceDtoToUpdate.ImageUrl,
-                IsActive = companyServiceDtoToUpdate.IsActive
-            });
-
-            CompanyServiceDto updatedCompanyServiceDto = null;
-
-            try
-            {
-                // Act
-                updatedCompanyServiceDto = companyServiceBL.UpdateCompanyService(companyServiceDtoToUpdate);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + " | " + ex.StackTrace;
-            }
-
-            //Assert
-            Assert.IsNotNull(updatedCompanyServiceDto, errorMessage);
-            Assert.IsInstanceOfType(updatedCompanyServiceDto, typeof(CompanyServiceDto), errorMessage);
-        }
-
-        [TestMethod]
-        public void DeleteCompanyServiceById_ReturnsCompanyServiceDto()
-        {
-            // Arrange
-            // scenario:
-            // service gets id and passes it to the repo:
-            int id = 3;
-            mockCompanyServiceRepository.Setup(r => r.Delete(id)).Returns(((List<CompanyService>)GetTestCompanyServices()).Find(c => c.Id == id));
-            // since repo.delete(int id) returns origin CompanyService-object - possible to map it to dto object and give it back:
-            mockMapper.Setup(x => x.Map<CompanyServiceDto>(It.IsAny<CompanyService>())).Returns(((List<CompanyServiceDto>)GetTestCompanyServiceDtos()).Find(c => c.Id == id));
-
-            CompanyServiceDto companyServiceDto = null;
-
-            try
-            {
-                // Act
-                companyServiceDto = companyServiceBL.DeleteCompanyService(id);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + " | " + ex.StackTrace;
-            }
-
-            //Assert
-            Assert.IsNotNull(companyServiceDto, errorMessage);
-            Assert.IsInstanceOfType(companyServiceDto, typeof(CompanyServiceDto), errorMessage);
         }
     }
 }

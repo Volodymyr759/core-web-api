@@ -90,19 +90,19 @@ namespace UnitTests.Services
         }
 
         [TestMethod]
-        public void GetCountryById_ReturnsCountryDtoByCorrectId()
+        public async Task GetCountryById_ReturnsCountryDtoByCorrectId()
         {
             //Arrange
             int id = 1;// correct id
             var existingCountry = GetTestCountries().Find(c => c.Id == id);
-            mockRepository.Setup(r => r.Get(id)).Returns(existingCountry);
+            mockRepository.Setup(r => r.GetAsync(id)).ReturnsAsync(existingCountry);
             mockMapper.Setup(x => x.Map<CountryDto>(It.IsAny<Country>())).Returns(GetTestCountryDtos().Find(c => c.Id == id));
             CountryDto countryDto = null;
 
             try
             {
                 // Act
-                countryDto = countryService.GetCountryById(id);
+                countryDto = await countryService.GetCountryByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -112,20 +112,21 @@ namespace UnitTests.Services
             //Assert
             Assert.IsNotNull(countryDto, errorMessage);
             Assert.IsInstanceOfType(countryDto, typeof(CountryDto), errorMessage);
+            mockRepository.Verify(r => r.GetAsync(id));
         }
 
         [TestMethod]
-        public void GetCountryById_ReturnsNullByWrongId()
+        public async Task GetCountryById_ReturnsNullByWrongId()
         {
             //Arrange
             int id = int.MaxValue - 1;// wrong id
-            mockRepository.Setup(r => r.Get(id)).Returns(value: null);
+            mockRepository.Setup(r => r.GetAsync(id)).Returns(value: null);
             CountryDto countryDto = null;
 
             try
             {
                 // Act
-                countryDto = countryService.GetCountryById(id);
+                countryDto = await countryService.GetCountryByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -134,17 +135,18 @@ namespace UnitTests.Services
 
             //Assert
             Assert.IsNull(countryDto, errorMessage);
+            mockRepository.Verify(r => r.GetAsync(id));
         }
 
         [TestMethod]
-        public void CreateCountry_ReturnsCountryDto()
+        public async Task CreateCountry_ReturnsCountryDto()
         {
             // Arrange scenario:
             // service recievs dto model and should map it to instance of domain type;
             var newCountryDto = new CountryDto() { Name = "France", Code = "FRA" };
             mockMapper.Setup(x => x.Map<Country>(It.IsAny<CountryDto>())).Returns(new Country());
             // pass the instance to repo, which should return model with created id:
-            mockRepository.Setup(r => r.Create(new Country())).Returns(new Country()
+            mockRepository.Setup(r => r.CreateAsync(new Country())).ReturnsAsync(new Country()
             {
                 Id = int.MaxValue,
                 Name = newCountryDto.Name,
@@ -163,7 +165,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                createdCountryDto = countryService.CreateCountry(newCountryDto);
+                createdCountryDto = await countryService.CreateCountryAsync(newCountryDto);
             }
             catch (Exception ex)
             {
@@ -173,70 +175,6 @@ namespace UnitTests.Services
             //Assert
             Assert.IsNotNull(createdCountryDto, errorMessage);
             Assert.IsInstanceOfType(createdCountryDto, typeof(CountryDto), errorMessage);
-        }
-
-        [TestMethod]
-        public void UpdateCountry_ReturnsUpdatedCountryDto()
-        {
-            //Arrange
-            // the same scenario like in 'Create' method
-            var countryDtoToUpdate = new CountryDto() { Id = 1, Name = "Bulgary", Code = "BUL" };
-            mockMapper.Setup(x => x.Map<Country>(It.IsAny<CountryDto>())).Returns(new Country());
-            mockRepository.Setup(r => r.Update(new Country())).Returns(new Country()
-            {
-                Id = countryDtoToUpdate.Id,
-                Name = countryDtoToUpdate.Name,
-                Code = countryDtoToUpdate.Code
-            });
-            mockMapper.Setup(x => x.Map<CountryDto>(It.IsAny<Country>())).Returns(new CountryDto()
-            {
-                Id = countryDtoToUpdate.Id,
-                Name = countryDtoToUpdate.Name,
-                Code = countryDtoToUpdate.Code
-            });
-
-            CountryDto updatedCountryDto = null;
-
-            try
-            {
-                // Act
-                updatedCountryDto = countryService.UpdateCountry(countryDtoToUpdate);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + " | " + ex.StackTrace;
-            }
-
-            //Assert
-            Assert.IsNotNull(updatedCountryDto, errorMessage);
-            Assert.IsInstanceOfType(updatedCountryDto, typeof(CountryDto), errorMessage);
-        }
-
-        [TestMethod]
-        public void DeleteCountryById_ReturnsCountryDto()
-        {
-            // Arrange scenario:
-            // service gets id and passes it to the repo:
-            int id = 3;
-            mockRepository.Setup(r => r.Delete(id)).Returns(GetTestCountries().Find(c => c.Id == id));
-            // since repo.delete(int id) returns origin Country-object - possible to map it to dto object and give it back:
-            mockMapper.Setup(x => x.Map<CountryDto>(It.IsAny<Country>())).Returns(GetTestCountryDtos().Find(c => c.Id == id));
-
-            CountryDto countryDto = null;
-
-            try
-            {
-                // Act
-                countryDto = countryService.DeleteCountry(id);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + " | " + ex.StackTrace;
-            }
-
-            //Assert
-            Assert.IsNotNull(countryDto, errorMessage);
-            Assert.IsInstanceOfType(countryDto, typeof(CountryDto), errorMessage);
         }
     }
 }

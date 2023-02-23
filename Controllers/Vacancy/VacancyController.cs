@@ -63,7 +63,7 @@ namespace CoreWebApi.Controllers
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetById([FromRoute] int id)
+        public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
         {
             var vacancyDto = await vacancyService.GetVacancyByIdAsync(id);
             if (vacancyDto == null) return NotFound(responseNotFoundError);
@@ -86,7 +86,7 @@ namespace CoreWebApi.Controllers
         [HttpGet]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> SearchVacanciesTitles(string searchValue) => Ok(await vacancyService.SearchVacanciesTitlesAsync(searchValue));
+        public async Task<IActionResult> SearchVacanciesTitlesAsync(string searchValue) => Ok(await vacancyService.SearchVacanciesTitlesAsync(searchValue));
 
         /// <summary>
         /// Creates a new Vacancy item.
@@ -110,7 +110,7 @@ namespace CoreWebApi.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Create([FromBody] VacancyDto vacancyDto)
+        public async Task<IActionResult> CreateAsync([FromBody] VacancyDto vacancyDto)
         {
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             return Created("/api/vacancy/create", await vacancyService.CreateVacancyAsync(vacancyDto));

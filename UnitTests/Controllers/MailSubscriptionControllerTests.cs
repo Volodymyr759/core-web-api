@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace UnitTests.Controllers
 {
@@ -82,17 +83,17 @@ namespace UnitTests.Controllers
         //}
 
         [TestMethod]
-        public void GetById_ReturnsOkWithMailSubscriptionDtoByCorrectId()
+        public async Task GetById_ReturnsOkWithMailSubscriptionDtoByCorrectId()
         {
             //Arrange
             int id = 1;// correct id
-            mockMailSubscriptionServise.Setup(r => r.GetMailSubscriptionById(id)).Returns(GetTestMailSubscriptionDtoById(id));
+            mockMailSubscriptionServise.Setup(r => r.GetMailSubscriptionByIdAsync(id)).ReturnsAsync(GetTestMailSubscriptionDtoById(id));
             OkObjectResult result = null;
 
             try
             {
                 // Act
-                result = mailSubscriptionController.GetById(id) as OkObjectResult;
+                result = await mailSubscriptionController.GetByIdAsync(id) as OkObjectResult;
             }
             catch (Exception ex)
             {
@@ -104,21 +105,21 @@ namespace UnitTests.Controllers
             Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(MailSubscriptionDto), errorMessage);
-            mockMailSubscriptionServise.Verify(r => r.GetMailSubscriptionById(id));
+            mockMailSubscriptionServise.Verify(r => r.GetMailSubscriptionByIdAsync(id));
         }
 
         [TestMethod]
-        public void GetById_ReturnsNotFoundByWrongId()
+        public async Task GetById_ReturnsNotFoundByWrongId()
         {
             //Arrange
             int id = int.MaxValue - 1;// wrong id
-            mockMailSubscriptionServise.Setup(r => r.GetMailSubscriptionById(id)).Returns(value: null);
+            mockMailSubscriptionServise.Setup(r => r.GetMailSubscriptionByIdAsync(id)).ReturnsAsync(value: null);
             NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = mailSubscriptionController.GetById(id) as NotFoundObjectResult;
+                result = await mailSubscriptionController.GetByIdAsync(id) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -128,22 +129,22 @@ namespace UnitTests.Controllers
             //Assert
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
-            mockMailSubscriptionServise.Verify(r => r.GetMailSubscriptionById(id));
+            mockMailSubscriptionServise.Verify(r => r.GetMailSubscriptionByIdAsync(id));
         }
 
         [TestMethod]
-        public void Create_ReturnsCreatedMailSubscriptionDtoByValidArg()
+        public async Task Create_ReturnsCreatedMailSubscriptionDtoByValidArg()
         {
             //Arrange
             int id = 1;
             var createMailSubscriptionDto = GetTestMailSubscriptionDtoById(id);
-            mockMailSubscriptionServise.Setup(r => r.CreateMailSubscription(createMailSubscriptionDto)).Returns(GetTestMailSubscriptionDtoById(id));
+            mockMailSubscriptionServise.Setup(r => r.CreateMailSubscriptionAsync(createMailSubscriptionDto)).ReturnsAsync(GetTestMailSubscriptionDtoById(id));
             CreatedResult result = null;
 
             try
             {
                 // Act
-                result = mailSubscriptionController.Create(createMailSubscriptionDto) as CreatedResult;
+                result = await mailSubscriptionController.CreateAsync(createMailSubscriptionDto) as CreatedResult;
             }
             catch (Exception ex)
             {
@@ -155,11 +156,11 @@ namespace UnitTests.Controllers
             Assert.IsInstanceOfType(result, typeof(CreatedResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(MailSubscriptionDto), errorMessage);
-            mockMailSubscriptionServise.Verify(r => r.CreateMailSubscription(createMailSubscriptionDto));
+            mockMailSubscriptionServise.Verify(r => r.CreateMailSubscriptionAsync(createMailSubscriptionDto));
         }
 
         [TestMethod]
-        public void Create_ReturnsBadRequestByInvalidArg()
+        public async Task Create_ReturnsBadRequestByInvalidArg()
         {
             //Arrange
             int id = 1;
@@ -170,7 +171,7 @@ namespace UnitTests.Controllers
             try
             {
                 // Act
-                result = mailSubscriptionController.Create(createMailSubscriptionDto) as BadRequestObjectResult;
+                result = await mailSubscriptionController.CreateAsync(createMailSubscriptionDto) as BadRequestObjectResult;
             }
             catch (Exception ex)
             {
@@ -183,19 +184,19 @@ namespace UnitTests.Controllers
         }
 
         [TestMethod]
-        public void Update_ReturnsMailSubscriptionDtoByValidArg()
+        public async Task Update_ReturnsMailSubscriptionDtoByValidArg()
         {
             //Arrange
             int id = 1;
             var mailSubscriptionDtoToUpdate = GetTestMailSubscriptionDtoById(id);
-            mockMailSubscriptionServise.Setup(r => r.GetMailSubscriptionById(mailSubscriptionDtoToUpdate.Id)).Returns(mailSubscriptionDtoToUpdate);
-            mockMailSubscriptionServise.Setup(r => r.UpdateMailSubscription(mailSubscriptionDtoToUpdate)).Returns(mailSubscriptionDtoToUpdate);
+            mockMailSubscriptionServise.Setup(r => r.IsExistAsync(id)).Returns(Task.FromResult(true));
+            mockMailSubscriptionServise.Setup(r => r.UpdateMailSubscriptionAsync(mailSubscriptionDtoToUpdate)).Returns(Task.CompletedTask);
             OkObjectResult result = null;
 
             try
             {
                 // Act
-                result = mailSubscriptionController.Update(mailSubscriptionDtoToUpdate) as OkObjectResult;
+                result = await mailSubscriptionController.UpdateAsync(mailSubscriptionDtoToUpdate) as OkObjectResult;
             }
             catch (Exception ex)
             {
@@ -207,22 +208,23 @@ namespace UnitTests.Controllers
             Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(MailSubscriptionDto), errorMessage);
-            mockMailSubscriptionServise.Verify(r => r.UpdateMailSubscription(mailSubscriptionDtoToUpdate));
+            mockMailSubscriptionServise.Verify(r => r.UpdateMailSubscriptionAsync(mailSubscriptionDtoToUpdate));
+            mockMailSubscriptionServise.Verify(r => r.IsExistAsync(id));
         }
 
         [TestMethod]
-        public void Update_ReturnsNotFoundByWrongIdInArg()
+        public async Task Update_ReturnsNotFoundByWrongIdInArg()
         {
             //Arrange
             int id = 1;
             var mailSubscriptionDtoToUpdate = GetTestMailSubscriptionDtoById(id);
-            mailSubscriptionDtoToUpdate.Id = 0; // wrong id
+            mockMailSubscriptionServise.Setup(r => r.IsExistAsync(id)).Returns(Task.FromResult(false));
             NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = mailSubscriptionController.Update(mailSubscriptionDtoToUpdate) as NotFoundObjectResult;
+                result = await mailSubscriptionController.UpdateAsync(mailSubscriptionDtoToUpdate) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -232,10 +234,11 @@ namespace UnitTests.Controllers
             //Assert
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
+            mockMailSubscriptionServise.Verify(r => r.IsExistAsync(id));
         }
 
         [TestMethod]
-        public void Update_ReturnsBadRequestByWrongArg()
+        public async Task Update_ReturnsBadRequestByWrongArg()
         {
             //Arrange
             int id = 1;
@@ -246,7 +249,7 @@ namespace UnitTests.Controllers
             try
             {
                 // Act
-                result = mailSubscriptionController.Update(mailSubscriptionDtoToUpdate) as BadRequestObjectResult;
+                result = await mailSubscriptionController.UpdateAsync(mailSubscriptionDtoToUpdate) as BadRequestObjectResult;
             }
             catch (Exception ex)
             {
@@ -259,18 +262,18 @@ namespace UnitTests.Controllers
         }
 
         [TestMethod]
-        public void Delete_ReturnsOkWithMailSubscriptionDtoByCorrectId()
+        public async Task Delete_ReturnsOkWithMailSubscriptionDtoByCorrectId()
         {
             //Arrange
             int id = 1;// correct id
-            var mailSubscriptionToDelete = GetTestMailSubscriptionDtoById(id);
-            mockMailSubscriptionServise.Setup(r => r.GetMailSubscriptionById(id)).Returns(mailSubscriptionToDelete);
-            OkObjectResult result = null;
+            mockMailSubscriptionServise.Setup(r => r.IsExistAsync(id)).Returns(Task.FromResult(true));
+            mockMailSubscriptionServise.Setup(r => r.DeleteMailSubscriptionAsync(id)).Returns(Task.CompletedTask);
+            OkResult result = null;
 
             try
             {
                 // Act
-                result = mailSubscriptionController.Delete(id) as OkObjectResult;
+                result = await mailSubscriptionController.DeleteAsync(id) as OkResult;
             }
             catch (Exception ex)
             {
@@ -279,24 +282,23 @@ namespace UnitTests.Controllers
 
             //Assert
             Assert.IsNotNull(result, errorMessage);
-            Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
-            Assert.IsNotNull(result.Value, errorMessage);
-            Assert.IsInstanceOfType(result.Value, typeof(MailSubscriptionDto), errorMessage);
-            mockMailSubscriptionServise.Verify(r => r.GetMailSubscriptionById(id));
+            Assert.IsInstanceOfType(result, typeof(OkResult), errorMessage);
+            mockMailSubscriptionServise.Verify(r => r.IsExistAsync(id));
+            mockMailSubscriptionServise.Verify(r => r.DeleteMailSubscriptionAsync(id));
         }
 
         [TestMethod]
-        public void Delete_ReturnsNotFoundByWrongId()
+        public async Task Delete_ReturnsNotFoundByWrongId()
         {
             //Arrange
             int id = 0;// wrong id
-            mockMailSubscriptionServise.Setup(r => r.GetMailSubscriptionById(id)).Returns(value: null);
+            mockMailSubscriptionServise.Setup(r => r.IsExistAsync(id)).Returns(Task.FromResult(false));
             NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = mailSubscriptionController.Delete(id) as NotFoundObjectResult;
+                result = await mailSubscriptionController.DeleteAsync(id) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -306,7 +308,7 @@ namespace UnitTests.Controllers
             //Assert
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
-            mockMailSubscriptionServise.Verify(r => r.GetMailSubscriptionById(id));
+            mockMailSubscriptionServise.Verify(r => r.IsExistAsync(id));
         }
 
         #endregion
