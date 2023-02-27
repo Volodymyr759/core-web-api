@@ -100,9 +100,11 @@ namespace CoreWebApi.Controllers
         /// </remarks>
         /// <response code="201">Returns the newly created CandidateDto item</response>
         /// <response code="400">If the argument is not valid</response>
-        [HttpPost, AllowAnonymous]
+        /// <response code="403">If the user hasn't need role</response>
+        [HttpPost, Authorize(Roles = "Registered")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> CreateAsync([FromBody] CandidateDto candidateDto)
         {
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);

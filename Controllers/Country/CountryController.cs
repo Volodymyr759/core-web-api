@@ -33,7 +33,7 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/Country/get?limit=3;page=1;order=0
+        ///     GET /api/Country/get?limit=3&amp;page=1&amp;order=0
         ///     
         /// </remarks>
         /// <response code="200">List of CountryDto's</response>
@@ -51,7 +51,7 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/Country/get?limit=3;page=1;order=0
+        ///     GET /api/Country/get?limit=3&amp;page=1&amp;order=0
         ///     
         /// </remarks>
         /// <response code="200">List of CountryDto's</response>

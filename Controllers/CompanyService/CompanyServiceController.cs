@@ -28,19 +28,20 @@ namespace CoreWebApi.Controllers
         /// </summary>
         /// <param name="limit">Number of items per page</param>
         /// <param name="page">Requested page</param>
-        /// <param name="order">Sort direction: 0 - Ascending or 1 - Descending</param>
+        /// <param name="companyServiceStatus">Filter for isActive property: 0 - Active, 1 - Disabled, 2 - All</param>
+        /// <param name="order">Can sort CompanyServices by Title. Sort direction: 0 - Ascending or 1 - Descending</param>
         /// <returns>Status 200 and list of CompanyServiceDto's</returns>
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/companyservice/get?limit=3;page=1;order=0;
+        ///     GET /api/companyservice/get?limit=3&amp;page=1&amp;companyServiceStatus=0&amp;order=0;
         ///     
         /// </remarks>
         /// <response code="200">list of CompanyServiceDto's</response>
         [HttpGet, AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAsync(int limit, int page, OrderType order) =>
-            Ok(await companyServiceBL.GetCompanyServicesSearchResultAsync(limit, page, order));
+        public async Task<IActionResult> GetAsync(int limit, int page, CompanyServiceStatus companyServiceStatus, OrderType order) =>
+            Ok(await companyServiceBL.GetCompanyServicesSearchResultAsync(limit, page, companyServiceStatus, order));
 
         /// <summary>
         /// Gets a specific CompanySeviceDto Item.

@@ -31,20 +31,20 @@ namespace CoreWebApi.Controllers
         /// <param name="search">part of Title for searching</param>
         /// <param name="vacancyStatus">Filter for isActive property: 0 - Active, 1 - Disabled, 2 - All</param>
         /// <param name="officeId">Filter vacancies by OfficeId</param>
-        /// <param name="sortfield">Field name for sorting</param>
+        /// <param name="sortField">Field name for sorting</param>
         /// <param name="order">sort direction: 0 - Ascending or 1 - Descending</param>
         /// <returns>Status 200 and list of VacancyDto's</returns>
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/Vacancy/get/?limit=10;page=1;search=;sort_field=Idorder=0
+        ///     GET /api/Vacancy/get?limit=10&amp;page=1&amp;search=&amp;sortField=id&amp;order=0
         ///     
         /// </remarks>
         /// <response code="200">list of VacancyDto's</response>
         [HttpGet, AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAsync(int limit, int page, string search, VacancyStatus vacancyStatus, int officeId, string sortfield, OrderType order) =>
-            Ok(await vacancyService.GetVacanciesSearchResultAsync(limit, page, search, vacancyStatus, officeId, sortfield, order));
+        public async Task<IActionResult> GetAsync(int limit, int page, string search, VacancyStatus vacancyStatus, int officeId, string sortField, OrderType order) =>
+            Ok(await vacancyService.GetVacanciesSearchResultAsync(limit, page, search, vacancyStatus, officeId, sortField, order));
 
         /// <summary>
         /// Gets a specific VacancyDto Item.
@@ -60,7 +60,7 @@ namespace CoreWebApi.Controllers
         /// <response code="200">Returns the requested VacancyDto item</response>
         /// <response code="404">If the vacancy with given id not found</response>
         [HttpGet("{id}")]
-        [AllowAnonymous]
+        [Authorize(Roles = "Registered")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
@@ -123,7 +123,7 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     PUT /api/Vacancy/Update
+        ///     PUT /api/Vacancy/update
         ///     {
         ///        "Id": "1",
         ///        "Title": ".Net Developer",

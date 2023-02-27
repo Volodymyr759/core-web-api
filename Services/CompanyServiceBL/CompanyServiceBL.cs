@@ -25,12 +25,15 @@ namespace CoreWebApi.Services
             this.repository = repository;
         }
 
-        public async Task<SearchResult<CompanyServiceDto>> GetCompanyServicesSearchResultAsync(int limit, int page, OrderType order)
+        public async Task<SearchResult<CompanyServiceDto>> GetCompanyServicesSearchResultAsync(int limit, int page, CompanyServiceStatus companyServiceStatus, OrderType order)
         {
             Func<IQueryable<CompanyService>, IOrderedQueryable<CompanyService>> orderBy = null;// sorting only by Title
             orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Title) : orderBy = q => q.OrderByDescending(s => s.Title);
 
             var services = await repository.GetAllAsync(null, orderBy);
+
+            if (companyServiceStatus == CompanyServiceStatus.Active) services = services.Where(s => s.IsActive == true);
+            if (companyServiceStatus == CompanyServiceStatus.Disabled) services = services.Where(s => s.IsActive == false);
 
             return new SearchResult<CompanyServiceDto>
             {

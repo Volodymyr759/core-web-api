@@ -9,7 +9,7 @@ namespace CoreWebApi.Services
 {
     public interface IVacancyService
     {
-        Task<SearchResult<VacancyDto>> GetVacanciesSearchResultAsync(int limit, int page, string search, VacancyStatus? vacancyStatus, int? officeId, string sortfield, OrderType order);
+        Task<SearchResult<VacancyDto>> GetVacanciesSearchResultAsync(int limit, int page, string search, VacancyStatus? vacancyStatus, int? officeId, string sortField, OrderType order);
         Task<VacancyDto> GetVacancyByIdAsync(int id);
         Task<IEnumerable<StringValue>> SearchVacanciesTitlesAsync(string searchValue);
         Task<VacancyDto> CreateVacancyAsync(VacancyDto vacancyDto);

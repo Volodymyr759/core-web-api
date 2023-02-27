@@ -32,7 +32,7 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/MailSubscriber/get;page=1;sort=asc;limit=3
+        ///     GET /api/MailSubscriber/get?page=1&amp;sort=asc&amp;limit=3
         ///     
         /// </remarks>
         /// <response code="200">list of MailSubscriberDto's</response>

@@ -33,7 +33,7 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/mailsubscription/get?limit=3;page=1;order=0;
+        ///     GET /api/mailsubscription/get?limit=3&amp;page=1&amp;order=0;
         ///     
         /// </remarks>
         /// <response code="200">list of MailSubscriptionDto's</response>

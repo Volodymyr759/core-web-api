@@ -30,7 +30,7 @@ namespace CoreWebApi.Services
             this.repositoryStringValue = repositoryStringValue;
         }
 
-        public async Task<SearchResult<VacancyDto>> GetVacanciesSearchResultAsync(int limit, int page, string search, VacancyStatus? vacancyStatus, int? officeId, string sortfield, OrderType order)
+        public async Task<SearchResult<VacancyDto>> GetVacanciesSearchResultAsync(int limit, int page, string search, VacancyStatus? vacancyStatus, int? officeId, string sortField, OrderType order)
         {
             // search by Title
             Expression<Func<Vacancy, bool>> searchQuery = null;
@@ -41,11 +41,10 @@ namespace CoreWebApi.Services
             orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Id) : orderBy = q => q.OrderByDescending(s => s.Id);
 
             var vacancies = await repository.GetAllAsync(searchQuery, orderBy);
-            if (vacancyStatus != null)
-            {
-                if (vacancyStatus == VacancyStatus.Active) vacancies = vacancies.Where(v => v.IsActive == true);
-                else vacancies = vacancies.Where(v => v.IsActive == false);
-            }
+
+            if (vacancyStatus == VacancyStatus.Active) vacancies = vacancies.Where(v => v.IsActive == true);
+            if (vacancyStatus == VacancyStatus.Disabled) vacancies = vacancies.Where(v => v.IsActive == false);
+
             if (officeId != 0) vacancies = vacancies.Where(v => v.OfficeId == officeId);
 
             return new SearchResult<VacancyDto>

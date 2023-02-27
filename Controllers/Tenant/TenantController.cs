@@ -31,7 +31,7 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/tenant/GetAllTenants/?limit=10&amp;page=1&amp;search=j&amp;sort_field=Id&amp;sort=desc
+        ///     GET /api/tenant/GetAllTenants?limit=10&amp;page=1&amp;search=j&amp;sort_field=Id&amp;sort=desc
         ///     
         /// </remarks>
         /// <response code="200">list of TenantDto's</response>

@@ -225,6 +225,7 @@ namespace CoreWebApi.Controllers
         /// <response code="400">If the argument is not valid</response>
         /// <response code="401">If the user is not authorized</response>
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -511,6 +512,7 @@ namespace CoreWebApi.Controllers
         /// <response code="200">Returns the confirmation of success</response>
         /// <response code="404">If the user with given email not found</response>
         [HttpGet("{email}")]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> LogoutAsync([FromRoute] string email)

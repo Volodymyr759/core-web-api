@@ -1,6 +1,6 @@
 ﻿namespace CoreWebApi.Services
 {
-    public enum VacancyStatus
+    public enum CompanyServiceStatus
     {
         Active,
         Disabled,

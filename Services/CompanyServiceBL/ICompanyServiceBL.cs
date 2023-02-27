@@ -7,7 +7,7 @@ namespace CoreWebApi.Services
 {
     public interface ICompanyServiceBL
     {
-        Task<SearchResult<CompanyServiceDto>> GetCompanyServicesSearchResultAsync(int limit, int page, OrderType order);
+        Task<SearchResult<CompanyServiceDto>> GetCompanyServicesSearchResultAsync(int limit, int page, CompanyServiceStatus companyServiceStatus, OrderType order);
         Task<CompanyServiceDto> GetCompanyServiceByIdAsync(int id);
         Task<CompanyServiceDto> CreateCompanyServiceAsync(CompanyServiceDto companyServiceDto);
         Task UpdateCompanyServiceAsync(CompanyServiceDto companyServiceDto);

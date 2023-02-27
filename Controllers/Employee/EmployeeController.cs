@@ -38,7 +38,7 @@ namespace CoreWebApi.Controllers
         ///     
         /// </remarks>
         /// <response code="200">list of EmployeeDto's</response>
-        [HttpGet]
+        [HttpGet, AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAsync(int limit, int page, string search, string sortField, OrderType order) =>
             Ok(await employeeService.GetEmployeesSearchResultAsync(limit, page, search ?? "", sortField ?? "FullName", order));
