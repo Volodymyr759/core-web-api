@@ -29,7 +29,7 @@ namespace CoreWebApi.Controllers
         /// <param name="page">Requested page</param>
         /// <param name="search">Part of FullName for searching</param>
         /// <param name="sortField">field name for sorting</param>
-        /// <param name="order">sort direction: 0 - Ascending or 1 - Descending</param>
+        /// <param name="order">sort direction: 0 - Ascending or 1 - Descending, 2 - None</param>
         /// <returns>Status 200 and list of CandidateDto's</returns>
         /// <remarks>
         /// Sample request:

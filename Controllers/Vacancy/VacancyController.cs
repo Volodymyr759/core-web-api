@@ -32,7 +32,7 @@ namespace CoreWebApi.Controllers
         /// <param name="vacancyStatus">Filter for isActive property: 0 - Active, 1 - Disabled, 2 - All</param>
         /// <param name="officeId">Filter vacancies by OfficeId</param>
         /// <param name="sortField">Field name for sorting</param>
-        /// <param name="order">sort direction: 0 - Ascending or 1 - Descending</param>
+        /// <param name="order">sort direction: 0 - Ascending or 1 - Descending, 2 - None</param>
         /// <returns>Status 200 and list of VacancyDto's</returns>
         /// <remarks>
         /// Sample request:

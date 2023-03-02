@@ -27,7 +27,7 @@ namespace CoreWebApi.Controllers
         /// </summary>
         /// <param name="limit">Number of items per page</param>
         /// <param name="page">Requested page</param>
-        /// <param name="order" default="asc">sort direction: 0 - Ascending or 1 - Descending</param>
+        /// <param name="order" default="asc">sort direction: 0 - Ascending or 1 - Descending, 2 - None</param>
         /// 
         /// <returns>Status 200 and list of CountryDto's</returns>
         /// <remarks>

@@ -6,7 +6,7 @@ namespace CoreWebApi.Services
 {
     public interface IEmployeeService
     {
-        Task<SearchResult<EmployeeDto>> GetEmployeesSearchResultAsync(int limit, int page, string search, string sort_field, OrderType order);
+        Task<SearchResult<EmployeeDto>> GetEmployeesSearchResultAsync(int limit, int page, string search, string sortField, OrderType order);
         Task<EmployeeDto> GetEmployeeByIdAsync(int id);
         Task<EmployeeDto> CreateEmployeeAsync(EmployeeDto employeeDto);
         Task UpdateEmployeeAsync(EmployeeDto employeeDto);

@@ -28,7 +28,8 @@ namespace CoreWebApi.Services
         public async Task<SearchResult<CompanyServiceDto>> GetCompanyServicesSearchResultAsync(int limit, int page, CompanyServiceStatus companyServiceStatus, OrderType order)
         {
             Func<IQueryable<CompanyService>, IOrderedQueryable<CompanyService>> orderBy = null;// sorting only by Title
-            orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Title) : orderBy = q => q.OrderByDescending(s => s.Title);
+            if (order != OrderType.None)
+                orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Title) : orderBy = q => q.OrderByDescending(s => s.Title);
 
             var services = await repository.GetAllAsync(null, orderBy);
 

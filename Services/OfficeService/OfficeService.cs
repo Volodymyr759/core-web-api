@@ -33,7 +33,8 @@ namespace CoreWebApi.Services
         {
             // sorting sorting only by Name
             Func<IQueryable<Office>, IOrderedQueryable<Office>> orderBy = null;
-            orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Name) : orderBy = q => q.OrderByDescending(s => s.Name);
+            if (order != OrderType.None)
+                orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Name) : orderBy = q => q.OrderByDescending(s => s.Name);
 
             var offices = await repository.GetAllAsync(null, orderBy);
 

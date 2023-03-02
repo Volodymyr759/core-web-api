@@ -29,7 +29,8 @@ namespace CoreWebApi.Services
         {
             // sorting only by Title
             Func<IQueryable<MailSubscription>, IOrderedQueryable<MailSubscription>> orderBy = null;
-            orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Title) : orderBy = q => q.OrderByDescending(s => s.Title);
+            if (order != OrderType.None)
+                orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Title) : orderBy = q => q.OrderByDescending(s => s.Title);
 
             var mailSubscriptions = await repository.GetAllAsync(null, orderBy);
 

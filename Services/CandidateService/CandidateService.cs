@@ -34,7 +34,8 @@ namespace CoreWebApi.Services
 
             // sorting - newest first
             Func<IQueryable<Candidate>, IOrderedQueryable<Candidate>> orderBy = null;
-            orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Id) : orderBy = q => q.OrderByDescending(s => s.Id);
+            if (order != OrderType.None)
+                orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Id) : orderBy = q => q.OrderByDescending(s => s.Id);
 
             var candidates = await repository.GetAllAsync(searchQuery, orderBy);
 

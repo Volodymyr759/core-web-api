@@ -26,7 +26,7 @@ namespace CoreWebApi.Services
             this.repository = repository;
         }
 
-        public async Task<SearchResult<EmployeeDto>> GetEmployeesSearchResultAsync(int limit, int page, string search, string sort_field, OrderType order)
+        public async Task<SearchResult<EmployeeDto>> GetEmployeesSearchResultAsync(int limit, int page, string search, string sortField, OrderType order)
         {
             // search by FullName
             Expression<Func<Employee, bool>> searchQuery = null;
@@ -34,7 +34,8 @@ namespace CoreWebApi.Services
 
             // sorting - newest first
             Func<IQueryable<Employee>, IOrderedQueryable<Employee>> orderBy = null;
-            orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Id) : orderBy = q => q.OrderByDescending(s => s.Id);
+            if (order != OrderType.None)
+                orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Id) : orderBy = q => q.OrderByDescending(s => s.Id);
 
             var employees = await repository.GetAllAsync(searchQuery, orderBy);
 

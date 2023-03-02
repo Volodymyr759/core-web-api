@@ -3,6 +3,7 @@
     public enum OrderType
     {
         Ascending,
-        Descending
+        Descending,
+        None
     }
 }
