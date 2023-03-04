@@ -36,10 +36,10 @@ namespace CoreWebApi.Services
             Expression<Func<Vacancy, bool>> searchQuery = null;
             if (!string.IsNullOrEmpty(search)) searchQuery = t => t.Title.Contains(search);
 
-            // sorting - newest first
+            // sorting by vacancy title
             Func<IQueryable<Vacancy>, IOrderedQueryable<Vacancy>> orderBy = null;
             if (order != OrderType.None)
-                orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Id) : orderBy = q => q.OrderByDescending(s => s.Id);
+                orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Title) : orderBy = q => q.OrderByDescending(s => s.Title);
 
             var vacancies = await repository.GetAllAsync(searchQuery, orderBy);
 
@@ -62,14 +62,14 @@ namespace CoreWebApi.Services
 
         public async Task<VacancyDto> GetVacancyByIdAsync(int id) => mapper.Map<VacancyDto>(await repository.GetAsync(id));
 
-        public async Task<IEnumerable<StringValue>> SearchVacanciesTitlesAsync(string searchValue)
+        public async Task<IEnumerable<StringValue>> SearchVacanciesTitlesAsync(string searchValue, int officeId)
         {
-            var vacanciesTitles = searchValue == null ?
-                repositoryStringValue.GetAsync("EXEC dbo.sp_getVacanciesTitles", null) :
-                repositoryStringValue.GetAsync("EXEC dbo.sp_getVacanciesTitlesByParam @search",
-                    new SqlParameter[] { new SqlParameter { ParameterName = "@search", Value = searchValue } });
-
-            return await vacanciesTitles;
+            List<StringValue> vacanciesTitles = officeId == 0 ?
+                (await repositoryStringValue.GetAsync("EXEC dbo.sp_getVacanciesTitles", null)).ToList() :
+                vacanciesTitles = (await repositoryStringValue.GetAsync("EXEC dbo.[sp_getVacanciesTitlesByOfficeId] @id",
+                    new SqlParameter[] { new SqlParameter { ParameterName = "@id", Value = officeId } })).ToList();
+            vacanciesTitles = vacanciesTitles.FindAll(v => v.Value.ToLower().Contains(searchValue.ToLower()));
+            return vacanciesTitles;
         }
 
         public async Task<VacancyDto> CreateVacancyAsync(VacancyDto vacancyDto)

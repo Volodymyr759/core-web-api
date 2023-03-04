@@ -43,8 +43,8 @@ namespace CoreWebApi.Controllers
         /// <response code="200">list of VacancyDto's</response>
         [HttpGet, AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAsync(int limit, int page, string search, VacancyStatus vacancyStatus, int officeId, string sortField, OrderType order) =>
-            Ok(await vacancyService.GetVacanciesSearchResultAsync(limit, page, search, vacancyStatus, officeId, sortField, order));
+        public async Task<IActionResult> GetAsync(int limit, int page, string search, VacancyStatus vacancyStatus, int? officeId, string sortField, OrderType order) =>
+            Ok(await vacancyService.GetVacanciesSearchResultAsync(limit, page, search, vacancyStatus, officeId ?? 0, sortField, order));
 
         /// <summary>
         /// Gets a specific VacancyDto Item.
@@ -75,18 +75,19 @@ namespace CoreWebApi.Controllers
         /// Gets the list of vacancies titles by search searchValue.
         /// </summary>
         /// <param name="searchValue">Search parameter</param>
+        /// <param name="officeId">Identifier of the office which vacancy belongs. If it's '' in request query - means all offices.</param>
         /// <returns>Status 200 and the list of vacancies titles. If searchValue is empty - returns all titles</returns>
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/vacancy/searchvacanciestitles?searchValue=Test
+        ///     GET /api/vacancy/searchvacanciestitles?searchValue=Test&amp;officeId=3
         ///     
         /// </remarks>
         /// <response code="200">List of vacancies titles</response>
         [HttpGet]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> SearchVacanciesTitlesAsync(string searchValue) => Ok(await vacancyService.SearchVacanciesTitlesAsync(searchValue));
+        public async Task<IActionResult> SearchVacanciesTitlesAsync([FromQuery] string searchValue, int? officeId) => Ok(await vacancyService.SearchVacanciesTitlesAsync(searchValue ?? "", officeId ?? 0));
 
         /// <summary>
         /// Creates a new Vacancy item.

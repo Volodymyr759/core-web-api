@@ -8,7 +8,13 @@ using CoreWebApi.Services;
 
 namespace CoreWebApi.Controllers
 {
-    [ApiController, Authorize(Roles = "Admin"), Produces("application/json"), Route("api/[controller]/[action]"), ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ApiController]
+    [Authorize(Roles = "Admin")]
+    [Produces("application/json")]
+    [Route("api/[controller]/[action]")]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeService employeeService;
@@ -34,7 +40,7 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/employee/get/?limit=10&amp;page=1&amp;search=j&amp;sortField=Id&amp;sort=0
+        ///     GET /api/employee/get?limit=10&amp;page=1&amp;search=j&amp;sortField=Id&amp;sort=0
         ///     
         /// </remarks>
         /// <response code="200">list of EmployeeDto's</response>
@@ -42,24 +48,6 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAsync(int limit, int page, string search, string sortField, OrderType order) =>
             Ok(await employeeService.GetEmployeesSearchResultAsync(limit, page, search ?? "", sortField ?? "FullName", order));
-
-        /// <summary>
-        /// Gets a list of EmployeeDto's for public pages.
-        /// </summary>
-        /// <param name="page">Requested page</param>
-        /// <returns>Status 200 and list of EmployeeDto's</returns>
-        /// <remarks>
-        /// Sample request:
-        ///
-        ///     GET /api/employee/getpublic?page=1
-        ///     
-        /// </remarks>
-        /// <response code="200">List of EmployeeDto's</response>
-        [HttpGet]
-        [AllowAnonymous]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetPublicAsync(int page) =>
-            Ok(await employeeService.GetEmployeesSearchResultAsync(limit: 3, page, search: "", sortField: "Id", order: OrderType.Ascending));
 
         /// <summary>
         /// Gets a specific EmployeeDto Item.
