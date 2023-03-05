@@ -15,7 +15,6 @@ namespace CoreWebApi.Controllers
     [Route("api/[controller]/[action]")]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-
     public class CompanyServiceController : ControllerBase
     {
         private readonly ICompanyServiceBL companyServiceBL;
@@ -157,6 +156,7 @@ namespace CoreWebApi.Controllers
         /// <response code="404">If the company service with given id not found</response>
         [HttpPatch("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> PartialServiceUpdateAsync([FromRoute] int id, [FromBody] JsonPatchDocument<object> patchDocument)
         {

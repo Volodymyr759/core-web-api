@@ -9,7 +9,12 @@ using System.Threading.Tasks;
 
 namespace CoreWebApi.Controllers
 {
-    [ApiController, Authorize, Produces("application/json"), Route("api/[controller]/[action]"), ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ApiController]
+    [Authorize(Roles = "Admin")]
+    [Produces("application/json")]
+    [Route("api/[controller]/[action]")]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public class VacancyController : ControllerBase
     {
         private readonly IVacancyService vacancyService;
@@ -60,7 +65,6 @@ namespace CoreWebApi.Controllers
         /// <response code="200">Returns the requested VacancyDto item</response>
         /// <response code="404">If the vacancy with given id not found</response>
         [HttpGet("{id}")]
-        [Authorize(Roles = "Registered")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetByIdAsync([FromRoute] int id)

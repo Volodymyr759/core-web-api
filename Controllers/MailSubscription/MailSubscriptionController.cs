@@ -8,12 +8,16 @@ using CoreWebApi.Services;
 
 namespace CoreWebApi.Controllers
 {
-    [ApiController, Authorize, Produces("application/json"), Route("api/[controller]/[action]"), ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ApiController]
+    [Authorize(Roles = "Admin")]
+    [Produces("application/json")]
+    [Route("api/[controller]/[action]")]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public class MailSubscriptionController : ControllerBase
     {
         private readonly IMailSubscriptionService mailSubscriptionService;
-        private IResponseError responseBadRequestError;
-        private IResponseError responseNotFoundError;
+        private readonly IResponseError responseBadRequestError;
+        private readonly IResponseError responseNotFoundError;
 
         public MailSubscriptionController(IMailSubscriptionService mailSubscriptionService)
         {

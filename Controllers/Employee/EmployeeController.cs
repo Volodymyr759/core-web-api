@@ -14,7 +14,6 @@ namespace CoreWebApi.Controllers
     [Route("api/[controller]/[action]")]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeService employeeService;

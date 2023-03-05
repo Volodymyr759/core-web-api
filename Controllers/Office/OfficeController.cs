@@ -8,7 +8,11 @@ using System.Threading.Tasks;
 
 namespace CoreWebApi.Controllers
 {
-    [ApiController, Authorize, Produces("application/json"), Route("api/[controller]/[action]"), ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ApiController]
+    [Authorize(Roles = "Admin")]
+    [Produces("application/json")]
+    [Route("api/[controller]/[action]")]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public class OfficeController : ControllerBase
     {
         private readonly IOfficeService officeService;

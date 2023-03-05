@@ -8,7 +8,11 @@ using System.Threading.Tasks;
 
 namespace CoreWebApi.Controllers
 {
-    [ApiController, Authorize, Produces("application/json"), Route("api/[controller]/[action]"), ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ApiController]
+    [Authorize(Roles = "Admin")]
+    [Produces("application/json")]
+    [Route("api/[controller]/[action]")]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public class CandidateController : ControllerBase
     {
         private readonly ICandidateService candidateService;
@@ -39,6 +43,7 @@ namespace CoreWebApi.Controllers
         /// </remarks>
         /// <response code="200">list of CandidateDto's</response>
         [HttpGet]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAsync(int limit, int page, string search, string sortField, OrderType order) =>
             Ok(await candidateService.GetCandidatesSearchResultAsync(limit, page, search, sortField, order));
@@ -101,7 +106,7 @@ namespace CoreWebApi.Controllers
         /// <response code="201">Returns the newly created CandidateDto item</response>
         /// <response code="400">If the argument is not valid</response>
         /// <response code="403">If the user hasn't need role</response>
-        [HttpPost, Authorize(Roles = "Registered")]
+        [HttpPost, Authorize(Roles = "Registered, Admin")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
