@@ -41,7 +41,6 @@ namespace CoreWebApi.Services
             CreateMap<Tenant, TenantDto>().ReverseMap();
 
             CreateMap<Vacancy, VacancyDto>()
-                .ForMember(dest => dest.CandidateDtos, act => act.MapFrom(src => src.Candidates))
                 .ForMember(dest => dest.OfficeDto, act => act.MapFrom(src => new OfficeDto()
                 {
                     Id = src.OfficeId,

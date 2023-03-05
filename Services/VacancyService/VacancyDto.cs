@@ -18,7 +18,7 @@ namespace CoreWebApi.Services
 
         public bool IsActive { get; set; } = true;
 
-        public IEnumerable<CandidateDto> CandidateDtos { get; set; }
+        public IEnumerable<CandidateDto> Candidates { get; set; }
 
         [Required]
         public int OfficeId { get; set; }
