@@ -53,6 +53,14 @@ namespace CoreWebApi.Services
 
         public async Task<CandidateDto> GetCandidateByIdAsync(int id) => mapper.Map<CandidateDto>(await repository.GetAsync(id));
 
+
+        public async Task<List<CandidateDto>> GetCandidatesByVacancyIdAsync(int id)
+        {
+            var candidates = mapper.Map<IEnumerable<CandidateDto>>(await repository.GetAllAsync()).ToList();
+
+            return candidates.FindAll(candidate => candidate.VacancyId == id);
+        }
+
         public async Task<CandidateDto> CreateCandidateAsync(CandidateDto candidateDto)
         {
             var candidate = mapper.Map<Candidate>(candidateDto);
@@ -75,5 +83,6 @@ namespace CoreWebApi.Services
 
             return await repository.IsExistAsync("EXEC @returnVal=sp_checkCandidateById @id, @returnVal", parameters);
         }
+
     }
 }

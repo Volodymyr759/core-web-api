@@ -18,12 +18,19 @@ namespace CoreWebApi.Controllers
     public class VacancyController : ControllerBase
     {
         private readonly IVacancyService vacancyService;
+        private readonly IOfficeService officeService;
+        private readonly ICandidateService candidateService;
         private readonly IResponseError responseBadRequestError;
         private readonly IResponseError responseNotFoundError;
 
-        public VacancyController(IVacancyService vacancyService)
+        public VacancyController(
+            IVacancyService vacancyService, 
+            IOfficeService officeService,
+            ICandidateService candidateService)
         {
             this.vacancyService = vacancyService;
+            this.officeService = officeService;
+            this.candidateService = candidateService;
             responseBadRequestError = ResponseErrorFactory.getBadRequestError("Wrong vacancy data.");
             responseNotFoundError = ResponseErrorFactory.getNotFoundError("Vacancy Not Found.");
         }
@@ -118,7 +125,10 @@ namespace CoreWebApi.Controllers
         public async Task<IActionResult> CreateAsync([FromBody] VacancyDto vacancyDto)
         {
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
-            return Created("/api/vacancy/create", await vacancyService.CreateVacancyAsync(vacancyDto));
+            var createdVacancy = await vacancyService.CreateVacancyAsync(vacancyDto);
+            createdVacancy.OfficeDto = await officeService.GetOfficeByIdAsync(vacancyDto.OfficeId);
+
+            return Created("/api/vacancy/create", createdVacancy);
         }
 
         /// <summary>
@@ -151,7 +161,12 @@ namespace CoreWebApi.Controllers
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             if (await IsExistAsync(vacancyDto.Id) == false) return NotFound(responseNotFoundError);
             await vacancyService.UpdateVacancyAsync(vacancyDto);
-
+            // Entity Framework already tracks the value of vacancyDto.Id, so it's impossible to 
+            // attach officeDto and Candidates using another request to EF using the same id.
+            // It needs to attach linked models using specified services - officeService and candidateService
+            if (vacancyDto.OfficeDto == null) vacancyDto.OfficeDto = await officeService.GetOfficeByIdAsync(vacancyDto.OfficeId);
+            if (vacancyDto.Candidates == null) vacancyDto.Candidates = await candidateService.GetCandidatesByVacancyIdAsync(vacancyDto.Id);
+            
             return Ok(vacancyDto);
         }
 
