@@ -23,7 +23,7 @@ namespace CoreWebApi.Services
             this.repository = repository;
         }
 
-        public async Task<SearchResult<CountryDto>> GetCountriesSearchResultAsync(int limit, int page, OrderType order)
+        public async Task<SearchResult<CountryDto>> GetCountriesSearchResultAsync(int limit, int page, string sortField, OrderType order)
         {
             // sorting only by Name
             Func<IQueryable<Country>, IOrderedQueryable<Country>> orderBy = null;

@@ -16,12 +16,14 @@ namespace CoreWebApi.Controllers
     public class CountryController : ControllerBase
     {
         private readonly ICountryService countryService;
+        private readonly IOfficeService officeService;
         private readonly IResponseError responseBadRequestError;
         private readonly IResponseError responseNotFoundError;
 
-        public CountryController(ICountryService countryService)
+        public CountryController(ICountryService countryService, IOfficeService officeService)
         {
             this.countryService = countryService;
+            this.officeService = officeService;
             responseBadRequestError = ResponseErrorFactory.getBadRequestError("Wrong country data.");
             responseNotFoundError = ResponseErrorFactory.getNotFoundError("Country Not Found.");
         }
@@ -31,39 +33,21 @@ namespace CoreWebApi.Controllers
         /// </summary>
         /// <param name="limit">Number of items per page</param>
         /// <param name="page">Requested page</param>
+        /// <param name="sortField">Field name for sorting</param>
         /// <param name="order" default="asc">sort direction: 0 - Ascending or 1 - Descending, 2 - None</param>
         /// 
         /// <returns>Status 200 and list of CountryDto's</returns>
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/Country/get?limit=3&amp;page=1&amp;order=0
+        ///     GET /api/country/get?limit=3&amp;page=1&amp;sortField=Name&amp;order=0
         ///     
         /// </remarks>
         /// <response code="200">List of CountryDto's</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAsync(int limit, int page, OrderType order) =>
-            Ok(await countryService.GetCountriesSearchResultAsync(limit, page, order));
-
-        /// <summary>
-        /// Gets a list of CountryDto's for public pages.
-        /// </summary>
-        /// <param name="page">Requested page</param>
-        /// 
-        /// <returns>Status 200 and list of CountryDto's</returns>
-        /// <remarks>
-        /// Sample request:
-        ///
-        ///     GET /api/Country/get?limit=3&amp;page=1&amp;order=0
-        ///     
-        /// </remarks>
-        /// <response code="200">List of CountryDto's</response>
-        [HttpGet]
-        [AllowAnonymous]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetPublicAsync(int page) =>
-            Ok(await countryService.GetCountriesSearchResultAsync(limit: 3, page, order: OrderType.Ascending));
+        public async Task<IActionResult> GetAsync(int limit, int page, string sortField, OrderType order) =>
+            Ok(await countryService.GetCountriesSearchResultAsync(limit, page, sortField, order));
 
         /// <summary>
         /// Gets a specific CountryDto Item.
@@ -136,6 +120,8 @@ namespace CoreWebApi.Controllers
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             if (await IsExistAsync(countryDto.Id) == false) return NotFound(responseNotFoundError);
             await countryService.UpdateCountryAsync(countryDto);
+            // Attaching linked offices
+            countryDto.OfficeDtos = await officeService.GetOfficesByCountryId(countryDto.Id);
 
             return Ok(countryDto);
         }

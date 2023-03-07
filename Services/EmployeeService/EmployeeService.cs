@@ -32,10 +32,10 @@ namespace CoreWebApi.Services
             Expression<Func<Employee, bool>> searchQuery = null;
             if (!string.IsNullOrEmpty(search)) searchQuery = t => t.FullName.Contains(search);
 
-            // sorting - newest first
+            // sorting only by FullName
             Func<IQueryable<Employee>, IOrderedQueryable<Employee>> orderBy = null;
             if (order != OrderType.None)
-                orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Id) : orderBy = q => q.OrderByDescending(s => s.Id);
+                orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.FullName) : orderBy = q => q.OrderByDescending(s => s.FullName);
 
             var employees = await repository.GetAllAsync(searchQuery, orderBy);
 

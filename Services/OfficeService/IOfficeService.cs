@@ -10,6 +10,7 @@ namespace CoreWebApi.Services
         Task<SearchResult<OfficeDto>> GetOfficesSearchResultAsync(int limit, int page, OrderType order);
         Task<List<OfficeNameIdDto>> GetOfficeIdNamesAsync();
         Task<OfficeDto> GetOfficeByIdAsync(int id);
+        Task<List<OfficeDto>> GetOfficesByCountryId(int id);
         Task<OfficeDto> CreateOfficeAsync(OfficeDto officeDto);
         Task UpdateOfficeAsync(OfficeDto officeDto);
         Task DeleteOfficeAsync(int id);

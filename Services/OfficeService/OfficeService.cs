@@ -59,6 +59,13 @@ namespace CoreWebApi.Services
 
         public async Task<OfficeDto> GetOfficeByIdAsync(int id) => mapper.Map<OfficeDto>(await repository.GetAsync(id));
 
+        public async Task<List<OfficeDto>> GetOfficesByCountryId(int id)
+        {
+            var offices = mapper.Map<IEnumerable<OfficeDto>>(await repository.GetAllAsync()).ToList();
+
+            return offices.FindAll(office => office.CountryId == id);
+        }
+
         public async Task<OfficeDto> CreateOfficeAsync(OfficeDto officeDto)
         {
             var office = mapper.Map<Office>(officeDto);
@@ -80,5 +87,6 @@ namespace CoreWebApi.Services
 
             return await repository.IsExistAsync("EXEC @returnVal=sp_sp_checkOfficeById @id, @returnVal", parameters);
         }
+
     }
 }
