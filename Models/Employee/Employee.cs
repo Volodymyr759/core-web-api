@@ -22,7 +22,8 @@ namespace CoreWebApi.Models
 
         public string AvatarUrl { get; set; }
 
-        public int? OfficeId { get; set; }
+        [Required(ErrorMessage = "OfficeId is required.")]
+        public int OfficeId { get; set; }
 
         [ForeignKey("OfficeId")]
         public virtual Office Office { get; set; }

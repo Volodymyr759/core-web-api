@@ -17,12 +17,14 @@ namespace CoreWebApi.Controllers
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeService employeeService;
+        private readonly IOfficeService officeService;
         private readonly IResponseError responseBadRequestError;
         private readonly IResponseError responseNotFoundError;
 
-        public EmployeeController(IEmployeeService employeeService)
+        public EmployeeController(IEmployeeService employeeService, IOfficeService officeService)
         {
             this.employeeService = employeeService;
+            this.officeService = officeService;
             responseBadRequestError = ResponseErrorFactory.getBadRequestError("Wrong employee data.");
             responseNotFoundError = ResponseErrorFactory.getNotFoundError("Employee Not Found.");
         }
@@ -92,8 +94,11 @@ namespace CoreWebApi.Controllers
         public async Task<IActionResult> CreateAsync([FromBody] EmployeeDto employeeDto)
         {
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
+            var createdEmployee = await employeeService.CreateEmployeeAsync(employeeDto);
+            // Attaching linked office
+            createdEmployee.OfficeDto = await officeService.GetOfficeByIdAsync(employeeDto.OfficeId);
 
-            return Created("/api/Employee/create", await employeeService.CreateEmployeeAsync(employeeDto));
+            return Created("/api/Employee/create", createdEmployee);
         }
 
         /// <summary>
@@ -127,7 +132,11 @@ namespace CoreWebApi.Controllers
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             if (await IsExistAsync(employeeDto.Id) == false) return NotFound(responseNotFoundError);
             await employeeService.UpdateEmployeeAsync(employeeDto);
-
+            // IT it the same situation as for VacancyController.Update - Entity Framework already tracks the value of employeeDto.Id,
+            // so it's impossible to attach officeDto using another request to EF with the same id.
+            // It needs to attach linked officeDto using officeService
+            if (employeeDto.OfficeDto == null) employeeDto.OfficeDto = await officeService.GetOfficeByIdAsync(employeeDto.OfficeId);
+            
             return Ok(employeeDto);
         }
 

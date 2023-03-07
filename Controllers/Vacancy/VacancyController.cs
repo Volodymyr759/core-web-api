@@ -126,6 +126,7 @@ namespace CoreWebApi.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             var createdVacancy = await vacancyService.CreateVacancyAsync(vacancyDto);
+            // Attaching linked office
             createdVacancy.OfficeDto = await officeService.GetOfficeByIdAsync(vacancyDto.OfficeId);
 
             return Created("/api/vacancy/create", createdVacancy);

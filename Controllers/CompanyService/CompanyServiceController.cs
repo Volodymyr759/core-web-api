@@ -143,7 +143,7 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     PATCH /api/CompanyService/partialserviceupdate/{id}
+        ///     PATCH /api/companyservice/partialserviceupdate/{id}
         ///     {
         ///        "op": "replace",
         ///        "path": "/isactive",
