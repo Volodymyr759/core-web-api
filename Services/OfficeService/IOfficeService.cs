@@ -7,7 +7,7 @@ namespace CoreWebApi.Services
 {
     public interface IOfficeService
     {
-        Task<SearchResult<OfficeDto>> GetOfficesSearchResultAsync(int limit, int page, OrderType order);
+        Task<SearchResult<OfficeDto>> GetOfficesSearchResultAsync(int limit, int page, string sortField, OrderType order);
         Task<List<OfficeNameIdDto>> GetOfficeIdNamesAsync();
         Task<OfficeDto> GetOfficeByIdAsync(int id);
         Task<List<OfficeDto>> GetOfficesByCountryId(int id);

@@ -16,12 +16,17 @@ namespace CoreWebApi.Controllers
     public class OfficeController : ControllerBase
     {
         private readonly IOfficeService officeService;
+        private readonly ICountryService countryService;
+        private readonly IVacancyService vacancyService;
         private readonly IResponseError responseBadRequestError;
         private readonly IResponseError responseNotFoundError;
 
-        public OfficeController(IOfficeService officeService)
+        public OfficeController(IOfficeService officeService, 
+            ICountryService countryService, IVacancyService vacancyService)
         {
             this.officeService = officeService;
+            this.countryService = countryService;
+            this.vacancyService = vacancyService;
             responseBadRequestError = ResponseErrorFactory.getBadRequestError("Wrong office data.");
             responseNotFoundError = ResponseErrorFactory.getNotFoundError("Office Not Found.");
         }
@@ -31,6 +36,7 @@ namespace CoreWebApi.Controllers
         /// </summary>
         /// <param name="limit">Number of items per page</param>
         /// <param name="page">Requested page</param>
+        /// <param name="sortField">Field name for sorting</param>
         /// <param name="order">sort direction: 0 - Ascending or 1 - Descending, 2 - None</param>
         /// 
         /// <returns>Status 200 and list of OfficeDto's</returns>
@@ -43,27 +49,8 @@ namespace CoreWebApi.Controllers
         /// <response code="200">list of OfficeDto's</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAsync(int limit, int page, OrderType order) =>
-            Ok(await officeService.GetOfficesSearchResultAsync(limit, page, order));
-
-        /// <summary>
-        /// Gets a list of OfficeDto's for public pages.
-        /// </summary>
-        /// <param name="page">Requested page</param>
-        /// 
-        /// <returns>Status 200 and list of OfficeDto's</returns>
-        /// <remarks>
-        /// Sample request:
-        ///
-        ///     GET /api/office/getpublic?page=1
-        ///     
-        /// </remarks>
-        /// <response code="200">List of OfficeDto's</response>
-        [HttpGet]
-        [AllowAnonymous]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetPublicAsync(int page) =>
-            Ok(await officeService.GetOfficesSearchResultAsync(limit: 3, page, order: OrderType.Ascending));
+        public async Task<IActionResult> GetAsync(int limit, int page, string sortField, OrderType order) =>
+            Ok(await officeService.GetOfficesSearchResultAsync(limit, page, sortField, order));
 
         /// <summary>
         /// Gets a list of OfficeNameIdDto's for public pages.
@@ -72,12 +59,12 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/office/getpublicofficenameids
+        ///     GET /api/office/getofficenameids
         ///     
         /// </remarks>
         /// <response code="200">List of OfficeNameIdDto's</response>
-        [HttpGet, AllowAnonymous, ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetPublicOfficeNameIdsAsync() => Ok(await officeService.GetOfficeIdNamesAsync());
+        [HttpGet, ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetOfficeNameIdsAsync() => Ok(await officeService.GetOfficeIdNamesAsync());
 
         /// <summary>
         /// Gets a specific OfficeDto Item.
@@ -123,7 +110,11 @@ namespace CoreWebApi.Controllers
         public async Task<IActionResult> CreateAsync([FromBody] OfficeDto officeDto)
         {
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
-            return Created("/api/office/create", await officeService.CreateOfficeAsync(officeDto));
+            var createdOffice = await officeService.CreateOfficeAsync(officeDto);
+            // Attaching linked country
+            createdOffice.CountryDto = await countryService.GetCountryByIdAsync(officeDto.CountryId);
+
+            return Created("/api/office/create", createdOffice);
         }
 
         /// <summary>
@@ -157,6 +148,9 @@ namespace CoreWebApi.Controllers
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             if (await IsExistAsync(officeDto.Id) == false) return NotFound(responseNotFoundError);
             await officeService.UpdateOfficeAsync(officeDto);
+            // attach CountryDto and VacancyDtos[] to updated office
+            if (officeDto.CountryDto == null) officeDto.CountryDto = await countryService.GetCountryByIdAsync(officeDto.CountryId);
+            if (officeDto.VacancyDtos == null) officeDto.VacancyDtos = await vacancyService.GetVacanciesByOfficeIdAsync(officeDto.Id);
 
             return Ok(officeDto);
         }

@@ -29,7 +29,7 @@ namespace CoreWebApi.Services
             this.repositoryOfficeNameId = repositoryOfficeNameId;
         }
 
-        public async Task<SearchResult<OfficeDto>> GetOfficesSearchResultAsync(int limit, int page, OrderType order)
+        public async Task<SearchResult<OfficeDto>> GetOfficesSearchResultAsync(int limit, int page, string sortField, OrderType order)
         {
             // sorting sorting only by Name
             Func<IQueryable<Office>, IOrderedQueryable<Office>> orderBy = null;
@@ -85,7 +85,7 @@ namespace CoreWebApi.Services
                    new SqlParameter("@returnVal", SqlDbType.Int) {Direction = ParameterDirection.Output}
                 };
 
-            return await repository.IsExistAsync("EXEC @returnVal=sp_sp_checkOfficeById @id, @returnVal", parameters);
+            return await repository.IsExistAsync("EXEC @returnVal=sp_checkOfficeById @id, @returnVal", parameters);
         }
 
     }

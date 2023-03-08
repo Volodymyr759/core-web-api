@@ -24,6 +24,13 @@ namespace CoreWebApi.Services
             CreateMap<CountryDto, Country>();
 
             CreateMap<Office, OfficeDto>()
+                .ForMember(dest => dest.CountryDto, act => act.MapFrom(src => new CountryDto()
+                {
+                    Id = src.CountryId,
+                    Name = src.Country.Name,
+                    Code = src.Country.Code
+                }))
+                .ForMember(dest => dest.EmployeeDtos, opt => opt.Ignore())
                 .ForMember(dest => dest.VacancyDtos, act => act.MapFrom(src => src.Vacancies));
             CreateMap<OfficeDto, Office>();
             CreateMap<OfficeNameId, OfficeNameIdDto>();

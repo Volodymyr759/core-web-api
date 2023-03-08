@@ -72,6 +72,13 @@ namespace CoreWebApi.Services
             return vacanciesTitles;
         }
 
+        public async Task<List<VacancyDto>> GetVacanciesByOfficeIdAsync(int officeId)
+        {
+            var vacancies = mapper.Map<IEnumerable<VacancyDto>>(await repository.GetAllAsync()).ToList();
+
+            return vacancies.FindAll(v => v.OfficeId == officeId);
+        }
+
         public async Task<VacancyDto> CreateVacancyAsync(VacancyDto vacancyDto)
         {
             var vacancy = mapper.Map<Vacancy>(vacancyDto);
@@ -101,5 +108,6 @@ namespace CoreWebApi.Services
 
             return await repository.IsExistAsync("EXEC @returnVal=sp_checkVacancyById @id, @returnVal", parameters);
         }
+
     }
 }

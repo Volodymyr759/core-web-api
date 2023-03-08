@@ -11,6 +11,7 @@ namespace CoreWebApi.Services
     {
         Task<SearchResult<VacancyDto>> GetVacanciesSearchResultAsync(int limit, int page, string search, VacancyStatus? vacancyStatus, int? officeId, string sortField, OrderType order);
         Task<VacancyDto> GetVacancyByIdAsync(int id);
+        Task<List<VacancyDto>> GetVacanciesByOfficeIdAsync(int officeId);
         Task<IEnumerable<StringValue>> SearchVacanciesTitlesAsync(string searchValue, int officeId);
         Task<VacancyDto> CreateVacancyAsync(VacancyDto vacancyDto);
         Task UpdateVacancyAsync(VacancyDto vacancyDto);
