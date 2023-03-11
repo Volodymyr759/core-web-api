@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 namespace CoreWebApi.Controllers
 {
     [ApiController]
-    [Authorize(Roles = "Admin")]
     [Produces("application/json")]
     [Route("api/[controller]/[action]")]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -24,7 +23,7 @@ namespace CoreWebApi.Controllers
         private readonly IResponseError responseNotFoundError;
 
         public VacancyController(
-            IVacancyService vacancyService, 
+            IVacancyService vacancyService,
             IOfficeService officeService,
             ICandidateService candidateService)
         {
@@ -42,7 +41,7 @@ namespace CoreWebApi.Controllers
         /// <param name="page">Requested page</param>
         /// <param name="search">part of Title for searching</param>
         /// <param name="vacancyStatus">Filter for isActive property: 0 - Active, 1 - Disabled, 2 - All</param>
-        /// <param name="officeId">Filter vacancies by OfficeId</param>
+        /// <param name="officeId">Filter for vacancies by OfficeId</param>
         /// <param name="sortField">Field name for sorting</param>
         /// <param name="order">sort direction: 0 - Ascending or 1 - Descending, 2 - None</param>
         /// <returns>Status 200 and list of VacancyDto's</returns>
@@ -53,7 +52,8 @@ namespace CoreWebApi.Controllers
         ///     
         /// </remarks>
         /// <response code="200">list of VacancyDto's</response>
-        [HttpGet, AllowAnonymous]
+        [HttpGet]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAsync(int limit, int page, string search, VacancyStatus vacancyStatus, int? officeId, string sortField, OrderType order) =>
             Ok(await vacancyService.GetVacanciesSearchResultAsync(limit, page, search, vacancyStatus, officeId ?? 0, sortField, order));
@@ -72,6 +72,7 @@ namespace CoreWebApi.Controllers
         /// <response code="200">Returns the requested VacancyDto item</response>
         /// <response code="404">If the vacancy with given id not found</response>
         [HttpGet("{id}")]
+        [Authorize(Roles = "Registered, Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
@@ -120,6 +121,7 @@ namespace CoreWebApi.Controllers
         /// <response code="201">Returns the newly created VacancyDto item</response>
         /// <response code="400">If the argument is not valid</response>
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateAsync([FromBody] VacancyDto vacancyDto)
@@ -154,6 +156,7 @@ namespace CoreWebApi.Controllers
         /// <response code="400">If the argument is not valid</response>
         /// <response code="404">If the Vacancy with given id not found</response>
         [HttpPut]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -167,26 +170,8 @@ namespace CoreWebApi.Controllers
             // It needs to attach linked models using specified services - officeService and candidateService
             if (vacancyDto.OfficeDto == null) vacancyDto.OfficeDto = await officeService.GetOfficeByIdAsync(vacancyDto.OfficeId);
             if (vacancyDto.Candidates == null) vacancyDto.Candidates = await candidateService.GetCandidatesByVacancyIdAsync(vacancyDto.Id);
-            
+
             return Ok(vacancyDto);
-        }
-
-        /// <summary>
-        /// Deletes a Vacancy Item.
-        /// </summary>
-        /// <param name="id">Identifier int id</param>
-        /// <returns>Status 200 and deleted VacancyDto object</returns>
-        /// <response code="200">Returns the deleted VacancyDto item</response>
-        /// <response code="404">If the vacancy with given id not found</response>
-        [HttpDelete("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> DeleteAsync([FromRoute] int id)
-        {
-            if (await IsExistAsync(id) == false) return NotFound(responseNotFoundError);
-            await vacancyService.DeleteVacancyAsync(id);
-
-            return Ok();
         }
 
         /// <summary>
@@ -227,6 +212,25 @@ namespace CoreWebApi.Controllers
             {
                 return BadRequest(responseBadRequestError);
             }
+        }
+
+        /// <summary>
+        /// Deletes a Vacancy Item.
+        /// </summary>
+        /// <param name="id">Identifier int id</param>
+        /// <returns>Status 200 and deleted VacancyDto object</returns>
+        /// <response code="200">Returns the deleted VacancyDto item</response>
+        /// <response code="404">If the vacancy with given id not found</response>
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeleteAsync([FromRoute] int id)
+        {
+            if (await IsExistAsync(id) == false) return NotFound(responseNotFoundError);
+            await vacancyService.DeleteVacancyAsync(id);
+
+            return Ok();
         }
 
         private async Task<bool> IsExistAsync(int id) => await vacancyService.IsExistAsync(id);

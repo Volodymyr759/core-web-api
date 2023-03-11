@@ -3,6 +3,7 @@ using CoreWebApi.Data;
 using CoreWebApi.Library.Enums;
 using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
@@ -26,18 +27,26 @@ namespace CoreWebApi.Services
             this.repository = repository;
         }
 
-        public async Task<SearchResult<CandidateDto>> GetCandidatesSearchResultAsync(int limit, int page, string search, string sortField, OrderType order)
+        public async Task<SearchResult<CandidateDto>> GetCandidatesSearchResultAsync(
+            int limit, int page,
+            string search, CandidateStatus candidateStatus, int? vacancyId,
+            string sortField, OrderType order)
         {
-            // search by Title
+            // search by FullName
             Expression<Func<Candidate, bool>> searchQuery = null;
             if (!string.IsNullOrEmpty(search)) searchQuery = t => t.FullName.Contains(search);
 
-            // sorting - newest first
+            // sorting FullNames
             Func<IQueryable<Candidate>, IOrderedQueryable<Candidate>> orderBy = null;
             if (order != OrderType.None)
-                orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Id) : orderBy = q => q.OrderByDescending(s => s.Id);
+                orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.FullName) : orderBy = q => q.OrderByDescending(s => s.FullName);
 
             var candidates = await repository.GetAllAsync(searchQuery, orderBy);
+
+            if (candidateStatus != CandidateStatus.All)
+                candidates = candidateStatus == CandidateStatus.Active ? candidates.Where(c => c.IsDismissed == false) : candidates.Where(c => c.IsDismissed == true);
+
+            if (vacancyId != null) candidates = candidates.Where(c => c.VacancyId == vacancyId);
 
             return new SearchResult<CandidateDto>
             {
@@ -70,6 +79,14 @@ namespace CoreWebApi.Services
 
         public async Task UpdateCandidateAsync(CandidateDto candidateDto) =>
             await repository.UpdateAsync(mapper.Map<Candidate>(candidateDto));
+
+        public async Task<CandidateDto> PartialUpdateAsync(int id, JsonPatchDocument<object> patchDocument)
+        {
+            var candidate = await repository.GetAsync(id);
+            patchDocument.ApplyTo(candidate);
+
+            return mapper.Map<CandidateDto>(await repository.SaveAsync(candidate));
+        }
 
         public async Task DeleteCandidateAsync(int id) => await repository.DeleteAsync(id);
 

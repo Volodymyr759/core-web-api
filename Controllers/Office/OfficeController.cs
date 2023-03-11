@@ -21,7 +21,7 @@ namespace CoreWebApi.Controllers
         private readonly IResponseError responseBadRequestError;
         private readonly IResponseError responseNotFoundError;
 
-        public OfficeController(IOfficeService officeService, 
+        public OfficeController(IOfficeService officeService,
             ICountryService countryService, IVacancyService vacancyService)
         {
             this.officeService = officeService;
@@ -63,7 +63,9 @@ namespace CoreWebApi.Controllers
         ///     
         /// </remarks>
         /// <response code="200">List of OfficeNameIdDto's</response>
-        [HttpGet, ProducesResponseType(StatusCodes.Status200OK)]
+        [HttpGet]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetOfficeNameIdsAsync() => Ok(await officeService.GetOfficeIdNamesAsync());
 
         /// <summary>

@@ -3,25 +3,27 @@ using CoreWebApi.Library.ResponseError;
 using CoreWebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
 namespace CoreWebApi.Controllers
 {
     [ApiController]
-    [Authorize(Roles = "Admin")]
     [Produces("application/json")]
     [Route("api/[controller]/[action]")]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public class CandidateController : ControllerBase
     {
         private readonly ICandidateService candidateService;
+        private readonly IVacancyService vacancyService;
         private readonly IResponseError responseBadRequestError;
         private readonly IResponseError responseNotFoundError;
 
-        public CandidateController(ICandidateService candidateService)
+        public CandidateController(ICandidateService candidateService, IVacancyService vacancyService)
         {
             this.candidateService = candidateService;
+            this.vacancyService = vacancyService;
             responseBadRequestError = ResponseErrorFactory.getBadRequestError("Wrong candidate data.");
             responseNotFoundError = ResponseErrorFactory.getNotFoundError("Candidate Not Found.");
         }
@@ -32,39 +34,23 @@ namespace CoreWebApi.Controllers
         /// <param name="limit">Number of items per page</param>
         /// <param name="page">Requested page</param>
         /// <param name="search">Part of FullName for searching</param>
-        /// <param name="sortField">field name for sorting</param>
+        /// <param name="candidateStatus">Filter for isDismissed property: 0 - Active, 1 - Dismissed, 2 - All</param>
+        /// <param name="vacancyId">Filter for candidates by VacancyId</param>
+        /// <param name="sortField">Field name for sorting</param>
         /// <param name="order">sort direction: 0 - Ascending or 1 - Descending, 2 - None</param>
         /// <returns>Status 200 and list of CandidateDto's</returns>
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/Candidate/get/?limit=10&amp;page=1&amp;search=&amp;sort_field=Id&amp;order=0
+        ///     GET /api/candidate/get/?limit=10&amp;page=1&amp;search=&amp;candidateStatus=2&amp;vacancyId=&amp;sort_field=Id&amp;order=0
         ///     
         /// </remarks>
         /// <response code="200">list of CandidateDto's</response>
         [HttpGet]
-        [AllowAnonymous]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAsync(int limit, int page, string search, string sortField, OrderType order) =>
-            Ok(await candidateService.GetCandidatesSearchResultAsync(limit, page, search, sortField, order));
-
-        /// <summary>
-        /// Gets a list of CandidateDto's for public pages.
-        /// </summary>
-        /// <param name="page">Requested page</param>
-        /// <returns>Status 200 and list of CandidateDto's</returns>
-        /// <remarks>
-        /// Sample request:
-        ///
-        ///     GET /api/Candidate/getpublic/?page=1
-        ///     
-        /// </remarks>
-        /// <response code="200">list of CandidateDto's</response>
-        [HttpGet]
-        [AllowAnonymous]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetPublicAsync(int page) =>
-            Ok(await candidateService.GetCandidatesSearchResultAsync(limit: 10, page, search: "", sortField: "Id", order: OrderType.Descending));
+        public async Task<IActionResult> GetAsync(int limit, int page, string search, CandidateStatus candidateStatus, int? vacancyId, string sortField, OrderType order) =>
+            Ok(await candidateService.GetCandidatesSearchResultAsync(limit, page, search, candidateStatus, vacancyId, sortField, order));
 
         /// <summary>
         /// Gets a specific CandidateDto Item.
@@ -106,7 +92,8 @@ namespace CoreWebApi.Controllers
         /// <response code="201">Returns the newly created CandidateDto item</response>
         /// <response code="400">If the argument is not valid</response>
         /// <response code="403">If the user hasn't need role</response>
-        [HttpPost, Authorize(Roles = "Registered, Admin")]
+        [HttpPost]
+        [Authorize(Roles = "Registered, Admin")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -140,6 +127,7 @@ namespace CoreWebApi.Controllers
         /// <response code="400">If the argument is not valid</response>
         /// <response code="404">If the candidate with given id not found</response>
         [HttpPut]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -148,8 +136,50 @@ namespace CoreWebApi.Controllers
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             if (await IsExistAsync(candidateDto.Id) == false) return NotFound(responseNotFoundError);
             await candidateService.UpdateCandidateAsync(candidateDto);
+            // Attaching linked vacancy
+            if (candidateDto.VacancyDto == null) candidateDto.VacancyDto = await vacancyService.GetVacancyByIdAsync(candidateDto.VacancyId);
 
             return Ok(candidateDto);
+        }
+
+        /// <summary>
+        /// Partly updates an existing Candidate item.
+        /// </summary>
+        /// <param name="id">Identifier int id</param>
+        /// <param name="patchDocument">Json Patch Document as array of operations</param>
+        /// <returns>Status 200 and updated CandidateDto object</returns>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     PATCH /api/vacancy/partialcandidateupdate/{id}
+        ///     [
+        ///         {
+        ///             "op": "replace",
+        ///             "path": "/isdismissed",
+        ///             "value": "true"
+        ///         }
+        ///     ]
+        ///     
+        /// </remarks>
+        /// <response code="200">Returns the updated CandidateDto item</response>
+        /// <response code="400">If the argument is not valid</response>
+        /// <response code="404">If the vacancy with given id not found</response>
+        [HttpPatch("{id}")]
+        [Authorize(Roles = "Admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> PartialCandidateUpdateAsync(int id, JsonPatchDocument<object> patchDocument)
+        {
+            if (await IsExistAsync(id) == false) return NotFound(responseNotFoundError);
+            try
+            {
+                return Ok(await candidateService.PartialUpdateAsync(id, patchDocument));
+            }
+            catch
+            {
+                return BadRequest(responseBadRequestError);
+            }
         }
 
         /// <summary>
@@ -160,6 +190,7 @@ namespace CoreWebApi.Controllers
         /// <response code="200">Returns the deleted CandidateDto item</response>
         /// <response code="404">If the candidate with given id not found</response>
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteAsync([FromRoute] int id)
