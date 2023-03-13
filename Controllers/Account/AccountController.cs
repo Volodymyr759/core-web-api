@@ -364,7 +364,7 @@ namespace CoreWebApi.Controllers
             await userManager.AddToRoleAsync(user, nameof(AppRoles.Registered));
             await Task.WhenAll(userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation", code),
                 emailSender.SendEmailAsync($"{user.Email}", "Confirmation email link",
-                $"Confirmation email link: /Account/ConfirmEmail/?code={code}&email={user.Email}"));
+                $"Confirmation email link: http://localhost:3000/Account/ConfirmEmail/?code={code}&email={user.Email}"));
             return Created("/account/register", code);
         }
 
@@ -478,18 +478,18 @@ namespace CoreWebApi.Controllers
             var user = await userManager.FindByEmailAsync(loginUserDto.Email);
             if (user == null)
             {
-                responseBadRequestError.Title = "User Not Found.";
-                return NotFound(responseBadRequestError);
+                responseNotFoundError.Title = "User Not Found.";
+                return NotFound(responseNotFoundError);
             };
             if (!user.EmailConfirmed)
             {
                 responseBadRequestError.Title = "Please confirm your email first.";
-                return NotFound(responseBadRequestError);
+                return BadRequest(responseBadRequestError);
             }
             if (!(await signInManager.CheckPasswordSignInAsync(user, loginUserDto.Password, false)).Succeeded)
             {
                 responseBadRequestError.Title = "Invalid password.";
-                return NotFound(responseBadRequestError);
+                return BadRequest(responseBadRequestError);
             }
             var rememberMePeriod = loginUserDto.Remember ? 60 * 24 : 15;
             var authModel = await CreateAuthModelAsync(user, rememberMePeriod);
