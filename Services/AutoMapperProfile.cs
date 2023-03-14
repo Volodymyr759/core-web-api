@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using CoreWebApi.Models;
+using CoreWebApi.Models.Account;
 
 namespace CoreWebApi.Services
 {
@@ -7,6 +8,8 @@ namespace CoreWebApi.Services
     {
         public AutoMapperProfile()
         {
+            CreateMap<ApplicationUser, ApplicationUserDto>();
+
             CreateMap<Candidate, CandidateDto>()
                 .ForMember(dest => dest.VacancyDto, act => act.MapFrom(src => new VacancyDto()
                 {

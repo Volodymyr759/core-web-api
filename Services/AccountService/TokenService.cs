@@ -7,7 +7,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace CoreWebApi.Services.AccountService
+namespace CoreWebApi.Services
 {
     public class TokenService : ITokenService
     {

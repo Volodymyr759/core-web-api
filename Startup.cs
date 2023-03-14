@@ -1,7 +1,6 @@
 using CoreWebApi.Data;
 using CoreWebApi.Models.Account;
 using CoreWebApi.Services;
-using CoreWebApi.Services.AccountService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -52,6 +51,7 @@ namespace CoreWebApi
             }).AddEntityFrameworkStores<SeerDbContext>();
 
             services.AddSingleton(provider => Configuration);
+            services.AddTransient<IAccountService, AccountService>();
             services.AddTransient<ICandidateService, CandidateService>();
             services.AddTransient<ICompanyServiceBL, CompanyServiceBL>();
             services.AddTransient<ICountryService, CountryService>();

@@ -1,7 +1,6 @@
 ﻿using CoreWebApi.Library.ResponseError;
 using CoreWebApi.Models.Account;
 using CoreWebApi.Services;
-using CoreWebApi.Services.AccountService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -15,7 +14,10 @@ using System.Threading.Tasks;
 
 namespace CoreWebApi.Controllers
 {
-    [ApiController, Authorize, Route("api/[controller]/[action]"), Produces("application/json"), ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ApiController]
+    [Route("api/[controller]/[action]")]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public class AccountController : ControllerBase
     {
         #region Private members
@@ -24,6 +26,7 @@ namespace CoreWebApi.Controllers
         private readonly RoleManager<IdentityRole> roleManager;
         private readonly SignInManager<ApplicationUser> signInManager;
         private readonly IEmailSender emailSender;
+        private readonly IAccountService accountService;
         private readonly ITokenService tokenService;
         private IResponseError responseBadRequestError;
         private IResponseError responseNotFoundError;
@@ -37,18 +40,46 @@ namespace CoreWebApi.Controllers
             RoleManager<IdentityRole> roleManager,
             SignInManager<ApplicationUser> signInManager,
             IEmailSender emailSender,
-            ITokenService tokenService)
+            ITokenService tokenService,
+            IAccountService accountService)
         {
             this.userManager = userManager;
             this.roleManager = roleManager;
             this.signInManager = signInManager;
             this.emailSender = emailSender;
             this.tokenService = tokenService;
+            this.accountService = accountService;
             responseBadRequestError = ResponseErrorFactory.getBadRequestError("");
             responseNotFoundError = ResponseErrorFactory.getNotFoundError("");
         }
 
         #endregion
+
+        /// <summary>
+        /// Gets a list of ApplicationUserDto's with pagination params and value for search, sorts by Email.
+        /// </summary>
+        /// <param name="limit">Number of items per page</param>
+        /// <param name="page">Requested page</param>
+        /// <param name="search">Part of Email for searching</param>
+        /// <returns>Status 200 and list of ApplicationUserDto's</returns>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET /api/account/get/?limit=10&amp;page=1&amp;search=&amp;sort_field=Id&amp;order=0
+        ///     
+        /// </remarks>
+        /// <response code="200">List of ApplicationUserDto's</response>
+        [HttpGet]
+        //[Authorize(Roles = "Admin")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult Get(int limit, int page, string search)
+        {
+            var userDtos = accountService.GetUsersSearchResultAsync(limit, page, search, userManager.Users);
+
+            return Ok(userDtos);
+        }
+
 
         /// <summary>
         /// Creates the new IdentityRole in db by given unique parameter.
@@ -108,6 +139,7 @@ namespace CoreWebApi.Controllers
         /// <response code="400">If the argument is not valid</response>
         /// <response code="401">If the user is not authorized</response>
         [HttpPost]
+        [Authorize(Roles = "Admin, Registered")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -165,6 +197,7 @@ namespace CoreWebApi.Controllers
         /// <response code="400">If the argument is not valid</response>
         /// <response code="401">If the user is not authorized</response>
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -273,6 +306,7 @@ namespace CoreWebApi.Controllers
         /// <response code="404">If the user not found</response>
         /// <response code="401">If the user is not authorized</response>
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetUserByIdAsync([FromRoute] string id)
@@ -310,6 +344,7 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateUserAsync([FromBody] EditUserDto editUserDto)
         {
             if (!ModelState.IsValid)

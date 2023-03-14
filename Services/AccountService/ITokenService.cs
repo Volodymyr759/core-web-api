@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Security.Claims;
 
-namespace CoreWebApi.Services.AccountService
+namespace CoreWebApi.Services
 {
     public interface ITokenService
     {
