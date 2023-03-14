@@ -362,28 +362,49 @@ namespace CoreWebApi.Controllers
             }
             var code = tokenService.GenerateRandomToken();
             await userManager.AddToRoleAsync(user, nameof(AppRoles.Registered));
-            await Task.WhenAll(userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation", code),
-                emailSender.SendEmailAsync($"{user.Email}", "Confirmation email link",
-                $"Confirmation email link: http://localhost:3000/Account/ConfirmEmail/?code={code}&email={user.Email}"));
+            try
+            {
+                await Task.WhenAll(userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation", code),
+                //emailSender.SendEmailAsync($"{user.Email}", "Confirmation email link",
+                emailSender.SendEmailAsync($"logisticmaster.2000@gmail.com", "Confirmation email link",//just  - for tests, in general it should be previous line
+                $" Please use the confirmation email link: http://localhost:3000/email-confirm/?code={code}&email={user.Email}"));
+            }
+            catch
+            {
+                responseBadRequestError.Title = "Service temporarily unavailable.";
+                return BadRequest(responseBadRequestError);
+            }
+            
             return Created("/account/register", code);
         }
 
         /// <summary>
         /// Changes User.EmailConfirmed property
         /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET /api/account/confirmemail?code=TntRy0cNM271AjzCXZ6Tz&amp;email=g@gmail.com
+        /// 
+        /// </remarks>
         /// <param name="code">Code from confirmation email</param>
         /// <param name="email">Users email</param>
         /// <returns>Ok("Email confirmed.")</returns>
         /// <response code="200">Returns the confirmation of success</response>
         /// <response code="404">If the user with given email is not found</response>
-        /// <response code="400">If the token has expired</response>
+        /// <response code="400">If the code or email are wrong</response>
         [HttpGet]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> ConfirmEmailAsync(string code, string email)
+        public async Task<IActionResult> ConfirmEmailAsync([FromQuery] string code, string email)
         {
+            if (code == null || email == null)
+            {
+                responseBadRequestError.Title = "Wrong code or email.";
+                return BadRequest(responseBadRequestError);
+            }
             var user = await userManager.FindByEmailAsync(email);
             if (user == null)
             {
