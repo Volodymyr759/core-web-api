@@ -365,16 +365,15 @@ namespace CoreWebApi.Controllers
             try
             {
                 await Task.WhenAll(userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation", code),
-                //emailSender.SendEmailAsync($"{user.Email}", "Confirmation email link",
-                emailSender.SendEmailAsync($"logisticmaster.2000@gmail.com", "Confirmation email link",//just  - for tests, in general it should be previous line
-                $" Please use the confirmation email link: http://localhost:3000/email-confirm/?code={code}&email={user.Email}"));
+                    emailSender.SendEmailAsync($"{user.Email}", "Confirmation email link",
+                    $" Please use the confirmation email link: http://localhost:3000/email-confirm/?code={code}&email={user.Email}"));
             }
             catch
             {
                 responseBadRequestError.Title = "Service temporarily unavailable.";
                 return BadRequest(responseBadRequestError);
             }
-            
+
             return Created("/account/register", code);
         }
 
