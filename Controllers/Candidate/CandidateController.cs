@@ -163,7 +163,7 @@ namespace CoreWebApi.Controllers
         /// </remarks>
         /// <response code="200">Returns the updated CandidateDto item</response>
         /// <response code="400">If the argument is not valid</response>
-        /// <response code="404">If the vacancy with given id not found</response>
+        /// <response code="404">If the candidate with given id not found</response>
         [HttpPatch("{id}")]
         [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]

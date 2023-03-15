@@ -4,6 +4,7 @@ using CoreWebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -50,13 +51,14 @@ namespace CoreWebApi.Controllers
             this.tokenService = tokenService;
             this.accountService = accountService;
             responseBadRequestError = ResponseErrorFactory.getBadRequestError("");
-            responseNotFoundError = ResponseErrorFactory.getNotFoundError("");
+            responseNotFoundError = ResponseErrorFactory.getNotFoundError("User Not Found.");
         }
 
         #endregion
 
         /// <summary>
         /// Gets a list of ApplicationUserDto's with pagination params and value for search, sorts by Email.
+        /// Uses the 'accountService' for transform ApplicationUser object to ApplicationUserDto
         /// </summary>
         /// <param name="limit">Number of items per page</param>
         /// <param name="page">Requested page</param>
@@ -70,15 +72,10 @@ namespace CoreWebApi.Controllers
         /// </remarks>
         /// <response code="200">List of ApplicationUserDto's</response>
         [HttpGet]
-        //[Authorize(Roles = "Admin")]
-        [AllowAnonymous]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult Get(int limit, int page, string search)
-        {
-            var userDtos = accountService.GetUsersSearchResultAsync(limit, page, search, userManager.Users);
-
-            return Ok(userDtos);
-        }
+        public IActionResult Get(int limit, int page, string search) =>
+            Ok(accountService.GetUsersSearchResultAsync(limit, page, search, userManager.Users));
 
 
         /// <summary>
@@ -146,11 +143,7 @@ namespace CoreWebApi.Controllers
         public async Task<IActionResult> ChangeEmailAsync([FromBody] ChangeEmailDto changeEmailDto)
         {
             var user = await userManager.FindByEmailAsync(changeEmailDto.ExistingEmail);
-            if (user == null)
-            {
-                responseNotFoundError.Title = "User Not Found.";
-                return NotFound(responseNotFoundError);
-            }
+            if (user == null) return NotFound(responseNotFoundError);
             if (await userManager.FindByEmailAsync(changeEmailDto.NewEmail) != null) // is new email unique
             {
                 responseBadRequestError.Title = "The email already in use.";
@@ -204,11 +197,7 @@ namespace CoreWebApi.Controllers
         public async Task<IActionResult> ChangePasswordAsync([FromBody] ChangePasswordDto changePasswordDto)
         {
             var user = await userManager.FindByEmailAsync(changePasswordDto.Email);
-            if (user == null)
-            {
-                responseNotFoundError.Title = "User Not Found.";
-                return NotFound(responseNotFoundError);
-            }
+            if (user == null) return NotFound(responseNotFoundError);
             if (!ModelState.IsValid || !(await signInManager.CheckPasswordSignInAsync(user, changePasswordDto.OldPassword, false)).Succeeded)
             {
                 responseBadRequestError.Title = "Invalid password.";
@@ -265,11 +254,7 @@ namespace CoreWebApi.Controllers
         public async Task<IActionResult> ChangeUserRolesAsync([FromBody] ChangeRolesDto changeRolesDto)
         {
             var user = await userManager.FindByIdAsync(changeRolesDto.UserId);
-            if (user == null)
-            {
-                responseNotFoundError.Title = "User Not Found.";
-                return NotFound(responseNotFoundError);
-            }
+            if (user == null) return NotFound(responseNotFoundError);
 
             foreach (var role in roleManager.Roles.Select(x => x.Name).ToList())
             {
@@ -312,11 +297,7 @@ namespace CoreWebApi.Controllers
         public async Task<IActionResult> GetUserByIdAsync([FromRoute] string id)
         {
             var user = await userManager.FindByIdAsync(id);
-            if (user == null)
-            {
-                responseNotFoundError.Title = "User Not Found.";
-                return NotFound(responseNotFoundError);
-            }
+            if (user == null) return NotFound(responseNotFoundError);
 
             return Ok(user);
         }
@@ -353,12 +334,7 @@ namespace CoreWebApi.Controllers
                 return BadRequest(responseBadRequestError);
             }
             var user = await userManager.FindByEmailAsync(editUserDto.Email);
-            if (user == null)
-            {
-                responseNotFoundError.Title = "User Not Found.";
-                return NotFound(responseNotFoundError);
-            }
-
+            if (user == null) return NotFound(responseNotFoundError);
             user.PhoneNumber = editUserDto.Phone;
             user.AvatarUrl = editUserDto.Avatar;
             await userManager.UpdateAsync(user);
@@ -440,11 +416,7 @@ namespace CoreWebApi.Controllers
                 return BadRequest(responseBadRequestError);
             }
             var user = await userManager.FindByEmailAsync(email);
-            if (user == null)
-            {
-                responseNotFoundError.Title = "User Not Found.";
-                return NotFound(responseNotFoundError);
-            }
+            if (user == null) return NotFound(responseNotFoundError);
             var result = await userManager.GetAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation");
             if (result == null || result != code)
             {
@@ -484,11 +456,7 @@ namespace CoreWebApi.Controllers
         {
             var userEmail = tokenService.GetUserEmailFromExpiredToken(tokenModel.AccessToken);
             var user = await userManager.FindByEmailAsync(userEmail);
-            if (user == null)
-            {
-                responseNotFoundError.Title = "User Not Found.";
-                return NotFound(responseNotFoundError);
-            }
+            if (user == null) return NotFound(responseNotFoundError);
             if (tokenService.IsTokenExpired(tokenModel.RefreshToken))
             {
                 responseBadRequestError.Title = "Refresh token has expired."; // so, user should log in
@@ -531,11 +499,7 @@ namespace CoreWebApi.Controllers
         public async Task<IActionResult> LoginAsync([FromBody] LoginUserDto loginUserDto)
         {
             var user = await userManager.FindByEmailAsync(loginUserDto.Email);
-            if (user == null)
-            {
-                responseNotFoundError.Title = "User Not Found.";
-                return NotFound(responseNotFoundError);
-            };
+            if (user == null) return NotFound(responseNotFoundError);
             if (!user.EmailConfirmed)
             {
                 responseBadRequestError.Title = "Please confirm your email first.";
@@ -581,6 +545,49 @@ namespace CoreWebApi.Controllers
             await RemoveTokens(user);
 
             return Ok();
+        }
+
+        /// <summary>
+        /// Partly updates an existing ApplicationUser item.
+        /// Uses the 'accountService' for attaching patchDocument and mapping ApplicationUser object to ApplicationUserDto
+        /// </summary>
+        /// <param name="id">Identifier string id</param>
+        /// <param name="patchDocument">Json Patch Document as array of operations</param>
+        /// <returns>Status 200 and updated ApplicationUserDto object</returns>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     PATCH /api/vacancy/partialcandidateupdate/{id}
+        ///     [
+        ///         {
+        ///             "op": "replace",
+        ///             "path": "/emailConfirmed",
+        ///             "value": "true"
+        ///         }
+        ///     ]
+        ///     
+        /// </remarks>
+        /// <response code="200">Returns the updated ApplicationUserDto item</response>
+        /// <response code="400">If the argument is not valid</response>
+        /// <response code="404">If the ApplicationUser with given id not found</response>
+        [HttpPatch("{id}")]
+        [Authorize(Roles = "Admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> PartialUserUpdateAsync(string id, JsonPatchDocument<object> patchDocument)
+        {
+            var user = await userManager.FindByIdAsync(id);
+            if (user == null) return NotFound(responseNotFoundError);
+            try
+            {
+                return Ok(await accountService.PartialUpdateAsync(user, patchDocument));
+            }
+            catch
+            {
+                responseBadRequestError.Title = "Unable to update user's data.";
+                return BadRequest(responseBadRequestError);
+            }
         }
 
         private async Task<AuthModel> CreateAuthModelAsync(ApplicationUser user, int rememberPeriod)

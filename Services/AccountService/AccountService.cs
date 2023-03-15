@@ -1,19 +1,26 @@
 ﻿using AutoMapper;
+using CoreWebApi.Data;
 using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models.Account;
+using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
 {
     public class AccountService : IAccountService
     {
         private readonly IMapper mapper;
+        private readonly IRepository<ApplicationUser> repository;
 
-        public AccountService(IMapper mapper)
+        public AccountService(IMapper mapper, IRepository<ApplicationUser> repository)
         {
             this.mapper = mapper;
+            this.repository = repository;
         }
 
         public SearchResult<ApplicationUserDto> GetUsersSearchResultAsync(int limit, int page, string search, IEnumerable<ApplicationUser> users)
@@ -35,5 +42,11 @@ namespace CoreWebApi.Services
             };
         }
 
+        public async Task<ApplicationUserDto> PartialUpdateAsync(ApplicationUser user, JsonPatchDocument<object> patchDocument)
+        {
+            patchDocument.ApplyTo(user);
+
+            return mapper.Map<ApplicationUserDto>(await repository.SaveAsync(user));
+        }
     }
 }
