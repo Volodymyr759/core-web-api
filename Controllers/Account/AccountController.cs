@@ -303,21 +303,24 @@ namespace CoreWebApi.Controllers
         }
 
         /// <summary>
-        /// Updates an existing user.
+        /// Updates an existing user fields: UserName, PhoneNumber, AvatarUrl.
         /// </summary>
-        /// <returns>Status 200 and updated user</returns>
+        /// <returns>Status 200 and updated ApplicationUserDto</returns>
         /// <remarks>
         /// Sample request:
         ///
-        ///     POST /api/account/UpdateUserAsync
+        ///     POST /api/account/updateuser
         ///     {
+        ///        "Id": "92c79472-9da6-4da3-a052-358f465d8864",
+        ///        "UserName": "John Smith",
         ///        "Email": "test@gmail.com",
-        ///        "Phone": "+380961111111",
-        ///        "Avatar": "https://somewhere.com/?userphoto=asdasdas"
+        ///        "EmailConfirmed": true,
+        ///        "PhoneNumber": "+380961111111",
+        ///        "AvatarUrl": "https://somewhere.com/?userphoto=asdasdas"
         ///     }
         ///     
         /// </remarks>
-        /// <response code="200">Returns status 200 and updated user</response>
+        /// <response code="200">Returns status 200 and updated ApplicationUserDto</response>
         /// <response code="404">If the user not found</response>
         /// <response code="400">If the argument is not valid</response>
         /// <response code="401">If the user is not authorized</response>
@@ -325,21 +328,24 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> UpdateUserAsync([FromBody] EditUserDto editUserDto)
+        //[Authorize(Roles = "Admin, Registered")]
+        [AllowAnonymous]
+        public async Task<IActionResult> UpdateUserAsync([FromBody] ApplicationUserDto userDto)
         {
             if (!ModelState.IsValid)
             {
                 responseBadRequestError.Title = "Unable to update user's data.";
                 return BadRequest(responseBadRequestError);
             }
-            var user = await userManager.FindByEmailAsync(editUserDto.Email);
+            var user = await userManager.FindByIdAsync(userDto.Id);
             if (user == null) return NotFound(responseNotFoundError);
-            user.PhoneNumber = editUserDto.Phone;
-            user.AvatarUrl = editUserDto.Avatar;
+
+            user.UserName = userDto.UserName;
+            user.PhoneNumber = userDto.PhoneNumber;
+            user.AvatarUrl = userDto.AvatarUrl;
             await userManager.UpdateAsync(user);
 
-            return Ok(user);
+            return Ok(userDto);
         }
 
         /// <summary>
@@ -557,7 +563,7 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     PATCH /api/vacancy/partialcandidateupdate/{id}
+        ///     PATCH /api/account/partialuserupdate/{id}
         ///     [
         ///         {
         ///             "op": "replace",
@@ -602,7 +608,7 @@ namespace CoreWebApi.Controllers
 
             return new AuthModel()
             {
-                Email = user.Email,
+                User = accountService.GetApplicationUserDto(user),
                 Roles = roles,
                 Tokens = new TokenModel()
                 {

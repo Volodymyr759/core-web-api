@@ -23,6 +23,8 @@ namespace CoreWebApi.Services
             this.repository = repository;
         }
 
+        public ApplicationUserDto GetApplicationUserDto(ApplicationUser user) => mapper.Map<ApplicationUserDto>(user);
+
         public SearchResult<ApplicationUserDto> GetUsersSearchResultAsync(int limit, int page, string search, IEnumerable<ApplicationUser> users)
         {
             if (!string.IsNullOrEmpty(search)) users = users.Where(u => u.UserName.Contains(search)).ToList();
@@ -47,6 +49,11 @@ namespace CoreWebApi.Services
             patchDocument.ApplyTo(user);
 
             return mapper.Map<ApplicationUserDto>(await repository.SaveAsync(user));
+        }
+
+        public Task<ApplicationUserDto> PartialUpdateAsync(ApplicationUser user)
+        {
+            throw new NotImplementedException();
         }
     }
 }

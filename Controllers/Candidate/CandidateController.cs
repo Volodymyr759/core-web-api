@@ -151,7 +151,7 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     PATCH /api/vacancy/partialcandidateupdate/{id}
+        ///     PATCH /api/candidate/partialcandidateupdate/{id}
         ///     [
         ///         {
         ///             "op": "replace",
