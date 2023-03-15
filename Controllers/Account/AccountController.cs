@@ -278,20 +278,20 @@ namespace CoreWebApi.Controllers
         }
 
         /// <summary>
-        /// Gets user by given id. 
+        /// Gets ApplicationUserDto by given id. 
         /// </summary>
-        /// <returns>Status 200 and user-object</returns>
+        /// <returns>Status 200 and ApplicationUserDto-object</returns>
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/account/GetUserByIdAsync/{id}
+        ///     GET /api/account/getuserbyid/{id}
         ///     
         /// </remarks>
-        /// <response code="200">Returns status 200 and list of actual roles</response>
+        /// <response code="200">Returns status 200 and ApplicationUserDto</response>
         /// <response code="404">If the user not found</response>
         /// <response code="401">If the user is not authorized</response>
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Registered")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetUserByIdAsync([FromRoute] string id)
@@ -299,7 +299,7 @@ namespace CoreWebApi.Controllers
             var user = await userManager.FindByIdAsync(id);
             if (user == null) return NotFound(responseNotFoundError);
 
-            return Ok(user);
+            return Ok(accountService.GetApplicationUserDto(user));
         }
 
         /// <summary>
@@ -309,7 +309,7 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     POST /api/account/updateuser
+        ///     POST /api/account/update
         ///     {
         ///        "Id": "92c79472-9da6-4da3-a052-358f465d8864",
         ///        "UserName": "John Smith",
@@ -328,9 +328,8 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //[Authorize(Roles = "Admin, Registered")]
-        [AllowAnonymous]
-        public async Task<IActionResult> UpdateUserAsync([FromBody] ApplicationUserDto userDto)
+        [Authorize(Roles = "Admin, Registered")]
+        public async Task<IActionResult> UpdateAsync([FromBody] ApplicationUserDto userDto)
         {
             if (!ModelState.IsValid)
             {
@@ -343,7 +342,13 @@ namespace CoreWebApi.Controllers
             user.UserName = userDto.UserName;
             user.PhoneNumber = userDto.PhoneNumber;
             user.AvatarUrl = userDto.AvatarUrl;
-            await userManager.UpdateAsync(user);
+
+            var result =  await userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                responseBadRequestError.Title = result.Errors.ToArray()[0].Description;
+                return BadRequest(responseBadRequestError);
+            }
 
             return Ok(userDto);
         }
