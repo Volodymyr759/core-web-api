@@ -176,7 +176,7 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     POST /api/account/ChangePasswordAsync
+        ///     POST /api/account/changepassword
         ///     {
         ///        "Email": "test@gmail.com",
         ///        "OldPassword": "Password.",
@@ -187,10 +187,10 @@ namespace CoreWebApi.Controllers
         /// </remarks>
         /// <response code="200">Returns status 200 and message</response>
         /// <response code="404">If the user not found</response>
-        /// <response code="400">If the argument is not valid</response>
+        /// <response code="400">If the argument is not valid or some validation rules where broken</response>
         /// <response code="401">If the user is not authorized</response>
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Registered")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -204,9 +204,16 @@ namespace CoreWebApi.Controllers
                 return BadRequest(responseBadRequestError);
             }
             await RemoveTokens(user);
-            await Task.WhenAll(userManager.ChangePasswordAsync(user, changePasswordDto.OldPassword, changePasswordDto.NewPassword),
-                emailSender.SendEmailAsync($"{changePasswordDto.Email}", "Reset Password",
-                $"Your password has been changed, use the new password {changePasswordDto.NewPassword} next login."));
+            // !!!! - For now there are no actual keys for smtp-server. Commented out just for testing proposes.
+            //await Task.WhenAll(userManager.ChangePasswordAsync(user, changePasswordDto.OldPassword, changePasswordDto.NewPassword),
+            //    emailSender.SendEmailAsync($"{changePasswordDto.Email}", "Reset Password",
+            //    $"Your password has been changed, use the new password {changePasswordDto.NewPassword} next login."));
+            var result = await userManager.ChangePasswordAsync(user, changePasswordDto.OldPassword, changePasswordDto.NewPassword);
+            if (!result.Succeeded)
+            {
+                responseBadRequestError.Title = result.Errors.ToArray()[0].Description;
+                return BadRequest(responseBadRequestError);
+            }
 
             return Ok("Password has been changed successfully.");
         }
