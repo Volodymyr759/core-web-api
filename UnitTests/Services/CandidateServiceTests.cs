@@ -65,19 +65,21 @@ namespace UnitTests.Services
         #endregion
 
         [TestMethod]
-        public async Task GeCandidatesSearchResultAsync_ReturnsSearchResultWithCandidates()
+        public async Task GetCandidatesSearchResultAsync_ReturnsSearchResultWithCandidates()
         {
             //Arrange
             SearchResult<CandidateDto> searchResult = null;
             int limit = 3;
             int page = 1;
+            CandidateStatus candidateStatus = CandidateStatus.All;
+            int vacancyId = 1;
             mockRepository.Setup(repo => repo.GetAllAsync(null, null)).ReturnsAsync(GetTestCandidates());
             mockMapper.Setup(x => x.Map<IEnumerable<CandidateDto>>(It.IsAny<IEnumerable<Candidate>>())).Returns(GetTestCandidateDtos());
 
             try
             {
                 // Act
-                searchResult = await candidateService.GetCandidatesSearchResultAsync(limit, page, search: "", sortField: "Id", order: OrderType.Ascending);
+                searchResult = await candidateService.GetCandidatesSearchResultAsync(limit, page, search: "", candidateStatus, vacancyId, sortField: "Id", order: OrderType.Ascending);
             }
             catch (Exception ex)
             {

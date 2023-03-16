@@ -80,7 +80,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                searchResult = await vacancyService.GetVacanciesSearchResultAsync(limit, page, search: "", null, null, sortfield: "Id", order: OrderType.Ascending);
+                searchResult = await vacancyService.GetVacanciesSearchResultAsync(limit, page, search: "", null, null, sortField: "Id", order: OrderType.Ascending);
             }
             catch (Exception ex)
             {

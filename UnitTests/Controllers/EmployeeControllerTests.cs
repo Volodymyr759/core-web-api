@@ -17,6 +17,7 @@ namespace UnitTests.Controllers
         private string errorMessage;
         private EmployeeController employeeController;
         private Mock<IEmployeeService> mockEmployeeService;
+        private Mock<IOfficeService> mockOfficeService;
 
         #endregion
 
@@ -27,7 +28,8 @@ namespace UnitTests.Controllers
         {
             errorMessage = "";
             mockEmployeeService = new Mock<IEmployeeService>();
-            employeeController = new EmployeeController(mockEmployeeService.Object);
+            mockOfficeService = new Mock<IOfficeService>();
+            employeeController = new EmployeeController(mockEmployeeService.Object, mockOfficeService.Object);
         }
 
         [TestCleanup()]

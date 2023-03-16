@@ -73,13 +73,14 @@ namespace UnitTests.Services
             SearchResult<CompanyServiceDto> searchResult = null;
             int page = 1;
             int limit = 3;
+            CompanyServiceStatus companyServiceStatus = CompanyServiceStatus.All;
             mockCompanyServiceRepository.Setup(repo => repo.GetAllAsync(null, null)).ReturnsAsync(GetTestCompanyServices());
             mockMapper.Setup(x => x.Map<IEnumerable<CompanyServiceDto>>(It.IsAny<IEnumerable<CompanyService>>())).Returns(GetTestCompanyServiceDtos());
 
             try
             {
                 // Act
-                searchResult = await companyServiceBL.GetCompanyServicesSearchResultAsync(limit, page, OrderType.Ascending);
+                searchResult = await companyServiceBL.GetCompanyServicesSearchResultAsync(limit, page, companyServiceStatus, OrderType.Ascending);
             }
             catch (Exception ex)
             {

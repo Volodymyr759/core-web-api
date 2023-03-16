@@ -78,7 +78,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                searchResult = await employeeService.GetEmployeesSearchResultAsync(limit, page, search: "", sort_field: "Id", order: OrderType.Ascending);
+                searchResult = await employeeService.GetEmployeesSearchResultAsync(limit, page, search: "", sortField: "Id", order: OrderType.Ascending);
             }
             catch (Exception ex)
             {

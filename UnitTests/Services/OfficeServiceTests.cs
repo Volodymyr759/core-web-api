@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
+using CoreWebApi.Library.Enums;
 using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
 using CoreWebApi.Services;
@@ -73,14 +74,15 @@ namespace UnitTests.Services
             SearchResult<OfficeDto> searchResult = null;
             int limit = 3;
             int page = 1;
-
+            string sortField = "";
+            OrderType order = OrderType.Ascending;
             mockRepository.Setup(repo => repo.GetAllAsync(null, null)).ReturnsAsync(GetTestOffices());
             mockMapper.Setup(x => x.Map<IEnumerable<OfficeDto>>(It.IsAny<IEnumerable<Office>>())).Returns(GetTestOfficeDtos());
 
             try
             {
                 // Act
-                searchResult = await officeService.GetOfficesSearchResultAsync(limit, page, 0);
+                searchResult = await officeService.GetOfficesSearchResultAsync(limit, page, sortField, order);
             }
             catch (Exception ex)
             {
