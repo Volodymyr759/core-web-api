@@ -123,7 +123,7 @@ namespace CoreWebApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     POST /api/account/ChangeEmailAsync
+        ///     POST /api/account/changeemail
         ///     {
         ///        "ExistingEmail": "test@gmail.com",
         ///        "NewEmail": "newtest@gmail.com",
@@ -155,17 +155,19 @@ namespace CoreWebApi.Controllers
                 return BadRequest(responseBadRequestError);
             }
             await RemoveTokens(user);
-            // Update user
-            user.Email = changeEmailDto.NewEmail;
-            user.UserName = changeEmailDto.NewEmail;
-            user.EmailConfirmed = false;
-            await userManager.UpdateAsync(user);
             // Send new confirmation letter at new email
             var code = tokenService.GenerateRandomToken();
-            await Task.WhenAll(userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation", code),
-                emailSender.SendEmailAsync($"{changeEmailDto.NewEmail}", "Confirmation email link",
-                    $"Confirmation email link: /Account/ConfirmEmail/?token={code}&email={changeEmailDto.NewEmail}"));
-
+            // !!!! - For now there are no actual keys for smtp-server. Commented out just for testing proposes.
+            //await Task.WhenAll(userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation", code),
+            //    emailSender.SendEmailAsync($"{changeEmailDto.NewEmail}", "Confirmation email link",
+            //        $"Confirmation email link: /Account/ConfirmEmail/?token={code}&email={changeEmailDto.NewEmail}"));
+            await userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation", code);
+            var result = await userManager.SetEmailAsync(user, changeEmailDto.NewEmail);
+            if (!result.Succeeded)
+            {
+                responseBadRequestError.Title = result.Errors.ToArray()[0].Description;
+                return BadRequest(responseBadRequestError);
+            }
             return Ok("Email has been changed successfully.");
         }
 
@@ -350,7 +352,7 @@ namespace CoreWebApi.Controllers
             user.PhoneNumber = userDto.PhoneNumber;
             user.AvatarUrl = userDto.AvatarUrl;
 
-            var result =  await userManager.UpdateAsync(user);
+            var result = await userManager.UpdateAsync(user);
             if (!result.Succeeded)
             {
                 responseBadRequestError.Title = result.Errors.ToArray()[0].Description;
