@@ -3,6 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -32,12 +33,15 @@ namespace CoreWebApi.Services
             ));
         }
 
-        public string GenerateRandomToken()
+        public string GenerateRandomToken(int length)
         {
-            var randomNumber = new byte[32];
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(randomNumber);
-            return Convert.ToBase64String(randomNumber);
+            //var randomNumber = new byte[32];
+            //using var rng = RandomNumberGenerator.Create();
+            //rng.GetBytes(randomNumber);
+            //return Convert.ToBase64String(randomNumber);kd
+            Random random = new Random();
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            return new string(Enumerable.Repeat(chars, length).Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
         public string GetUserEmailFromExpiredToken(string token)

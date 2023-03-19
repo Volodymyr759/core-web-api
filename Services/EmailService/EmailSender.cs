@@ -13,28 +13,26 @@ namespace CoreWebApi.Services
             Configuration = configuration;
         }
 
-        public Task SendEmailAsync(string to, string subject, string body)
+        public async Task SendEmailAsync(string to, string subject, string body)
         {
-            // !!!! - For now there are no actual keys for smtp-server. Commented out just for testing proposes.
-            //MailAddress mailFrom = new MailAddress(Configuration["EmailSettings:EmailAddress"], "noreplay");
-            //MailAddress mailTo = new MailAddress(to);
+            // enable google smtp - https://support.google.com/accounts/answer/185833?authuser=1
+            MailAddress mailFrom = new MailAddress(Configuration["EmailSettings:EmailAddress"], "noreplay");
+            MailAddress mailTo = new MailAddress(to);
 
-            //MailMessage msg = new MailMessage(mailFrom, mailTo)
-            //{
-            //    Subject = subject,
-            //    Body = body,
-            //    IsBodyHtml = true
-            //};
+            MailMessage msg = new MailMessage(mailFrom, mailTo)
+            {
+                Subject = subject,
+                Body = body,
+                IsBodyHtml = true
+            };
 
-            //SmtpClient client = new SmtpClient(Configuration["EmailSettings:SmtpServer"], 2525)
-            //{
-            //    EnableSsl = true,
-            //    Credentials = new System.Net.NetworkCredential(Configuration["EmailSettings:SmtpUser"], Configuration["EmailSettings:SmtpKey"])
-            //};
+            SmtpClient client = new SmtpClient(Configuration["EmailSettings:SmtpServer"], int.Parse(Configuration["EmailSettings:SmtpPort"]))
+            {
+                EnableSsl = true,
+                Credentials = new System.Net.NetworkCredential(Configuration["EmailSettings:SmtpUser"], Configuration["EmailSettings:SmtpKey"])
+            };
 
-            //await client.SendMailAsync(msg);
-
-            return Task.CompletedTask;
+            await client.SendMailAsync(msg);
         }
     }
 }

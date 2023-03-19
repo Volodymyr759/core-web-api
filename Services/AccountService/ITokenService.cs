@@ -7,7 +7,7 @@ namespace CoreWebApi.Services
     {
         bool IsTokenExpired(string token);
         string GenerateAccessToken(IEnumerable<Claim> claims, double period);
-        string GenerateRandomToken();
+        string GenerateRandomToken(int length);
         string GetUserEmailFromExpiredToken(string token);
     }
 }

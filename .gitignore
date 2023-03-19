@@ -5,3 +5,4 @@ packages
 *.dtbcache.*
 appsettings.json
 Uploads
+DB_Schema.drawio
