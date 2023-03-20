@@ -48,8 +48,6 @@ namespace CoreWebApi.Services
                 .ForMember(dest => dest.MailSubscriberDtos, act => act.MapFrom(src => src.MailSubscribers)); ;
             CreateMap<MailSubscriptionDto, MailSubscription>();
 
-            CreateMap<Tenant, TenantDto>().ReverseMap();
-
             CreateMap<Vacancy, VacancyDto>()
                 .ForMember(dest => dest.OfficeDto, act => act.MapFrom(src => new OfficeDto()
                 {
@@ -62,8 +60,6 @@ namespace CoreWebApi.Services
             CreateMap<VacancyDto, Vacancy>()
                 .ForMember(dest => dest.Office, act => act.Ignore())
                 .ForMember(dest => dest.Candidates, act => act.Ignore());
-
-            CreateMap<CreateTenantDto, Tenant>().ForMember(dest => dest.Id, act => act.Ignore());
         }
     }
 }

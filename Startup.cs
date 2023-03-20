@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
@@ -60,7 +59,6 @@ namespace CoreWebApi
             services.AddTransient<IMailSubscriberService, MailSubscriberService>();
             services.AddTransient<IMailSubscriptionService, MailSubscriptionService>();
             services.AddTransient<IOfficeService, OfficeService>();
-            services.AddTransient<ITenantService, TenantService>();
             services.AddTransient<ITokenService, TokenService>();
             services.AddTransient<IVacancyService, VacancyService>();
 
@@ -160,17 +158,15 @@ namespace CoreWebApi
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
+            app.UseDeveloperExceptionPage();
+            app.UseSwagger();
+            app.UseSwaggerUI(options =>
             {
-                app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(options =>
-                {
-                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
-                    options.RoutePrefix = String.Empty; //Starts on https://localhost:<port>/swagger. To start Swagger UI in the root ( https://localhost:<port>/) - set string.Empty
-                    options.InjectStylesheet("/swagger-ui/custom.css");//some styling can be added
-                });
-            }
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+                options.RoutePrefix = String.Empty; //Starts on https://localhost:<port>/swagger. To start Swagger UI in the root ( https://localhost:<port>/) - set string.Empty
+                options.InjectStylesheet("/swagger-ui/custom.css");//some styling can be added
+            });
+
             app.UseCors("Cors");
             app.UseHttpsRedirection();
             app.UseStaticFiles();

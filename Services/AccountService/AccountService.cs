@@ -3,7 +3,6 @@ using CoreWebApi.Data;
 using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models.Account;
 using Microsoft.AspNetCore.JsonPatch;
-using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;

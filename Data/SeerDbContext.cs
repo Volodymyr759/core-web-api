@@ -25,8 +25,6 @@ namespace CoreWebApi.Data
 
         public DbSet<Employee> Employees { get; set; }
 
-        public DbSet<Tenant> Tenants { get; set; }
-
         public DbSet<MailSubscriber> MailSubscribers { get; set; }
 
         public DbSet<MailSubscription> MailSubscriptions { get; set; }
