@@ -6,17 +6,17 @@ namespace CoreWebApi.Services
 {
     public class EmailSender : IEmailSender
     {
-        private readonly IConfiguration Configuration;
+        private readonly IConfiguration configuration;
 
         public EmailSender(IConfiguration configuration)
         {
-            Configuration = configuration;
+            this.configuration = configuration;
         }
 
         public async Task SendEmailAsync(string to, string subject, string body)
         {
             // enable google smtp - https://support.google.com/accounts/answer/185833?authuser=1
-            MailAddress mailFrom = new MailAddress(Configuration["EmailSettings:EmailAddress"], "noreplay");
+            MailAddress mailFrom = new MailAddress(configuration["EmailSettings:EmailAddress"], "noreplay");
             MailAddress mailTo = new MailAddress(to);
 
             MailMessage msg = new MailMessage(mailFrom, mailTo)
@@ -26,10 +26,10 @@ namespace CoreWebApi.Services
                 IsBodyHtml = true
             };
 
-            SmtpClient client = new SmtpClient(Configuration["EmailSettings:SmtpServer"], int.Parse(Configuration["EmailSettings:SmtpPort"]))
+            SmtpClient client = new SmtpClient(configuration["EmailSettings:SmtpServer"], int.Parse(configuration["EmailSettings:SmtpPort"]))
             {
                 EnableSsl = true,
-                Credentials = new System.Net.NetworkCredential(Configuration["EmailSettings:SmtpUser"], Configuration["EmailSettings:SmtpKey"])
+                Credentials = new System.Net.NetworkCredential(configuration["EmailSettings:SmtpUser"], configuration["EmailSettings:SmtpKey"])
             };
 
             await client.SendMailAsync(msg);

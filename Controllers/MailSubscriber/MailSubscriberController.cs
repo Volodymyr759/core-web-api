@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 
 namespace CoreWebApi.Controllers
@@ -16,12 +17,18 @@ namespace CoreWebApi.Controllers
     public class MailSubscriberController : ControllerBase
     {
         private readonly IMailSubscriberService mailSubscriberService;
+        private readonly IEmailSender emailSender;
+        private readonly IConfiguration configuration;
         private readonly IResponseError responseBadRequestError;
         private readonly IResponseError responseNotFoundError;
 
-        public MailSubscriberController(IMailSubscriberService mailSubscriberService)
+        public MailSubscriberController(IMailSubscriberService mailSubscriberService, 
+            IEmailSender emailSender,
+            IConfiguration configuration)
         {
             this.mailSubscriberService = mailSubscriberService;
+            this.emailSender = emailSender;
+            this.configuration = configuration;
             responseBadRequestError = ResponseErrorFactory.getBadRequestError("Wrong mail subscriber data.");
             responseNotFoundError = ResponseErrorFactory.getNotFoundError("Mail Subscriber Not Found.");
         }
@@ -72,7 +79,7 @@ namespace CoreWebApi.Controllers
         ///
         ///     POST /api/nailsubscriber/subscribe
         ///     {
-        ///        "Email" = "test1@gmail.com",
+        ///        "Email": "test1@gmail.com",
         ///        "IsSubscribed": "true",
         ///        "MailSubscriptionId": "1"
         ///     }
@@ -88,6 +95,39 @@ namespace CoreWebApi.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             return Created("/api/nailsubscriber/subscribe", await mailSubscriberService.CreateMailSubscriberAsync(mailSubscriberDto));
+        }
+
+        /// <summary>
+        /// Sends message from contact from to the site Administrator.
+        /// </summary>
+        /// <returns>Status 200 and confirmation message</returns>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     POST /api/mailsubscriber/sendmessagetoadmin
+        ///     {
+        ///        "senderName": "John Walker",
+        ///        "senderEmail": "test1@gmail.com",
+        ///        "subject": "Test subject",
+        ///        "message": "Test message"
+        ///     }
+        ///     
+        /// </remarks>
+        /// <response code="200">Status Ok and confirmation</response>
+        /// <response code="400">If the argument is not valid</response>
+        [HttpPost]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> SendMessageToAdminAsync([FromBody] MailMessageDto message)
+        {
+            if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
+            await emailSender.SendEmailAsync(
+                configuration["EmailSettings:EmailAddress"], 
+                message.Subject, 
+                message.SenderEmail + " has sent from address: " + message.SenderEmail + " the message: " + message.Message);
+
+            return Ok("Your message has delivered to Administrator. We will contact you asap. Thank You!");
         }
 
         /// <summary>

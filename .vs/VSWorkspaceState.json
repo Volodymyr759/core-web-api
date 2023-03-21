@@ -4,6 +4,6 @@
     "\\Controllers",
     "\\Controllers\\Account"
   ],
-  "SelectedNode": "\\CoreWebApi.sln",
+  "SelectedNode": "\\Controllers\\Account\\AccountController.cs",
   "PreviewInSolutionExplorer": false
 }
