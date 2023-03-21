@@ -27,7 +27,7 @@ namespace UnitTests.Controllers
         {
             errorMessage = "";
             mockMailSubscriberService = new Mock<IMailSubscriberService>();
-            mailSubscriberController = new MailSubscriberController(mockMailSubscriberService.Object);
+            mailSubscriberController = new MailSubscriberController(mockMailSubscriberService.Object, null, null);
         }
 
         [TestCleanup()]

@@ -125,7 +125,7 @@ namespace CoreWebApi.Controllers
             await emailSender.SendEmailAsync(
                 configuration["EmailSettings:EmailAddress"], 
                 message.Subject, 
-                message.SenderEmail + " has sent from address: " + message.SenderEmail + " the message: " + message.Message);
+                message.SenderName + " has sent from address: " + message.SenderEmail + " the message: " + message.Message);
 
             return Ok("Your message has delivered to Administrator. We will contact you asap. Thank You!");
         }
