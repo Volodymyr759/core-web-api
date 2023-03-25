@@ -60,6 +60,35 @@ namespace CoreWebApi.Services
             };
         }
 
+        public async Task<SearchResult<VacancyDto>> GetFavoriteVacanciesSearchResultAsync(int limit, int page, string email, OrderType order)
+        {
+            // sorting only by vacancy title for now
+            Func<IQueryable<Vacancy>, IOrderedQueryable<Vacancy>> orderBy = null;
+            if (order != OrderType.None)
+                orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Title) : orderBy = q => q.OrderByDescending(s => s.Title);
+
+            var vacancies = await repository.GetAllAsync(null, orderBy);
+
+            var favoriteVacancies = new List<Vacancy>();
+
+            foreach (var vacancy in vacancies)
+            {
+                if (vacancy.Candidates.Count > 0 && vacancy.Candidates.Where(c => c.Email == email).FirstOrDefault() != null)
+                    favoriteVacancies.Add(vacancy);
+            }
+
+            return new SearchResult<VacancyDto>
+            {
+                CurrentPageNumber = page,
+                Order = order,
+                PageSize = limit,
+                PageCount = Convert.ToInt32(Math.Ceiling((double)vacancies.Count() / limit)),
+                SearchCriteria = email ?? string.Empty,
+                TotalItemCount = favoriteVacancies.Count(),
+                ItemList = (List<VacancyDto>)mapper.Map<IEnumerable<VacancyDto>>(favoriteVacancies.Skip((page - 1) * limit).Take(limit))
+            };
+        }
+
         public async Task<VacancyDto> GetVacancyByIdAsync(int id) => mapper.Map<VacancyDto>(await repository.GetAsync(id));
 
         public async Task<IEnumerable<StringValue>> SearchVacanciesTitlesAsync(string searchValue, int officeId)

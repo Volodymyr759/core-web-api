@@ -185,12 +185,18 @@ namespace CoreWebApi.Controllers
         /// <summary>
         /// Deletes an Candidate Item.
         /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     DELETE /api/candidate/delete/3
+        ///     
+        /// </remarks>
         /// <param name="id">Identifier int id</param>
         /// <returns>Status 200 and deleted CandidateDto object</returns>
         /// <response code="200">Returns the deleted CandidateDto item</response>
         /// <response code="404">If the candidate with given id not found</response>
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Registered")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteAsync([FromRoute] int id)

@@ -43,12 +43,12 @@ namespace CoreWebApi.Controllers
         /// <param name="vacancyStatus">Filter for isActive property: 0 - Active, 1 - Disabled, 2 - All</param>
         /// <param name="officeId">Filter for vacancies by OfficeId</param>
         /// <param name="sortField">Field name for sorting</param>
-        /// <param name="order">sort direction: 0 - Ascending or 1 - Descending, 2 - None</param>
+        /// <param name="order">sort direction: 0 - Ascending, 1 - Descending or 2 - None</param>
         /// <returns>Status 200 and list of VacancyDto's</returns>
         /// <remarks>
         /// Sample request:
         ///
-        ///     GET /api/Vacancy/get?limit=10&amp;page=1&amp;search=&amp;sortField=id&amp;order=0
+        ///     GET /api/Vacancy/get?limit=10&amp;page=1&amp;search=&amp;vacancyStatus=2&amp;officeId=&amp;sortField=id&amp;order=0
         ///     
         /// </remarks>
         /// <response code="200">list of VacancyDto's</response>
@@ -57,6 +57,27 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAsync(int limit, int page, string search, VacancyStatus vacancyStatus, int? officeId, string sortField, OrderType order) =>
             Ok(await vacancyService.GetVacanciesSearchResultAsync(limit, page, search, vacancyStatus, officeId ?? 0, sortField, order));
+
+        /// <summary>
+        /// Gets a list of favorite (filtered by candidate email) VacancyDto's with pagination params.
+        /// </summary>
+        /// <param name="limit">Number of items per page</param>
+        /// <param name="page">Requested page</param>
+        /// <param name="email">Candidate's email for filtering vacancies</param>
+        /// <param name="order">Sorts only by Vacancy Title, sort direction: 0 - Ascending, 1 - Descending or 2 - None</param>
+        /// <returns>Status 200 and list of VacancyDto's</returns>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET /api/Vacancy/getfavorite?limit=3&amp;page=1&amp;email=&amp;order=0
+        ///     
+        /// </remarks>
+        /// <response code="200">list of VacancyDto's</response>
+        [HttpGet]
+        [Authorize(Roles = "Admin, Registered")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetFavoriteAsync(int limit, int page, string email, OrderType order) =>
+            Ok(await vacancyService.GetFavoriteVacanciesSearchResultAsync(limit, page, email, order));
 
         /// <summary>
         /// Gets a specific VacancyDto Item.
@@ -72,7 +93,7 @@ namespace CoreWebApi.Controllers
         /// <response code="200">Returns the requested VacancyDto item</response>
         /// <response code="404">If the vacancy with given id not found</response>
         [HttpGet("{id}")]
-        [Authorize(Roles = "Registered, Admin")]
+        [Authorize(Roles = "Admin, Registered")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
