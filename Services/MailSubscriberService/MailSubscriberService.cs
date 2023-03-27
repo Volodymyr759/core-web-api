@@ -76,8 +76,18 @@ namespace CoreWebApi.Services
                    new SqlParameter("@id", SqlDbType.Int) { Value = id },
                    new SqlParameter("@returnVal", SqlDbType.Int) {Direction = ParameterDirection.Output}
                 };
-
             return await subscriberRepository.IsExistAsync("EXEC @returnVal=sp_checkMailSubscriberById @id, @returnVal", parameters);
+        }
+
+        public async Task<bool> IsExistAsync(int mailSubscriptionId, string email)
+        {
+            SqlParameter[] parameters =
+                {
+                   new SqlParameter("@mailSubscriptionId", SqlDbType.Int) { Value = mailSubscriptionId },
+                   new SqlParameter("@returnVal", SqlDbType.Int) {Direction = ParameterDirection.Output},
+                   new SqlParameter("@email", SqlDbType.NVarChar) { Value = email }
+                };
+            return await subscriberRepository.IsExistAsync("EXEC @returnVal=sp_checkMailSubscriberBySubscriptionIdAndEmail @mailSubscriptionId, @returnVal, @email", parameters);
         }
     }
 }

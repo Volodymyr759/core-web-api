@@ -262,7 +262,7 @@ namespace CoreWebApi.Data
         public async Task<bool> IsExistAsync(string sqlQuery, SqlParameter[] parameters)
         {
             await _context.Database.ExecuteSqlRawAsync(sqlQuery, parameters);
-            var result = parameters[1].Value;
+            var result = parameters[1].Value;// Important! Into each stored procedure keep the output parameter on 2nd place (for example as it was done in 'sp_checkMailSubscriberBySubscriptionIdAndEmail')
 
             return int.Parse(result.ToString()) > 0;
         }

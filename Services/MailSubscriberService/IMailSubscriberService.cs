@@ -15,5 +15,6 @@ namespace CoreWebApi.Services
         Task DeleteMailSubsriberAsync(int id);
         Task<MailSubscriberDto> PartialUpdateAsync(int id, JsonPatchDocument<object> patchDocument);
         Task<bool> IsExistAsync(int id);
+        Task<bool> IsExistAsync(int mailSubscriptionId, string email);
     }
 }

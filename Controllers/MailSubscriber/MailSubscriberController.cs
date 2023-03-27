@@ -22,7 +22,7 @@ namespace CoreWebApi.Controllers
         private readonly IResponseError responseBadRequestError;
         private readonly IResponseError responseNotFoundError;
 
-        public MailSubscriberController(IMailSubscriberService mailSubscriberService, 
+        public MailSubscriberController(IMailSubscriberService mailSubscriberService,
             IEmailSender emailSender,
             IConfiguration configuration)
         {
@@ -73,15 +73,16 @@ namespace CoreWebApi.Controllers
         /// <summary>
         /// Creates a new MailSubscriberDto item.
         /// </summary>
+        /// <param name="mailSubscriberDto">MailSubscriberDto object</param>
         /// <returns>Status 201 and created MailSubscriberDto object</returns>
         /// <remarks>
         /// Sample request:
         ///
-        ///     POST /api/nailsubscriber/subscribe
+        ///     POST /api/mailsubscriber/subscribe
         ///     {
-        ///        "Email": "test1@gmail.com",
-        ///        "IsSubscribed": "true",
-        ///        "MailSubscriptionId": "1"
+        ///        email: "test1@gmail.com",
+        ///        isSubscribed: true,
+        ///        mailSubscriptionId: 1
         ///     }
         ///     
         /// </remarks>
@@ -94,7 +95,12 @@ namespace CoreWebApi.Controllers
         public async Task<IActionResult> SubscribeAsync([FromBody] MailSubscriberDto mailSubscriberDto)
         {
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
-            return Created("/api/nailsubscriber/subscribe", await mailSubscriberService.CreateMailSubscriberAsync(mailSubscriberDto));
+            if (await IsExistAsync(mailSubscriberDto.MailSubscriptionId, mailSubscriberDto.Email) == true)
+            {
+                responseBadRequestError.Title = "Email address " + mailSubscriberDto.Email + " already subscribed.";
+                return BadRequest(responseBadRequestError);
+            }
+            return Created("/api/mailsubscriber/subscribe", await mailSubscriberService.CreateMailSubscriberAsync(mailSubscriberDto));
         }
 
         /// <summary>
@@ -123,8 +129,8 @@ namespace CoreWebApi.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             await emailSender.SendEmailAsync(
-                configuration["EmailSettings:EmailAddress"], 
-                message.Subject, 
+                configuration["EmailSettings:EmailAddress"],
+                message.Subject,
                 message.SenderName + " has sent from address: " + message.SenderEmail + " the message: " + message.Message);
 
             return Ok("Your message has delivered to Administrator. We will contact you asap. Thank You!");
@@ -186,5 +192,7 @@ namespace CoreWebApi.Controllers
         }
 
         private async Task<bool> IsExistAsync(int id) => await mailSubscriberService.IsExistAsync(id);
+
+        private async Task<bool> IsExistAsync(int mailSubscriptionId, string email) => await mailSubscriberService.IsExistAsync(mailSubscriptionId, email);
     }
 }

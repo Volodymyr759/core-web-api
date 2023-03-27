@@ -2,7 +2,10 @@
 
 Boilerplate of Asp.Net Core web-api application.
 
-This is backend for my react-typescript application: https://github.com/Volodymyr759/core-web-client
+Live-demo: https://volodymyr57.somee.com/index.html
+
+This is the separated backend for web-UI (my frontend react-typescript application): https://volodymyr759.github.io/core-web-client/ 
+(repository https://github.com/Volodymyr759/core-web-client)
 
 ## Includes:
 
@@ -12,17 +15,17 @@ This is backend for my react-typescript application: https://github.com/Volodymy
 
 - Swagger documentation;
 
-- Tests of controllers- and services-methods located in separate project CoreWebApi.Tests.
+- Tests of controllers- and services- methods located in separate project CoreWebApi.Tests.
 
-## Useful examples of using views and stored procedures:
+## Useful examples of:
 
-- Class OfficeNameId added to context (as not mapped set) and uses view in db - useful for filters on frontend;
+- Generic Repository-pattern with EntityFramework;
 
-- Class StringValue added to context (as not mapped set) and uses stored procedure in db to get list of string data - useful for autocomplete operations on frontend side;
+- Customizing of Net Identity subsystem;
 
-- Good implementation of 'IsExists' functionality - uses small stored procedure instead of usage of EntityFramework for 'heavy' DbSets, which contain lot of linked objects;
+- Usage of stored procedures and views for 'heavy' DbSets, which contain lot of linked objects and for specific features like autocomplete on frontend side;
 
-- Good implementation of PATCH request is in VacancyController => VacancyService => Repository chain;
+- Implementations of PATCH requests;
 
 
 
