@@ -399,7 +399,7 @@ namespace CoreWebApi.Controllers
             {
                 await emailSender.SendEmailAsync(email, "Reset Password",
                     "Please reset your password by clicking here: <a href=\"" +
-                    $"https://volodymyr759.github.io/core-web-client/#/reset-password?code={code}&userId={user.Id}" + "\">link</a>");
+                    $"https://volodymyr759.github.io/core-web-client/#/reset-password?code={code}&email={email}" + "\">link</a>");
             }
             catch
             {
