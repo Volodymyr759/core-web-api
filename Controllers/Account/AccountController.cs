@@ -1,4 +1,5 @@
-﻿using CoreWebApi.Library.ResponseError;
+﻿using CoreWebApi.Library.Enums;
+using CoreWebApi.Library.ResponseError;
 using CoreWebApi.Models.Account;
 using CoreWebApi.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -30,7 +31,8 @@ namespace CoreWebApi.Controllers
         private readonly IAccountService accountService;
         private readonly ITokenService tokenService;
         private IResponseError responseBadRequestError;
-        private IResponseError responseNotFoundError;
+        private readonly IResponseError responseNotFoundError;
+        private readonly IResponseError responseServiceUnavailableError;
 
         #endregion
 
@@ -52,6 +54,7 @@ namespace CoreWebApi.Controllers
             this.accountService = accountService;
             responseBadRequestError = ResponseErrorFactory.getBadRequestError("");
             responseNotFoundError = ResponseErrorFactory.getNotFoundError("User Not Found.");
+            responseServiceUnavailableError = ResponseErrorFactory.getServiceUnavailableError("Service Unavailable.");
         }
 
         #endregion
@@ -66,10 +69,10 @@ namespace CoreWebApi.Controllers
         ///
         /// Returns object like this:
         ///      {
-        ///        "id": "2194ad72-81db-410b-9bdd-d172732e3338",
-        ///        "name": "Test",
-        ///        "normalizedName": "TEST",
-        ///        "concurrencyStamp": "f8bf512d-5213-4f0a-a774-4f0f70547a7c"
+        ///        id: "2194ad72-81db-410b-9bdd-d172732e3338",
+        ///        name: "Test",
+        ///        normalizedName: "TEST",
+        ///        concurrencyStamp: "f8bf512d-5213-4f0a-a774-4f0f70547a7c"
         ///      }
         ///     
         /// </remarks>
@@ -103,9 +106,9 @@ namespace CoreWebApi.Controllers
         ///
         ///     POST /api/account/changeemail
         ///     {
-        ///        "existingEmail": "test@gmail.com",
-        ///        "newEmail": "newtest@gmail.com",
-        ///        "password": "Password1."
+        ///        existingEmail: "test@gmail.com",
+        ///        newEmail: "newtest@gmail.com",
+        ///        password: "Password1."
         ///     }
         ///     
         /// </remarks>
@@ -113,11 +116,13 @@ namespace CoreWebApi.Controllers
         /// <response code="400">If the arguments are not valid: unique new email and correct password. Also while email server is not running.</response>
         /// <response code="401">If the user is not authorized</response>
         /// <response code="404">If the user not found</response>
+        /// <response code="503">If the email service is unavailable</response>
         [HttpPost]
         [Authorize(Roles = "Admin, Registered")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         public async Task<IActionResult> ChangeEmailAsync([FromBody] ChangeEmailDto changeEmailDto)
         {
             var user = await userManager.FindByEmailAsync(changeEmailDto.ExistingEmail);
@@ -140,16 +145,15 @@ namespace CoreWebApi.Controllers
                 responseBadRequestError.Title = result.Errors.ToArray()[0].Description;
                 return BadRequest(responseBadRequestError);
             }
-            await userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation", code);
+            await userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", TokenType.EmailConfirmation.ToString(), code);
             try
             {
                 await emailSender.SendEmailAsync($"{changeEmailDto.NewEmail}", "Confirmation email link",
-                    $"Confirmation email link: http://localhost:3000/email-confirm/?code={code}&email={changeEmailDto.NewEmail}");
+                    $"Confirmation email link: https://volodymyr759.github.io/core-web-client/#/email-confirm/?code={code}&email={changeEmailDto.NewEmail}");
             }
             catch
             {
-                responseBadRequestError.Title = "Email service is temporarily unavailable.";
-                return BadRequest(responseBadRequestError);
+                return StatusCode(responseServiceUnavailableError.Status, responseServiceUnavailableError.Title);
             }
 
             return Ok("Email changed.");
@@ -164,10 +168,10 @@ namespace CoreWebApi.Controllers
         ///
         ///     POST /api/account/changepassword
         ///     {
-        ///        "email": "test@gmail.com",
-        ///        "oldPassword": "Password1.",
-        ///        "newPassword": "NewPassword1."
-        ///        "confirmNewPassword": "NewPassword1."
+        ///        email: "test@gmail.com",
+        ///        oldPassword: "Password1.",
+        ///        newPassword: "NewPassword1."
+        ///        confirmNewPassword: "NewPassword1."
         ///     }
         ///     
         /// </remarks>
@@ -175,11 +179,13 @@ namespace CoreWebApi.Controllers
         /// <response code="400">If the argument is not valid or some validation rules where broken</response>
         /// <response code="401">If the user is not authorized</response>
         /// <response code="404">If the user not found</response>
+        /// <response code="503">If the email service is unavailable</response>
         [HttpPost]
         [Authorize(Roles = "Admin, Registered")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         public async Task<IActionResult> ChangePasswordAsync([FromBody] ChangePasswordDto changePasswordDto)
         {
             var user = await userManager.FindByEmailAsync(changePasswordDto.Email);
@@ -203,8 +209,7 @@ namespace CoreWebApi.Controllers
             }
             catch
             {
-                responseBadRequestError.Title = "Email service is temporarily unavailable.";
-                return BadRequest(responseBadRequestError);
+                return StatusCode(responseServiceUnavailableError.Status, responseServiceUnavailableError.Title);
             }
 
             return Ok("Password changed.");
@@ -219,8 +224,8 @@ namespace CoreWebApi.Controllers
         ///
         ///     POST /api/account/changeuserroles
         ///     {
-        ///        "userId": "808f4f76-6dd3-4183-9e26-5ac696b9327a",
-        ///        "neededRoles": ["Admin", "Registered"]
+        ///        userId: "808f4f76-6dd3-4183-9e26-5ac696b9327a",
+        ///        neededRoles: ["Admin", "Registered"]
         ///     }
         ///     
         /// </remarks>
@@ -288,7 +293,7 @@ namespace CoreWebApi.Controllers
             }
             var user = await userManager.FindByEmailAsync(email);
             if (user == null) return NotFound(responseNotFoundError);
-            var result = await userManager.GetAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation");
+            var result = await userManager.GetAuthenticationTokenAsync(user, "CoreWebApi", TokenType.EmailConfirmation.ToString());
             if (result == null || result != code)
             {
                 responseBadRequestError.Title = "Unable to confirm email.";
@@ -296,7 +301,7 @@ namespace CoreWebApi.Controllers
             }
             user.EmailConfirmed = true;
             await userManager.UpdateAsync(user);
-            await userManager.RemoveAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation");
+            await userManager.RemoveAuthenticationTokenAsync(user, "CoreWebApi", TokenType.EmailConfirmation.ToString());
 
             return Ok("Email confirmed.");
         }
@@ -365,6 +370,96 @@ namespace CoreWebApi.Controllers
         }
 
         /// <summary>
+        /// Creates PasswordReset token and sends the email to user's email-address.
+        /// </summary>
+        /// <returns>Status 200 and the given by user email-address</returns>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET /api/account/forgotpassword?email=test@gmail.com
+        ///     
+        /// </remarks>
+        /// <param name="email">The email given by user to send the created token as code.</param>
+        /// <response code="200">Ok status and the email given by user.</response>
+        /// <response code="404">If the user is not found</response>
+        /// <response code="503">If the email service is unavailable.</response>
+        [HttpGet]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+        public async Task<IActionResult> ForgotPasswordAsync([FromQuery] string email)
+        {
+            var user = await userManager.FindByEmailAsync(email);
+            if (user == null) return NotFound(responseNotFoundError);
+
+            var code = tokenService.GenerateRandomToken(30);
+            await userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", TokenType.ResetPassword.ToString(), code);
+            try
+            {
+                await emailSender.SendEmailAsync(email, "Reset Password",
+                    "Please reset your password by clicking here: <a href=\"" +
+                    $"https://volodymyr759.github.io/core-web-client/#/reset-password?code={code}&userId={user.Id}" + "\">link</a>");
+            }
+            catch
+            {
+                return StatusCode(responseServiceUnavailableError.Status, responseServiceUnavailableError.Title);
+            }
+
+            return Ok(email);
+        }
+
+        /// <summary>
+        /// Resets user's password.
+        /// </summary>
+        /// <returns>Status 200 and success message.</returns>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     POST /api/account/resetpassword
+        ///     {
+        ///         code: "SomeResetPasswordToken",
+        ///         email: "test@gmail.com",
+        ///         password: "Password1.",
+        ///         confirmPassword: "Password1."
+        ///     }
+        ///     
+        /// </remarks>
+        /// <param name="resetPasswordDto">ResetPasswordDto object</param>
+        /// <response code="200">Ok status and success message.</response>
+        /// <response code="400">If the code (token) is not correct or another error of UserManager validation happened.</response>
+        /// <response code="404">If the user is not found</response>
+        [HttpPost]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
+        {
+            var user = await userManager.FindByEmailAsync(resetPasswordDto.Email);
+            if (user == null) return NotFound(responseNotFoundError);
+
+            var token = await userManager.GetAuthenticationTokenAsync(user, "CoreWebApi", TokenType.ResetPassword.ToString());
+            if (token == null || token != resetPasswordDto.Code)
+            {
+                responseBadRequestError.Title = "Unable to reset password.";
+                return BadRequest(responseBadRequestError);
+            }
+            user.PasswordHash = userManager.PasswordHasher.HashPassword(user, resetPasswordDto.Password);
+            var result = await userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                responseBadRequestError.Title = result.Errors.ToArray()[0].Description;
+                return BadRequest(responseBadRequestError);
+            }
+
+            await userManager.RemoveAuthenticationTokenAsync(user, "CoreWebApi", TokenType.ResetPassword.ToString());
+            await RemoveTokens(user);
+
+            return Ok("Password changed.");
+        }
+
+        /// <summary>
         /// Creates new access and refresh tokens.
         /// </summary>
         /// <returns>Status 200 and created access and refresh tokens</returns>
@@ -373,9 +468,9 @@ namespace CoreWebApi.Controllers
         ///     
         ///     POST /api/account/login
         ///     {
-        ///         "email": "vvv@gmail.com",
-        ///         "password": "Password1.",
-        ///         "remember": "true"
+        ///         email: "vvv@gmail.com",
+        ///         password: "Password1.",
+        ///         remember: "true"
         ///     }
         ///     
         /// </remarks>
@@ -427,11 +522,7 @@ namespace CoreWebApi.Controllers
         public async Task<IActionResult> LogoutAsync([FromRoute] string email)
         {
             var user = await userManager.FindByEmailAsync(email);
-            if (user == null)
-            {
-                responseBadRequestError.Title = "User Not Found.";
-                return NotFound(responseBadRequestError);
-            }
+            if (user == null) return NotFound(responseNotFoundError);
             await RemoveTokens(user);
 
             return Ok();
@@ -446,18 +537,20 @@ namespace CoreWebApi.Controllers
         ///
         ///     POST /api/account/register
         ///     {
-        ///        "email": "test@gmail.com",
-        ///        "password": "Password.",
-        ///        "confirmPassword": "Password1."
+        ///        email: "test@gmail.com",
+        ///        password: "Password.",
+        ///        confirmPassword: "Password1."
         ///     }
         ///     
         /// </remarks>
         /// <response code="201">Returns the newly created User.Id</response>
         /// <response code="400">If the argument is not valid</response>
+        /// <response code="503">If the email service is unavailable</response>
         [HttpPost]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         public async Task<IActionResult> RegisterAsync(RegisterUserDto registerUserDto)
         {
             var user = new ApplicationUser { UserName = registerUserDto.Email, Email = registerUserDto.Email };
@@ -470,14 +563,13 @@ namespace CoreWebApi.Controllers
             await userManager.AddToRoleAsync(user, nameof(AppRoles.Registered));
             try
             {
-                await Task.WhenAll(userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", "emailConfirmation", code),
+                await Task.WhenAll(userManager.SetAuthenticationTokenAsync(user, "CoreWebApi", TokenType.EmailConfirmation.ToString(), code),
                     emailSender.SendEmailAsync($"{user.Email}", "Confirmation email link",
-                    $" Please use the confirmation email link: http://localhost:3000/email-confirm/?code={code}&email={user.Email}"));
+                    $" Please use the confirmation email link: https://volodymyr759.github.io/core-web-client/#/email-confirm/?code={code}&email={user.Email}"));
             }
-            catch (Exception ex)
+            catch
             {
-                responseBadRequestError.Title = "Service temporarily unavailable." + ex.Message;
-                return BadRequest(responseBadRequestError);
+                return StatusCode(responseServiceUnavailableError.Status, responseServiceUnavailableError.Title);
             }
 
             return Created("/account/register", code);
@@ -492,8 +584,8 @@ namespace CoreWebApi.Controllers
         ///
         ///     POST /api/account/refreshtoken
         ///     {
-        ///        "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWI...",
-        ///        "refreshToken": "PFYIdnb0vMvz0FcV/jKKgbpT3MEA0FNGAPegBkWXr00=",
+        ///        accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWI...",
+        ///        refreshToken: "PFYIdnb0vMvz0FcV/jKKgbpT3MEA0FNGAPegBkWXr00=",
         ///     }
         ///     
         /// </remarks>
@@ -515,7 +607,7 @@ namespace CoreWebApi.Controllers
                 responseBadRequestError.Title = "Refresh token has expired."; // so, user should log in
                 return BadRequest(responseBadRequestError);
             }
-            if ((await userManager.GetAuthenticationTokenAsync(user, "CoreWebApi", "refresh")) != tokenModel.RefreshToken)
+            if ((await userManager.GetAuthenticationTokenAsync(user, "CoreWebApi", TokenType.Refresh.ToString())) != tokenModel.RefreshToken)
             {
                 responseBadRequestError.Title = "Unable to update tokens.";
                 return BadRequest(responseBadRequestError);
@@ -539,9 +631,9 @@ namespace CoreWebApi.Controllers
         ///     PATCH /api/account/partialuserupdate/{id}
         ///     [
         ///         {
-        ///             "op": "replace",
-        ///             "path": "/emailConfirmed",
-        ///             "value": "true"
+        ///             op: "replace",
+        ///             path: "/emailConfirmed",
+        ///             value: "true"
         ///         }
         ///     ]
         ///     
@@ -578,12 +670,12 @@ namespace CoreWebApi.Controllers
         ///
         ///     POST /api/account/update
         ///     {
-        ///        "Id": "92c79472-9da6-4da3-a052-358f465d8864",
-        ///        "UserName": "John Smith",
-        ///        "Email": "test@gmail.com",
-        ///        "EmailConfirmed": true,
-        ///        "PhoneNumber": "+380961111111",
-        ///        "AvatarUrl": "https://somewhere.com/?userphoto=asdasdas"
+        ///        id: "92c79472-9da6-4da3-a052-358f465d8864",
+        ///        userName: "John Smith",
+        ///        email: "test@gmail.com",
+        ///        emailConfirmed: true,
+        ///        phoneNumber: "+380961111111",
+        ///        avatarUrl: "https://somewhere.com/?userphoto=asdasdas"
         ///     }
         ///     
         /// </remarks>
@@ -644,8 +736,8 @@ namespace CoreWebApi.Controllers
 
         private async Task RemoveTokens(ApplicationUser user)
         {
-            await userManager.RemoveAuthenticationTokenAsync(user, "CoreWebApi", "access");
-            await userManager.RemoveAuthenticationTokenAsync(user, "CoreWebApi", "refresh");
+            await userManager.RemoveAuthenticationTokenAsync(user, "CoreWebApi", TokenType.Access.ToString());
+            await userManager.RemoveAuthenticationTokenAsync(user, "CoreWebApi", TokenType.Refresh.ToString());
         }
 
         private async Task SaveTokensAsync(ApplicationUser user, TokenModel tokenModel)
