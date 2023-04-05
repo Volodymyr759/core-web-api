@@ -3,6 +3,7 @@ using CoreWebApi.Data;
 using CoreWebApi.Library.Enums;
 using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
@@ -44,19 +45,19 @@ namespace CoreWebApi.Services
             };
         }
 
-        public async Task<CountryDto> GetCountryByIdAsync(int id) => mapper.Map<CountryDto>(await repository.GetAsync(id));
+        public async Task<CountryDto> GetByIdAsync(int id) => mapper.Map<CountryDto>(await repository.GetAsync(id));
 
-        public async Task<CountryDto> CreateCountryAsync(CountryDto countryDto)
+        public async Task<CountryDto> CreateAsync(CountryDto countryDto)
         {
             var country = mapper.Map<Country>(countryDto);
 
             return mapper.Map<CountryDto>(await repository.CreateAsync(country));
         }
 
-        public async Task UpdateCountryAsync(CountryDto countryDto) =>
+        public async Task UpdateAsync(CountryDto countryDto) =>
             await repository.UpdateAsync(mapper.Map<Country>(countryDto));
 
-        public async Task DeleteCountryAsync(int id) => await repository.DeleteAsync(id);
+        public async Task DeleteAsync(int id) => await repository.DeleteAsync(id);
 
         public async Task<bool> IsExistAsync(int id)
         {
@@ -69,5 +70,9 @@ namespace CoreWebApi.Services
             return await repository.IsExistAsync("EXEC @returnVal=sp_checkCountryById @id, @returnVal", parameters);
         }
 
+        public Task<CountryDto> PartialUpdateAsync(int id, JsonPatchDocument<object> patchDocument)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

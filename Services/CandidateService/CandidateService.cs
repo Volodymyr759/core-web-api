@@ -69,14 +69,14 @@ namespace CoreWebApi.Services
             return candidates.FindAll(candidate => candidate.VacancyId == id);
         }
 
-        public async Task<CandidateDto> CreateCandidateAsync(CandidateDto candidateDto)
+        public async Task<CandidateDto> CreateAsync(CandidateDto candidateDto)
         {
             var candidate = mapper.Map<Candidate>(candidateDto);
 
             return mapper.Map<CandidateDto>(await repository.CreateAsync(candidate));
         }
 
-        public async Task UpdateCandidateAsync(CandidateDto candidateDto) =>
+        public async Task UpdateAsync(CandidateDto candidateDto) =>
             await repository.UpdateAsync(mapper.Map<Candidate>(candidateDto));
 
         public async Task<CandidateDto> PartialUpdateAsync(int id, JsonPatchDocument<object> patchDocument)
@@ -87,7 +87,7 @@ namespace CoreWebApi.Services
             return mapper.Map<CandidateDto>(await repository.SaveAsync(candidate));
         }
 
-        public async Task DeleteCandidateAsync(int id) => await repository.DeleteAsync(id);
+        public async Task DeleteAsync(int id) => await repository.DeleteAsync(id);
 
         public async Task<bool> IsExistAsync(int id)
         {

@@ -56,40 +56,12 @@ namespace UnitTests.Controllers
 
         #region Tests
 
-        //[TestMethod]
-        //public void GetAll_ReturnsListOfCountries()
-        //{
-        //    //Arrange
-        //    int page = 1;
-        //    string sort = "asc";
-        //    int limit = 10;
-        //    mockCountryService.Setup(r => r.GetAllCountries(page, sort, limit)).Returns(GetTestCountryDtos());
-        //    OkObjectResult result = null;
-
-        //    try
-        //    {
-        //        // Act
-        //        result = countryController.GetAll() as OkObjectResult;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        errorMessage = ex.Message + " | " + ex.StackTrace;
-        //    }
-
-        //    //Assert
-        //    Assert.IsNotNull(result, errorMessage);
-        //    Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
-        //    Assert.IsNotNull(result.Value, errorMessage);
-        //    Assert.IsInstanceOfType(result.Value, typeof(IEnumerable<CountryDto>), errorMessage);
-        //    mockCountryService.Verify(r => r.GetAllCountries(page, sort, limit));
-        //}
-
         [TestMethod]
         public async Task GetById_ReturnsOkWithCountryDtoByCorrectId()
         {
             //Arrange
             int id = 1;// correct id
-            mockCountryService.Setup(r => r.GetCountryByIdAsync(id)).ReturnsAsync(GetTestCountryDtoById(id));
+            mockCountryService.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(GetTestCountryDtoById(id));
             OkObjectResult result = null;
 
             try
@@ -107,7 +79,7 @@ namespace UnitTests.Controllers
             Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(CountryDto), errorMessage);
-            mockCountryService.Verify(r => r.GetCountryByIdAsync(id));
+            mockCountryService.Verify(r => r.GetByIdAsync(id));
         }
 
         [TestMethod]
@@ -115,7 +87,7 @@ namespace UnitTests.Controllers
         {
             //Arrange
             int id = int.MaxValue - 1;// wrong id
-            mockCountryService.Setup(r => r.GetCountryByIdAsync(id)).ReturnsAsync(value: null);
+            mockCountryService.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(value: null);
             NotFoundObjectResult result = null;
 
             try
@@ -131,7 +103,7 @@ namespace UnitTests.Controllers
             //Assert
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
-            mockCountryService.Verify(r => r.GetCountryByIdAsync(id));
+            mockCountryService.Verify(r => r.GetByIdAsync(id));
         }
 
         [TestMethod]
@@ -140,7 +112,7 @@ namespace UnitTests.Controllers
             //Arrange
             int i = 1;
             var createCountryDto = GetTestCountryDtoById(i);
-            mockCountryService.Setup(r => r.CreateCountryAsync(createCountryDto)).ReturnsAsync(GetTestCountryDtoById(1));
+            mockCountryService.Setup(r => r.CreateAsync(createCountryDto)).ReturnsAsync(GetTestCountryDtoById(1));
             CreatedResult result = null;
 
             try
@@ -158,7 +130,7 @@ namespace UnitTests.Controllers
             Assert.IsInstanceOfType(result, typeof(CreatedResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(CountryDto), errorMessage);
-            mockCountryService.Verify(r => r.CreateCountryAsync(createCountryDto));
+            mockCountryService.Verify(r => r.CreateAsync(createCountryDto));
         }
 
         [TestMethod]
@@ -191,7 +163,7 @@ namespace UnitTests.Controllers
             //Arrange
             int id = 1;
             var countryDtoToUpdate = GetTestCountryDtoById(id);
-            mockCountryService.Setup(r => r.UpdateCountryAsync(countryDtoToUpdate)).Returns(Task.CompletedTask);
+            mockCountryService.Setup(r => r.UpdateAsync(countryDtoToUpdate)).Returns(Task.CompletedTask);
             mockCountryService.Setup(r => r.IsExistAsync(id)).Returns(Task.FromResult(true));
             OkObjectResult result = null;
 
@@ -210,7 +182,7 @@ namespace UnitTests.Controllers
             Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(CountryDto), errorMessage);
-            mockCountryService.Verify(r => r.UpdateCountryAsync(countryDtoToUpdate));
+            mockCountryService.Verify(r => r.UpdateAsync(countryDtoToUpdate));
             mockCountryService.Verify(r => r.IsExistAsync(id));
         }
 
@@ -266,7 +238,7 @@ namespace UnitTests.Controllers
         {
             //Arrange
             int id = 1;// correct id
-            mockCountryService.Setup(r => r.DeleteCountryAsync(id)).Returns(Task.CompletedTask);
+            mockCountryService.Setup(r => r.DeleteAsync(id)).Returns(Task.CompletedTask);
             mockCountryService.Setup(r => r.IsExistAsync(id)).Returns(Task.FromResult(true));
             OkResult result = null;
 
@@ -284,7 +256,7 @@ namespace UnitTests.Controllers
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(OkResult), errorMessage);
             mockCountryService.Verify(r => r.IsExistAsync(id));
-            mockCountryService.Verify(r => r.DeleteCountryAsync(id));
+            mockCountryService.Verify(r => r.DeleteAsync(id));
         }
 
         [TestMethod]

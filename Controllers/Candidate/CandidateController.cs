@@ -60,12 +60,11 @@ namespace CoreWebApi.Controllers
         /// <response code="200">Returns the requested CandidateDto item</response>
         /// <response code="404">If the candidate with given id not found</response>
         [HttpGet("{id}")]
-        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
         {
-            var candidateDto = await candidateService.GetByIdAsync(id); //.GetCandidateByIdAsync(id);
+            var candidateDto = await candidateService.GetByIdAsync(id);
             if (candidateDto == null) return NotFound(responseNotFoundError);
 
             return Ok(candidateDto);
@@ -101,7 +100,7 @@ namespace CoreWebApi.Controllers
         public async Task<IActionResult> CreateAsync([FromBody] CandidateDto candidateDto)
         {
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
-            return Created("/api/candidate/create", await candidateService.CreateCandidateAsync(candidateDto));
+            return Created("/api/candidate/create", await candidateService.CreateAsync(candidateDto));
         }
 
         /// <summary>
@@ -136,9 +135,9 @@ namespace CoreWebApi.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             if (await IsExistAsync(candidateDto.Id) == false) return NotFound(responseNotFoundError);
-            await candidateService.UpdateCandidateAsync(candidateDto);
+            await candidateService.UpdateAsync(candidateDto);
             // Attaching linked vacancy
-            if (candidateDto.VacancyDto == null) candidateDto.VacancyDto = await vacancyService.GetVacancyByIdAsync(candidateDto.VacancyId);
+            if (candidateDto.VacancyDto == null) candidateDto.VacancyDto = await vacancyService.GetByIdAsync(candidateDto.VacancyId);
 
             return Ok(candidateDto);
         }
@@ -203,7 +202,7 @@ namespace CoreWebApi.Controllers
         public async Task<IActionResult> DeleteAsync([FromRoute] int id)
         {
             if (await IsExistAsync(id) == false) return NotFound(responseNotFoundError);
-            await candidateService.DeleteCandidateAsync(id);
+            await candidateService.DeleteAsync(id);
 
             return Ok();
         }

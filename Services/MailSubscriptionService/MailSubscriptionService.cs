@@ -3,6 +3,7 @@ using CoreWebApi.Data;
 using CoreWebApi.Library.Enums;
 using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
@@ -46,19 +47,19 @@ namespace CoreWebApi.Services
             };
         }
 
-        public async Task<MailSubscriptionDto> GetMailSubscriptionByIdAsync(int id) => mapper.Map<MailSubscriptionDto>(await repository.GetAsync(id));
+        public async Task<MailSubscriptionDto> GetByIdAsync(int id) => mapper.Map<MailSubscriptionDto>(await repository.GetAsync(id));
 
-        public async Task<MailSubscriptionDto> CreateMailSubscriptionAsync(MailSubscriptionDto mailSubscriptionDto)
+        public async Task<MailSubscriptionDto> CreateAsync(MailSubscriptionDto mailSubscriptionDto)
         {
             var subscription = mapper.Map<MailSubscription>(mailSubscriptionDto);
 
             return mapper.Map<MailSubscriptionDto>(await repository.CreateAsync(subscription));
         }
 
-        public async Task UpdateMailSubscriptionAsync(MailSubscriptionDto mailSubscriptionDto) =>
+        public async Task UpdateAsync(MailSubscriptionDto mailSubscriptionDto) =>
             await repository.UpdateAsync(mapper.Map<MailSubscription>(mailSubscriptionDto));
 
-        public async Task DeleteMailSubscriptionAsync(int id) => await repository.DeleteAsync(id);
+        public async Task DeleteAsync(int id) => await repository.DeleteAsync(id);
 
         public async Task<bool> IsExistAsync(int id)
         {
@@ -69,6 +70,11 @@ namespace CoreWebApi.Services
                 };
 
             return await repository.IsExistAsync("EXEC @returnVal=sp_checkMailSubscriptionById @id, @returnVal", parameters);
+        }
+
+        public Task<MailSubscriptionDto> PartialUpdateAsync(int id, JsonPatchDocument<object> patchDocument)
+        {
+            throw new NotImplementedException();
         }
     }
 }

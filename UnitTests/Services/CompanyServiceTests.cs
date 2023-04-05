@@ -107,7 +107,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                companyServiceDto = await companyServiceBL.GetCompanyServiceByIdAsync(id);
+                companyServiceDto = await companyServiceBL.GetByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -131,7 +131,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                companyServiceDto = await companyServiceBL.GetCompanyServiceByIdAsync(id);
+                companyServiceDto = await companyServiceBL.GetByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -175,7 +175,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                createdCompanyServiceDto = await companyServiceBL.CreateCompanyServiceAsync(newCompanyServiceDto);
+                createdCompanyServiceDto = await companyServiceBL.CreateAsync(newCompanyServiceDto);
             }
             catch (Exception ex)
             {

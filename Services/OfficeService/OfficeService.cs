@@ -3,6 +3,7 @@ using CoreWebApi.Data;
 using CoreWebApi.Library.Enums;
 using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
@@ -57,7 +58,7 @@ namespace CoreWebApi.Services
             return officesNameIds.OrderBy(o => o.Name).ToList<OfficeNameIdDto>();
         }
 
-        public async Task<OfficeDto> GetOfficeByIdAsync(int id) => mapper.Map<OfficeDto>(await repository.GetAsync(id));
+        public async Task<OfficeDto> GetByIdAsync(int id) => mapper.Map<OfficeDto>(await repository.GetAsync(id));
 
         public async Task<List<OfficeDto>> GetOfficesByCountryId(int id)
         {
@@ -66,16 +67,16 @@ namespace CoreWebApi.Services
             return offices.FindAll(office => office.CountryId == id);
         }
 
-        public async Task<OfficeDto> CreateOfficeAsync(OfficeDto officeDto)
+        public async Task<OfficeDto> CreateAsync(OfficeDto officeDto)
         {
             var office = mapper.Map<Office>(officeDto);
 
             return mapper.Map<OfficeDto>(await repository.CreateAsync(office));
         }
 
-        public async Task UpdateOfficeAsync(OfficeDto officeDto) => await repository.UpdateAsync(mapper.Map<Office>(officeDto));
+        public async Task UpdateAsync(OfficeDto officeDto) => await repository.UpdateAsync(mapper.Map<Office>(officeDto));
 
-        public async Task DeleteOfficeAsync(int id) => await repository.DeleteAsync(id);
+        public async Task DeleteAsync(int id) => await repository.DeleteAsync(id);
 
         public async Task<bool> IsExistAsync(int id)
         {
@@ -88,5 +89,9 @@ namespace CoreWebApi.Services
             return await repository.IsExistAsync("EXEC @returnVal=sp_checkOfficeById @id, @returnVal", parameters);
         }
 
+        public Task<OfficeDto> PartialUpdateAsync(int id, JsonPatchDocument<object> patchDocument)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

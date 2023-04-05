@@ -64,7 +64,7 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
         {
-            var mailSubscriberDto = await mailSubscriberService.GetMailSubscriberByIdAsync(id);
+            var mailSubscriberDto = await mailSubscriberService.GetByIdAsync(id);
             if (mailSubscriberDto == null) return NotFound(responseNotFoundError);
 
             return Ok(mailSubscriberDto);
@@ -100,7 +100,7 @@ namespace CoreWebApi.Controllers
                 responseBadRequestError.Title = "Email address " + mailSubscriberDto.Email + " already subscribed.";
                 return BadRequest(responseBadRequestError);
             }
-            return Created("/api/mailsubscriber/subscribe", await mailSubscriberService.CreateMailSubscriberAsync(mailSubscriberDto));
+            return Created("/api/mailsubscriber/subscribe", await mailSubscriberService.CreateAsync(mailSubscriberDto));
         }
 
         /// <summary>
@@ -186,7 +186,7 @@ namespace CoreWebApi.Controllers
         public async Task<IActionResult> DeleteAsync([FromRoute] int id)
         {
             if (await IsExistAsync(id) == false) return NotFound(responseNotFoundError);
-            await mailSubscriberService.DeleteMailSubsriberAsync(id);
+            await mailSubscriberService.DeleteAsync(id);
 
             return Ok();
         }

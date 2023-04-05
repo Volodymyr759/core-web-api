@@ -61,40 +61,12 @@ namespace UnitTests.Controllers
 
         #region Tests
 
-        //[TestMethod]
-        //public void GetAll_ReturnsListOfOffices()
-        //{
-        //    //Arrange
-        //    int page = 1;
-        //    string sort = "asc";
-        //    int limit = 10;
-        //    mockOfficeService.Setup(r => r.GetAllOffices(page, sort, limit)).Returns(GetTestOfficeDtos());
-        //    OkObjectResult result = null;
-
-        //    try
-        //    {
-        //        // Act
-        //        result = officeController.GetAll() as OkObjectResult;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        errorMessage = ex.Message + " | " + ex.StackTrace;
-        //    }
-
-        //    //Assert
-        //    Assert.IsNotNull(result, errorMessage);
-        //    Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
-        //    Assert.IsNotNull(result.Value, errorMessage);
-        //    Assert.IsInstanceOfType(result.Value, typeof(IEnumerable<OfficeDto>), errorMessage);
-        //    mockOfficeService.Verify(r => r.GetAllOffices(page, sort, limit));
-        //}
-
         [TestMethod]
         public async Task GetById_ReturnsOkWithOfficeDtoByCorrectId()
         {
             //Arrange
             int id = 1;// correct id
-            mockOfficeService.Setup(r => r.GetOfficeByIdAsync(id)).ReturnsAsync(GetTestOfficeDtoById(id));
+            mockOfficeService.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(GetTestOfficeDtoById(id));
             OkObjectResult result = null;
 
             try
@@ -112,7 +84,7 @@ namespace UnitTests.Controllers
             Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(OfficeDto), errorMessage);
-            mockOfficeService.Verify(r => r.GetOfficeByIdAsync(id));
+            mockOfficeService.Verify(r => r.GetByIdAsync(id));
         }
 
         [TestMethod]
@@ -120,7 +92,7 @@ namespace UnitTests.Controllers
         {
             //Arrange
             int id = int.MaxValue - 1;// wrong id
-            mockOfficeService.Setup(r => r.GetOfficeByIdAsync(id)).ReturnsAsync(value: null);
+            mockOfficeService.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(value: null);
             NotFoundObjectResult result = null;
 
             try
@@ -136,7 +108,7 @@ namespace UnitTests.Controllers
             //Assert
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
-            mockOfficeService.Verify(r => r.GetOfficeByIdAsync(id));
+            mockOfficeService.Verify(r => r.GetByIdAsync(id));
         }
 
         [TestMethod]
@@ -145,7 +117,7 @@ namespace UnitTests.Controllers
             //Arrange
             int id = 1;
             var createOfficeDto = GetTestOfficeDtoById(id);
-            mockOfficeService.Setup(r => r.CreateOfficeAsync(createOfficeDto)).ReturnsAsync(GetTestOfficeDtoById(id));
+            mockOfficeService.Setup(r => r.CreateAsync(createOfficeDto)).ReturnsAsync(GetTestOfficeDtoById(id));
             CreatedResult result = null;
 
             try
@@ -163,7 +135,7 @@ namespace UnitTests.Controllers
             Assert.IsInstanceOfType(result, typeof(CreatedResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(OfficeDto), errorMessage);
-            mockOfficeService.Verify(r => r.CreateOfficeAsync(createOfficeDto));
+            mockOfficeService.Verify(r => r.CreateAsync(createOfficeDto));
         }
 
         [TestMethod]
@@ -197,7 +169,7 @@ namespace UnitTests.Controllers
             int id = 1;
             var officeDtoToUpdate = GetTestOfficeDtoById(id);
             mockOfficeService.Setup(r => r.IsExistAsync(id)).Returns(Task.FromResult(true));
-            mockOfficeService.Setup(r => r.UpdateOfficeAsync(officeDtoToUpdate)).Returns(Task.CompletedTask);
+            mockOfficeService.Setup(r => r.UpdateAsync(officeDtoToUpdate)).Returns(Task.CompletedTask);
             OkObjectResult result = null;
 
             try
@@ -215,7 +187,7 @@ namespace UnitTests.Controllers
             Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(OfficeDto), errorMessage);
-            mockOfficeService.Verify(r => r.UpdateOfficeAsync(officeDtoToUpdate));
+            mockOfficeService.Verify(r => r.UpdateAsync(officeDtoToUpdate));
             mockOfficeService.Verify(r => r.IsExistAsync(id));
         }
 
@@ -274,7 +246,7 @@ namespace UnitTests.Controllers
             //Arrange
             int id = 1;// correct id
             mockOfficeService.Setup(r => r.IsExistAsync(id)).Returns(Task.FromResult(true));
-            mockOfficeService.Setup(r => r.DeleteOfficeAsync(id)).Returns(Task.CompletedTask);
+            mockOfficeService.Setup(r => r.DeleteAsync(id)).Returns(Task.CompletedTask);
             OkResult result = null;
 
             try
@@ -291,7 +263,7 @@ namespace UnitTests.Controllers
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(OkResult), errorMessage);
             mockOfficeService.Verify(r => r.IsExistAsync(id));
-            mockOfficeService.Verify(r => r.DeleteOfficeAsync(id));
+            mockOfficeService.Verify(r => r.DeleteAsync(id));
         }
 
         [TestMethod]

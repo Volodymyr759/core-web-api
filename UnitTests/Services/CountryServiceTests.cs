@@ -105,7 +105,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                countryDto = await countryService.GetCountryByIdAsync(id);
+                countryDto = await countryService.GetByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -129,7 +129,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                countryDto = await countryService.GetCountryByIdAsync(id);
+                countryDto = await countryService.GetByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -168,7 +168,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                createdCountryDto = await countryService.CreateCountryAsync(newCountryDto);
+                createdCountryDto = await countryService.CreateAsync(newCountryDto);
             }
             catch (Exception ex)
             {

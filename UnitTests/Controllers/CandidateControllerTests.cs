@@ -61,7 +61,7 @@ namespace UnitTests.Controllers
         {
             //Arrange
             int id = 1;// correct id
-            mockCandidateService.Setup(r => r.GetCandidateByIdAsync(id)).ReturnsAsync(GetTestCandidateDtoById(id));
+            mockCandidateService.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(GetTestCandidateDtoById(id));
             OkObjectResult result = null;
 
             try
@@ -79,7 +79,7 @@ namespace UnitTests.Controllers
             Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(CandidateDto), errorMessage);
-            mockCandidateService.Verify(r => r.GetCandidateByIdAsync(id));
+            mockCandidateService.Verify(r => r.GetByIdAsync(id));
         }
 
         [TestMethod]
@@ -87,7 +87,7 @@ namespace UnitTests.Controllers
         {
             //Arrange
             int id = int.MaxValue - 1;// wrong id
-            mockCandidateService.Setup(r => r.GetCandidateByIdAsync(id)).ReturnsAsync(value: null);
+            mockCandidateService.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(value: null);
             NotFoundObjectResult result = null;
 
             try
@@ -103,7 +103,7 @@ namespace UnitTests.Controllers
             //Assert
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
-            mockCandidateService.Verify(r => r.GetCandidateByIdAsync(id));
+            mockCandidateService.Verify(r => r.GetByIdAsync(id));
         }
 
         [TestMethod]
@@ -111,7 +111,7 @@ namespace UnitTests.Controllers
         {
             //Arrange
             var createCandidateDto = GetTestCandidateDtoById(1);
-            mockCandidateService.Setup(r => r.CreateCandidateAsync(createCandidateDto)).ReturnsAsync(GetTestCandidateDtoById(1));
+            mockCandidateService.Setup(r => r.CreateAsync(createCandidateDto)).ReturnsAsync(GetTestCandidateDtoById(1));
             CreatedResult result = null;
 
             try
@@ -129,7 +129,7 @@ namespace UnitTests.Controllers
             Assert.IsInstanceOfType(result, typeof(CreatedResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(CandidateDto), errorMessage);
-            mockCandidateService.Verify(r => r.CreateCandidateAsync(createCandidateDto));
+            mockCandidateService.Verify(r => r.CreateAsync(createCandidateDto));
         }
 
         [TestMethod]
@@ -162,7 +162,7 @@ namespace UnitTests.Controllers
             //Arrange
             int id = 1;
             var candidateDtoToUpdate = GetTestCandidateDtoById(id);
-            mockCandidateService.Setup(r => r.UpdateCandidateAsync(candidateDtoToUpdate)).Returns(Task.CompletedTask);
+            mockCandidateService.Setup(r => r.UpdateAsync(candidateDtoToUpdate)).Returns(Task.CompletedTask);
             mockCandidateService.Setup(r => r.IsExistAsync(id)).Returns(Task.FromResult(true));
             OkObjectResult result = null;
 
@@ -181,7 +181,7 @@ namespace UnitTests.Controllers
             Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(CandidateDto), errorMessage);
-            mockCandidateService.Verify(r => r.UpdateCandidateAsync(candidateDtoToUpdate));
+            mockCandidateService.Verify(r => r.UpdateAsync(candidateDtoToUpdate));
         }
 
         [TestMethod]
@@ -239,7 +239,7 @@ namespace UnitTests.Controllers
             //Arrange
             int id = 1;// correct id
             mockCandidateService.Setup(r => r.IsExistAsync(id)).Returns(Task.FromResult(true));
-            mockCandidateService.Setup(r => r.DeleteCandidateAsync(id)).Returns(Task.CompletedTask);
+            mockCandidateService.Setup(r => r.DeleteAsync(id)).Returns(Task.CompletedTask);
             OkResult result = null;
 
             try
@@ -256,7 +256,7 @@ namespace UnitTests.Controllers
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(OkResult), errorMessage);
             mockCandidateService.Verify(r => r.IsExistAsync(id));
-            mockCandidateService.Verify(r => r.DeleteCandidateAsync(id));
+            mockCandidateService.Verify(r => r.DeleteAsync(id));
         }
 
         [TestMethod]

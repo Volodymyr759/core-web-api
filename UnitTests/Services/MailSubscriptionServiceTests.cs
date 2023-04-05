@@ -105,7 +105,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                mailSubscriptionDto = await mailSubscriptionService.GetMailSubscriptionByIdAsync(id);
+                mailSubscriptionDto = await mailSubscriptionService.GetByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -129,7 +129,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                mailSubscriptionDto = await mailSubscriptionService.GetMailSubscriptionByIdAsync(id);
+                mailSubscriptionDto = await mailSubscriptionService.GetByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -169,7 +169,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                createdMailSubscriptionDto = await mailSubscriptionService.CreateMailSubscriptionAsync(newMailSubscriptionDto);
+                createdMailSubscriptionDto = await mailSubscriptionService.CreateAsync(newMailSubscriptionDto);
             }
             catch (Exception ex)
             {

@@ -106,7 +106,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                vacancyDto = await vacancyService.GetVacancyByIdAsync(id);
+                vacancyDto = await vacancyService.GetByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -130,7 +130,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                vacancyDto = await vacancyService.GetVacancyByIdAsync(id);
+                vacancyDto = await vacancyService.GetByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -175,7 +175,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                createdVacancyDto = await vacancyService.CreateVacancyAsync(newVacancyDto);
+                createdVacancyDto = await vacancyService.CreateAsync(newVacancyDto);
             }
             catch (Exception ex)
             {

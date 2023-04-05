@@ -42,22 +42,16 @@ namespace CoreWebApi.Services
             return subscriberDtos;
         }
 
-        public async Task<MailSubscriberDto> GetMailSubscriberByIdAsync(int id) => mapper.Map<MailSubscriberDto>(await subscriberRepository.GetAsync(id));
+        public async Task<MailSubscriberDto> GetByIdAsync(int id) => mapper.Map<MailSubscriberDto>(await subscriberRepository.GetAsync(id));
 
-        public async Task<SearchResult<MailSubscriptionDto>> GetSubscriptionsBySubscribersEmailAsync(int page, string sort, int limit)
-        {
-            // Idea is to get all subscription by email since subscriber in fact is anonimoous user
-            throw new NotImplementedException();
-        }
-
-        public async Task<MailSubscriberDto> CreateMailSubscriberAsync(MailSubscriberDto mailSubscriberDto)
+        public async Task<MailSubscriberDto> CreateAsync(MailSubscriberDto mailSubscriberDto)
         {
             var subscriber = mapper.Map<MailSubscriber>(mailSubscriberDto);
 
             return mapper.Map<MailSubscriberDto>(await subscriberRepository.CreateAsync(subscriber));
         }
 
-        public async Task UpdateMailSubscriberAsync(MailSubscriberDto mailSubscriberDto) =>
+        public async Task UpdateAsync(MailSubscriberDto mailSubscriberDto) =>
             await subscriberRepository.UpdateAsync(mapper.Map<MailSubscriber>(mailSubscriberDto));
 
         public async Task<MailSubscriberDto> PartialUpdateAsync(int id, JsonPatchDocument<object> patchDocument)
@@ -67,7 +61,7 @@ namespace CoreWebApi.Services
             return mapper.Map<MailSubscriberDto>(await subscriberRepository.SaveAsync(mailSubscriber));
         }
 
-        public async Task DeleteMailSubsriberAsync(int id) => await subscriberRepository.DeleteAsync(id);
+        public async Task DeleteAsync(int id) => await subscriberRepository.DeleteAsync(id);
 
         public async Task<bool> IsExistAsync(int id)
         {

@@ -106,7 +106,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                employeeDto = await employeeService.GetEmployeeByIdAsync(id);
+                employeeDto = await employeeService.GetByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -130,7 +130,7 @@ namespace UnitTests.Services
             // Act
             try
             {
-                employeeDto = await employeeService.GetEmployeeByIdAsync(id);
+                employeeDto = await employeeService.GetByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -176,7 +176,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                createdEmployeeDto = await employeeService.CreateEmployeeAsync(newEmployeeDto);
+                createdEmployeeDto = await employeeService.CreateAsync(newEmployeeDto);
             }
             catch (Exception ex)
             {

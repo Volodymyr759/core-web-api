@@ -66,7 +66,7 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
         {
-            var companySeviceDto = await companyServiceBL.GetCompanyServiceByIdAsync(id);
+            var companySeviceDto = await companyServiceBL.GetByIdAsync(id);
             if (companySeviceDto == null) return NotFound(responseNotFoundError);
 
             return Ok(companySeviceDto);
@@ -97,7 +97,7 @@ namespace CoreWebApi.Controllers
         public async Task<IActionResult> CreateAsync([FromBody] CompanyServiceDto companyServiceDto)
         {
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
-            return Created("api/companyservice/create", await companyServiceBL.CreateCompanyServiceAsync(companyServiceDto));
+            return Created("api/companyservice/create", await companyServiceBL.CreateAsync(companyServiceDto));
         }
 
         /// <summary>
@@ -129,7 +129,7 @@ namespace CoreWebApi.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             if (await IsExistAsync(companyServiceDto.Id) == false) return NotFound(responseNotFoundError);
-            await companyServiceBL.UpdateCompanyServiceAsync(companyServiceDto);
+            await companyServiceBL.UpdateAsync(companyServiceDto);
 
             return Ok(companyServiceDto);
         }
@@ -191,7 +191,7 @@ namespace CoreWebApi.Controllers
         public async Task<IActionResult> DeleteAsync([FromRoute] int id)
         {
             if (await IsExistAsync(id) == false) return NotFound(responseNotFoundError);
-            await companyServiceBL.DeleteCompanyServiceAsync(id);
+            await companyServiceBL.DeleteAsync(id);
 
             return Ok();
         }

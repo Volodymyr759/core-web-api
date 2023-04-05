@@ -61,7 +61,7 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
         {
-            var companySeviceDto = await countryService.GetCountryByIdAsync(id);
+            var companySeviceDto = await countryService.GetByIdAsync(id);
             if (companySeviceDto == null) return NotFound(responseNotFoundError);
 
             return Ok(companySeviceDto);
@@ -90,7 +90,7 @@ namespace CoreWebApi.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
 
-            return Created("/api/country/create", await countryService.CreateCountryAsync(countryDto));
+            return Created("/api/country/create", await countryService.CreateAsync(countryDto));
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace CoreWebApi.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             if (await IsExistAsync(countryDto.Id) == false) return NotFound(responseNotFoundError);
-            await countryService.UpdateCountryAsync(countryDto);
+            await countryService.UpdateAsync(countryDto);
             // Attaching linked offices
             countryDto.OfficeDtos = await officeService.GetOfficesByCountryId(countryDto.Id);
 
@@ -139,7 +139,7 @@ namespace CoreWebApi.Controllers
         public async Task<IActionResult> DeleteAsync([FromRoute] int id)
         {
             if (await IsExistAsync(id) == false) return NotFound(responseNotFoundError);
-            await countryService.DeleteCountryAsync(id);
+            await countryService.DeleteAsync(id);
 
             return Ok();
         }

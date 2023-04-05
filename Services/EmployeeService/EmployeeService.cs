@@ -3,6 +3,7 @@ using CoreWebApi.Data;
 using CoreWebApi.Library.Enums;
 using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
@@ -51,19 +52,19 @@ namespace CoreWebApi.Services
             };
         }
 
-        public async Task<EmployeeDto> GetEmployeeByIdAsync(int id) => mapper.Map<EmployeeDto>(await repository.GetAsync(id));
+        public async Task<EmployeeDto> GetByIdAsync(int id) => mapper.Map<EmployeeDto>(await repository.GetAsync(id));
 
-        public async Task<EmployeeDto> CreateEmployeeAsync(EmployeeDto employeeDto)
+        public async Task<EmployeeDto> CreateAsync(EmployeeDto employeeDto)
         {
             var employee = mapper.Map<Employee>(employeeDto);
 
             return mapper.Map<EmployeeDto>(await repository.CreateAsync(employee));
         }
 
-        public async Task UpdateEmployeeAsync(EmployeeDto employeeDto) =>
+        public async Task UpdateAsync(EmployeeDto employeeDto) =>
             await repository.UpdateAsync(mapper.Map<Employee>(employeeDto));
 
-        public async Task DeleteEmployeeAsync(int id) => await repository.DeleteAsync(id);
+        public async Task DeleteAsync(int id) => await repository.DeleteAsync(id);
 
         public async Task<bool> IsExistAsync(int id)
         {
@@ -74,6 +75,11 @@ namespace CoreWebApi.Services
                 };
 
             return await repository.IsExistAsync("EXEC @returnVal=sp_checkEmployeeById @id, @returnVal", parameters);
+        }
+
+        public Task<EmployeeDto> PartialUpdateAsync(int id, JsonPatchDocument<object> patchDocument)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -5,15 +5,12 @@ using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
 {
-    public interface IOfficeService
+    public interface IOfficeService : IBaseService<OfficeDto>
     {
         Task<SearchResult<OfficeDto>> GetOfficesSearchResultAsync(int limit, int page, string sortField, OrderType order);
+
         Task<List<OfficeNameIdDto>> GetOfficeIdNamesAsync();
-        Task<OfficeDto> GetOfficeByIdAsync(int id);
+
         Task<List<OfficeDto>> GetOfficesByCountryId(int id);
-        Task<OfficeDto> CreateOfficeAsync(OfficeDto officeDto);
-        Task UpdateOfficeAsync(OfficeDto officeDto);
-        Task DeleteOfficeAsync(int id);
-        Task<bool> IsExistAsync(int id);
     }
 }

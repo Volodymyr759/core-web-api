@@ -60,7 +60,7 @@ namespace UnitTests.Controllers
         {
             //Arrange
             int id = 1;// correct id
-            mockCompanyServiceBL.Setup(r => r.GetCompanyServiceByIdAsync(id)).ReturnsAsync(GetTestCompanyServiceDtoById(id));
+            mockCompanyServiceBL.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(GetTestCompanyServiceDtoById(id));
             OkObjectResult result = null;
 
             try
@@ -78,7 +78,7 @@ namespace UnitTests.Controllers
             Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(CompanyServiceDto), errorMessage);
-            mockCompanyServiceBL.Verify(r => r.GetCompanyServiceByIdAsync(id));
+            mockCompanyServiceBL.Verify(r => r.GetByIdAsync(id));
         }
 
         [TestMethod]
@@ -86,7 +86,7 @@ namespace UnitTests.Controllers
         {
             //Arrange
             int id = int.MaxValue - 1;// wrong id
-            mockCompanyServiceBL.Setup(r => r.GetCompanyServiceByIdAsync(id)).ReturnsAsync(value: null);
+            mockCompanyServiceBL.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(value: null);
             NotFoundObjectResult result = null;
 
             try
@@ -102,7 +102,7 @@ namespace UnitTests.Controllers
             //Assert
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
-            mockCompanyServiceBL.Verify(r => r.GetCompanyServiceByIdAsync(id));
+            mockCompanyServiceBL.Verify(r => r.GetByIdAsync(id));
         }
 
         [TestMethod]
@@ -110,7 +110,7 @@ namespace UnitTests.Controllers
         {
             //Arrange
             var createCompanyServiceDto = GetTestCompanyServiceDtoById(1);
-            mockCompanyServiceBL.Setup(r => r.CreateCompanyServiceAsync(createCompanyServiceDto)).ReturnsAsync(GetTestCompanyServiceDtoById(1));
+            mockCompanyServiceBL.Setup(r => r.CreateAsync(createCompanyServiceDto)).ReturnsAsync(GetTestCompanyServiceDtoById(1));
             CreatedResult result = null;
 
             try
@@ -128,7 +128,7 @@ namespace UnitTests.Controllers
             Assert.IsInstanceOfType(result, typeof(CreatedResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(CompanyServiceDto), errorMessage);
-            mockCompanyServiceBL.Verify(r => r.CreateCompanyServiceAsync(createCompanyServiceDto));
+            mockCompanyServiceBL.Verify(r => r.CreateAsync(createCompanyServiceDto));
         }
 
         [TestMethod]
@@ -161,7 +161,7 @@ namespace UnitTests.Controllers
             //Arrange
             int id = 1;
             var companyServiceDtoToUpdate = GetTestCompanyServiceDtoById(id);
-            mockCompanyServiceBL.Setup(r => r.UpdateCompanyServiceAsync(companyServiceDtoToUpdate)).Returns(Task.CompletedTask);
+            mockCompanyServiceBL.Setup(r => r.UpdateAsync(companyServiceDtoToUpdate)).Returns(Task.CompletedTask);
             mockCompanyServiceBL.Setup(r => r.IsExistAsync(id)).Returns(Task.FromResult(true));
             OkObjectResult result = null;
 
@@ -180,7 +180,7 @@ namespace UnitTests.Controllers
             Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(CompanyServiceDto), errorMessage);
-            mockCompanyServiceBL.Verify(r => r.UpdateCompanyServiceAsync(companyServiceDtoToUpdate));
+            mockCompanyServiceBL.Verify(r => r.UpdateAsync(companyServiceDtoToUpdate));
         }
 
         [TestMethod]
@@ -235,7 +235,7 @@ namespace UnitTests.Controllers
         {
             //Arrange
             int id = 1;// correct id
-            mockCompanyServiceBL.Setup(r => r.DeleteCompanyServiceAsync(id)).Returns(Task.CompletedTask);
+            mockCompanyServiceBL.Setup(r => r.DeleteAsync(id)).Returns(Task.CompletedTask);
             mockCompanyServiceBL.Setup(r => r.IsExistAsync(id)).Returns(Task.FromResult(true));
             OkResult result = null;
 
@@ -253,7 +253,7 @@ namespace UnitTests.Controllers
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(OkResult), errorMessage);
             mockCompanyServiceBL.Verify(r => r.IsExistAsync(id));
-            mockCompanyServiceBL.Verify(r => r.DeleteCompanyServiceAsync(id));
+            mockCompanyServiceBL.Verify(r => r.DeleteAsync(id));
         }
 
         [TestMethod]

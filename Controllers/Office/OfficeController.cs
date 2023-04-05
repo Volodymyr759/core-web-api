@@ -80,7 +80,7 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
         {
-            var officeDto = await officeService.GetOfficeByIdAsync(id);
+            var officeDto = await officeService.GetByIdAsync(id);
             if (officeDto == null) return NotFound(responseNotFoundError);
 
             return Ok(officeDto);
@@ -112,9 +112,9 @@ namespace CoreWebApi.Controllers
         public async Task<IActionResult> CreateAsync([FromBody] OfficeDto officeDto)
         {
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
-            var createdOffice = await officeService.CreateOfficeAsync(officeDto);
+            var createdOffice = await officeService.CreateAsync(officeDto);
             // Attaching linked country
-            createdOffice.CountryDto = await countryService.GetCountryByIdAsync(officeDto.CountryId);
+            createdOffice.CountryDto = await countryService.GetByIdAsync(officeDto.CountryId);
 
             return Created("/api/office/create", createdOffice);
         }
@@ -149,9 +149,9 @@ namespace CoreWebApi.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             if (await IsExistAsync(officeDto.Id) == false) return NotFound(responseNotFoundError);
-            await officeService.UpdateOfficeAsync(officeDto);
+            await officeService.UpdateAsync(officeDto);
             // attach CountryDto and VacancyDtos[] to updated office
-            if (officeDto.CountryDto == null) officeDto.CountryDto = await countryService.GetCountryByIdAsync(officeDto.CountryId);
+            if (officeDto.CountryDto == null) officeDto.CountryDto = await countryService.GetByIdAsync(officeDto.CountryId);
             if (officeDto.VacancyDtos == null) officeDto.VacancyDtos = await vacancyService.GetVacanciesByOfficeIdAsync(officeDto.Id);
 
             return Ok(officeDto);
@@ -170,7 +170,7 @@ namespace CoreWebApi.Controllers
         public async Task<IActionResult> DeleteAsync([FromRoute] int id)
         {
             if (await IsExistAsync(id) == false) return NotFound(responseNotFoundError);
-            await officeService.DeleteOfficeAsync(id);
+            await officeService.DeleteAsync(id);
 
             return Ok();
         }

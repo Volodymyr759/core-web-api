@@ -4,13 +4,8 @@ using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
 {
-    public interface ICountryService
+    public interface ICountryService : IBaseService<CountryDto>
     {
         Task<SearchResult<CountryDto>> GetCountriesSearchResultAsync(int limit, int page, string sortField, OrderType order);
-        Task<CountryDto> GetCountryByIdAsync(int id);
-        Task<CountryDto> CreateCountryAsync(CountryDto countryDto);
-        Task UpdateCountryAsync(CountryDto countryDto);
-        Task DeleteCountryAsync(int id);
-        Task<bool> IsExistAsync(int id);
     }
 }

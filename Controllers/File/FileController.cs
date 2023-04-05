@@ -52,8 +52,7 @@ namespace CoreWebApi.Controllers.File
                 CreatedAt = DateTime.Now.ToUniversalTime()
             };
 
-
-            var fileModelDto = await fileService.UploadFileAsync(uploadedFile);
+            var fileModelDto = await fileService.CreateAsync(fileDto);
 
             return Created("/api/file/upload", fileModelDto);
         }

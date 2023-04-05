@@ -66,7 +66,7 @@ namespace UnitTests.Controllers
         {
             //Arrange
             int id = 1;// correct id
-            mockVacancyService.Setup(r => r.GetVacancyByIdAsync(id)).ReturnsAsync(GetTestVacancyDtoById(id));
+            mockVacancyService.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(GetTestVacancyDtoById(id));
             OkObjectResult result = null;
 
             try
@@ -84,7 +84,7 @@ namespace UnitTests.Controllers
             Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(VacancyDto), errorMessage);
-            mockVacancyService.Verify(r => r.GetVacancyByIdAsync(id));
+            mockVacancyService.Verify(r => r.GetByIdAsync(id));
         }
 
         [TestMethod]
@@ -92,7 +92,7 @@ namespace UnitTests.Controllers
         {
             //Arrange
             int id = int.MaxValue - 1;// wrong id
-            mockVacancyService.Setup(r => r.GetVacancyByIdAsync(id)).ReturnsAsync(value: null);
+            mockVacancyService.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(value: null);
             NotFoundObjectResult result = null;
 
             try
@@ -108,7 +108,7 @@ namespace UnitTests.Controllers
             //Assert
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
-            mockVacancyService.Verify(r => r.GetVacancyByIdAsync(id));
+            mockVacancyService.Verify(r => r.GetByIdAsync(id));
         }
 
         [TestMethod]
@@ -117,7 +117,7 @@ namespace UnitTests.Controllers
             //Arrange
             int id = 1;
             var createVacancyDto = GetTestVacancyDtoById(id);
-            mockVacancyService.Setup(r => r.CreateVacancyAsync(createVacancyDto)).ReturnsAsync(GetTestVacancyDtoById(id));
+            mockVacancyService.Setup(r => r.CreateAsync(createVacancyDto)).ReturnsAsync(GetTestVacancyDtoById(id));
             CreatedResult result = null;
 
             try
@@ -135,7 +135,7 @@ namespace UnitTests.Controllers
             Assert.IsInstanceOfType(result, typeof(CreatedResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(VacancyDto), errorMessage);
-            mockVacancyService.Verify(r => r.CreateVacancyAsync(createVacancyDto));
+            mockVacancyService.Verify(r => r.CreateAsync(createVacancyDto));
         }
 
         [TestMethod]
@@ -168,7 +168,7 @@ namespace UnitTests.Controllers
             //Arrange
             int id = 1;
             var vacancyDtoToUpdate = GetTestVacancyDtoById(id);
-            mockVacancyService.Setup(r => r.UpdateVacancyAsync(vacancyDtoToUpdate)).Returns(Task.CompletedTask);
+            mockVacancyService.Setup(r => r.UpdateAsync(vacancyDtoToUpdate)).Returns(Task.CompletedTask);
             mockVacancyService.Setup(r => r.IsExistAsync(id)).Returns(Task.FromResult(true));
             OkObjectResult result = null;
 
@@ -187,7 +187,7 @@ namespace UnitTests.Controllers
             Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(VacancyDto), errorMessage);
-            mockVacancyService.Verify(r => r.UpdateVacancyAsync(vacancyDtoToUpdate));
+            mockVacancyService.Verify(r => r.UpdateAsync(vacancyDtoToUpdate));
             mockVacancyService.Verify(r => r.IsExistAsync(id));
         }
 
@@ -245,7 +245,7 @@ namespace UnitTests.Controllers
         {
             //Arrange
             int id = 1;// correct id
-            mockVacancyService.Setup(r => r.DeleteVacancyAsync(id)).Returns(Task.CompletedTask);
+            mockVacancyService.Setup(r => r.DeleteAsync(id)).Returns(Task.CompletedTask);
             mockVacancyService.Setup(r => r.IsExistAsync(id)).Returns(Task.FromResult(true));
             OkResult result = null;
 
@@ -263,7 +263,7 @@ namespace UnitTests.Controllers
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(OkResult), errorMessage);
             mockVacancyService.Verify(r => r.IsExistAsync(id));
-            mockVacancyService.Verify(r => r.DeleteVacancyAsync(id));
+            mockVacancyService.Verify(r => r.DeleteAsync(id));
         }
 
         [TestMethod]

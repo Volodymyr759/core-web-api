@@ -4,13 +4,8 @@ using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
 {
-    public interface IEmployeeService
+    public interface IEmployeeService : IBaseService<EmployeeDto>
     {
         Task<SearchResult<EmployeeDto>> GetEmployeesSearchResultAsync(int limit, int page, string search, string sortField, OrderType order);
-        Task<EmployeeDto> GetEmployeeByIdAsync(int id);
-        Task<EmployeeDto> CreateEmployeeAsync(EmployeeDto employeeDto);
-        Task UpdateEmployeeAsync(EmployeeDto employeeDto);
-        Task DeleteEmployeeAsync(int id);
-        Task<bool> IsExistAsync(int id);
     }
 }

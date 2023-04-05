@@ -48,16 +48,16 @@ namespace CoreWebApi.Services
             };
         }
 
-        public async Task<CompanyServiceDto> GetCompanyServiceByIdAsync(int id) => mapper.Map<CompanyServiceDto>(await repository.GetAsync(id));
+        public async Task<CompanyServiceDto> GetByIdAsync(int id) => mapper.Map<CompanyServiceDto>(await repository.GetAsync(id));
 
-        public async Task<CompanyServiceDto> CreateCompanyServiceAsync(CompanyServiceDto companyServiceDto)
+        public async Task<CompanyServiceDto> CreateAsync(CompanyServiceDto companyServiceDto)
         {
             var companyService = mapper.Map<CompanyService>(companyServiceDto);
 
             return mapper.Map<CompanyServiceDto>(await repository.CreateAsync(companyService));
         }
 
-        public async Task UpdateCompanyServiceAsync(CompanyServiceDto companyServiceDto) =>
+        public async Task UpdateAsync(CompanyServiceDto companyServiceDto) =>
             await repository.UpdateAsync(mapper.Map<CompanyService>(companyServiceDto));
 
         public async Task<CompanyServiceDto> PartialUpdateAsync(int id, JsonPatchDocument<object> patchDocument)
@@ -67,7 +67,7 @@ namespace CoreWebApi.Services
             return mapper.Map<CompanyServiceDto>(await repository.SaveAsync(service));
         }
 
-        public async Task DeleteCompanyServiceAsync(int id) => await repository.DeleteAsync(id);
+        public async Task DeleteAsync(int id) => await repository.DeleteAsync(id);
 
         public async Task<bool> IsExistAsync(int id)
         {

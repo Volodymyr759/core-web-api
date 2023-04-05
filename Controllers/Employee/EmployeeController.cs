@@ -62,7 +62,7 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
         {
-            var employeeDto = await employeeService.GetEmployeeByIdAsync(id);
+            var employeeDto = await employeeService.GetByIdAsync(id);
             if (employeeDto == null) return NotFound(responseNotFoundError);
 
             return Ok(employeeDto);
@@ -94,9 +94,9 @@ namespace CoreWebApi.Controllers
         public async Task<IActionResult> CreateAsync([FromBody] EmployeeDto employeeDto)
         {
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
-            var createdEmployee = await employeeService.CreateEmployeeAsync(employeeDto);
+            var createdEmployee = await employeeService.CreateAsync(employeeDto);
             // Attaching linked office
-            createdEmployee.OfficeDto = await officeService.GetOfficeByIdAsync(employeeDto.OfficeId);
+            createdEmployee.OfficeDto = await officeService.GetByIdAsync(employeeDto.OfficeId);
 
             return Created("/api/Employee/create", createdEmployee);
         }
@@ -131,12 +131,12 @@ namespace CoreWebApi.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             if (await IsExistAsync(employeeDto.Id) == false) return NotFound(responseNotFoundError);
-            await employeeService.UpdateEmployeeAsync(employeeDto);
+            await employeeService.UpdateAsync(employeeDto);
             // IT it the same situation as for VacancyController.Update - Entity Framework already tracks the value of employeeDto.Id,
             // so it's impossible to attach officeDto using another request to EF with the same id.
             // It needs to attach linked officeDto using officeService
-            if (employeeDto.OfficeDto == null) employeeDto.OfficeDto = await officeService.GetOfficeByIdAsync(employeeDto.OfficeId);
-            
+            if (employeeDto.OfficeDto == null) employeeDto.OfficeDto = await officeService.GetByIdAsync(employeeDto.OfficeId);
+
             return Ok(employeeDto);
         }
 
@@ -153,7 +153,7 @@ namespace CoreWebApi.Controllers
         public async Task<IActionResult> DeleteAsync([FromRoute] int id)
         {
             if (await IsExistAsync(id) == false) return NotFound(responseNotFoundError);
-            await employeeService.DeleteEmployeeAsync(id);
+            await employeeService.DeleteAsync(id);
 
             return Ok();
         }

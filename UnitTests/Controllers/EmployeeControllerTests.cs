@@ -61,7 +61,7 @@ namespace UnitTests.Controllers
         {
             //Arrange
             int id = 1;// correct id
-            mockEmployeeService.Setup(r => r.GetEmployeeByIdAsync(id)).ReturnsAsync(GetTestEmployeeDtoById(id));
+            mockEmployeeService.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(GetTestEmployeeDtoById(id));
             OkObjectResult result = null;
 
             try
@@ -79,7 +79,7 @@ namespace UnitTests.Controllers
             Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(EmployeeDto), errorMessage);
-            mockEmployeeService.Verify(r => r.GetEmployeeByIdAsync(id));
+            mockEmployeeService.Verify(r => r.GetByIdAsync(id));
         }
 
         [TestMethod]
@@ -87,7 +87,7 @@ namespace UnitTests.Controllers
         {
             //Arrange
             int id = int.MaxValue - 1;// wrong id
-            mockEmployeeService.Setup(r => r.GetEmployeeByIdAsync(id)).ReturnsAsync(value: null);
+            mockEmployeeService.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(value: null);
             NotFoundObjectResult result = null;
 
             try
@@ -103,7 +103,7 @@ namespace UnitTests.Controllers
             //Assert
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
-            mockEmployeeService.Verify(r => r.GetEmployeeByIdAsync(id));
+            mockEmployeeService.Verify(r => r.GetByIdAsync(id));
         }
 
         [TestMethod]
@@ -111,7 +111,7 @@ namespace UnitTests.Controllers
         {
             //Arrange
             var createEmployeeDto = GetTestEmployeeDtoById(1);
-            mockEmployeeService.Setup(r => r.CreateEmployeeAsync(createEmployeeDto)).ReturnsAsync(GetTestEmployeeDtoById(1));
+            mockEmployeeService.Setup(r => r.CreateAsync(createEmployeeDto)).ReturnsAsync(GetTestEmployeeDtoById(1));
             CreatedResult result = null;
 
             try
@@ -129,7 +129,7 @@ namespace UnitTests.Controllers
             Assert.IsInstanceOfType(result, typeof(CreatedResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(EmployeeDto), errorMessage);
-            mockEmployeeService.Verify(r => r.CreateEmployeeAsync(createEmployeeDto));
+            mockEmployeeService.Verify(r => r.CreateAsync(createEmployeeDto));
         }
 
         [TestMethod]
@@ -163,7 +163,7 @@ namespace UnitTests.Controllers
             int id = 1;
             var employeeDtoToUpdate = GetTestEmployeeDtoById(id);
             mockEmployeeService.Setup(r => r.IsExistAsync(id)).Returns(Task.FromResult(true));
-            mockEmployeeService.Setup(r => r.UpdateEmployeeAsync(employeeDtoToUpdate)).Returns(Task.CompletedTask);
+            mockEmployeeService.Setup(r => r.UpdateAsync(employeeDtoToUpdate)).Returns(Task.CompletedTask);
             OkObjectResult result = null;
 
             try
@@ -181,7 +181,7 @@ namespace UnitTests.Controllers
             Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(EmployeeDto), errorMessage);
-            mockEmployeeService.Verify(r => r.UpdateEmployeeAsync(employeeDtoToUpdate));
+            mockEmployeeService.Verify(r => r.UpdateAsync(employeeDtoToUpdate));
             mockEmployeeService.Verify(r => r.IsExistAsync(id));
         }
 
@@ -238,7 +238,7 @@ namespace UnitTests.Controllers
             //Arrange
             int id = 1;// correct id
             mockEmployeeService.Setup(r => r.IsExistAsync(id)).Returns(Task.FromResult(true));
-            mockEmployeeService.Setup(r => r.DeleteEmployeeAsync(id)).Returns(Task.CompletedTask);
+            mockEmployeeService.Setup(r => r.DeleteAsync(id)).Returns(Task.CompletedTask);
             OkResult result = null;
 
             try
@@ -255,7 +255,7 @@ namespace UnitTests.Controllers
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(OkResult), errorMessage);
             mockEmployeeService.Verify(r => r.IsExistAsync(id));
-            mockEmployeeService.Verify(r => r.DeleteEmployeeAsync(id));
+            mockEmployeeService.Verify(r => r.DeleteAsync(id));
         }
 
         [TestMethod]

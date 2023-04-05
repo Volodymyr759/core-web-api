@@ -109,7 +109,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                officeDto = await officeService.GetOfficeByIdAsync(id);
+                officeDto = await officeService.GetByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -133,7 +133,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                officeDto = await officeService.GetOfficeByIdAsync(id);
+                officeDto = await officeService.GetByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -180,7 +180,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                createdOfficeDto = await officeService.CreateOfficeAsync(newOfficeDto);
+                createdOfficeDto = await officeService.CreateAsync(newOfficeDto);
             }
             catch (Exception ex)
             {
