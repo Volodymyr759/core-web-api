@@ -60,8 +60,7 @@ namespace CoreWebApi.Services
             };
         }
 
-        public async Task<CandidateDto> GetCandidateByIdAsync(int id) => mapper.Map<CandidateDto>(await repository.GetAsync(id));
-
+        public async Task<CandidateDto> GetByIdAsync(int id) => mapper.Map<CandidateDto>(await repository.GetAsync(id));
 
         public async Task<List<CandidateDto>> GetCandidatesByVacancyIdAsync(int id)
         {
@@ -100,6 +99,5 @@ namespace CoreWebApi.Services
 
             return await repository.IsExistAsync("EXEC @returnVal=sp_checkCandidateById @id, @returnVal", parameters);
         }
-
     }
 }

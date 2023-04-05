@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
 {
-    public interface ICandidateService
+    public interface ICandidateService: IBaseService<CandidateDto>
     {
         Task<SearchResult<CandidateDto>> GetCandidatesSearchResultAsync(
             int limit, int page, 
             string search, CandidateStatus candidateStatus, int? vacancyId, 
             string sortField, OrderType order);
-        Task<CandidateDto> GetCandidateByIdAsync(int id);
+        //Task<CandidateDto> GetCandidateByIdAsync(int id);
         Task<List<CandidateDto>> GetCandidatesByVacancyIdAsync(int id);
         Task<CandidateDto> CreateCandidateAsync(CandidateDto candidateDto);
         Task UpdateCandidateAsync(CandidateDto candidateDto);

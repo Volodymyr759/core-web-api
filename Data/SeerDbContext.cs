@@ -10,7 +10,7 @@ namespace CoreWebApi.Data
     public class SeerDbContext : IdentityDbContext<ApplicationUser>
     {
         public SeerDbContext(DbContextOptions<SeerDbContext> options)
-            : base(options) {}
+            : base(options) { }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -24,6 +24,8 @@ namespace CoreWebApi.Data
         public DbSet<Country> Countries { get; set; }
 
         public DbSet<Employee> Employees { get; set; }
+
+        public DbSet<FileModel> Files { get; set; }
 
         public DbSet<MailSubscriber> MailSubscribers { get; set; }
 

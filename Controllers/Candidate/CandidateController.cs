@@ -60,11 +60,12 @@ namespace CoreWebApi.Controllers
         /// <response code="200">Returns the requested CandidateDto item</response>
         /// <response code="404">If the candidate with given id not found</response>
         [HttpGet("{id}")]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
         {
-            var candidateDto = await candidateService.GetCandidateByIdAsync(id);
+            var candidateDto = await candidateService.GetByIdAsync(id); //.GetCandidateByIdAsync(id);
             if (candidateDto == null) return NotFound(responseNotFoundError);
 
             return Ok(candidateDto);

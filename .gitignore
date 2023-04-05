@@ -6,3 +6,5 @@ packages
 appsettings.json
 Uploads
 DB_Schema.drawio
+wwwroot
+PublishProfiles

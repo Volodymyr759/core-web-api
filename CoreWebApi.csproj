@@ -85,6 +85,7 @@
 
   <ItemGroup>
     <None Include="CoreWebApi.sln" />
+    <None Include="wwwroot\Uploads\team-1.jpg" />
   </ItemGroup>
 
   <ItemGroup>

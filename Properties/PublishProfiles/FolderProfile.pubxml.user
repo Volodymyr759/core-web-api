@@ -6,7 +6,7 @@ https://go.microsoft.com/fwlink/?LinkID=208121.
   <PropertyGroup>
     <TimeStampOfAssociatedLegacyPublishXmlFile />
     <_PublishTargetUrl>C:\Users\user\source\repos\CoreWebApi\bin\Release\netcoreapp3.1\publish\</_PublishTargetUrl>
-    <History>True|2023-03-28T08:52:31.4414224Z;True|2023-03-25T16:17:41.1569656+02:00;True|2023-03-21T13:57:49.1993373+02:00;True|2023-03-20T13:13:31.8509820+02:00;False|2023-03-20T13:12:40.1813553+02:00;True|2023-03-20T00:48:00.6759914+02:00;</History>
+    <History>True|2023-03-29T05:14:52.2064135Z;True|2023-03-28T16:41:17.9766931+03:00;True|2023-03-28T11:52:31.4414224+03:00;True|2023-03-25T16:17:41.1569656+02:00;True|2023-03-21T13:57:49.1993373+02:00;True|2023-03-20T13:13:31.8509820+02:00;False|2023-03-20T13:12:40.1813553+02:00;True|2023-03-20T00:48:00.6759914+02:00;</History>
   </PropertyGroup>
   <ItemGroup>
     <File Include="Uploads/team-1.jpg">

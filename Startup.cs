@@ -56,6 +56,7 @@ namespace CoreWebApi
             services.AddTransient<ICountryService, CountryService>();
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddTransient<IEmployeeService, EmployeeService>();
+            services.AddTransient<IFileService, FileService>();
             services.AddTransient<IMailSubscriberService, MailSubscriberService>();
             services.AddTransient<IMailSubscriptionService, MailSubscriptionService>();
             services.AddTransient<IOfficeService, OfficeService>();

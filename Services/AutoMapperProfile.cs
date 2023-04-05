@@ -26,6 +26,8 @@ namespace CoreWebApi.Services
                 .ForMember(dest => dest.OfficeDtos, act => act.MapFrom(src => src.Offices));
             CreateMap<CountryDto, Country>();
 
+            CreateMap<FileModel, FileModelDto>().ReverseMap();
+
             CreateMap<Office, OfficeDto>()
                 .ForMember(dest => dest.CountryDto, act => act.MapFrom(src => new CountryDto()
                 {
