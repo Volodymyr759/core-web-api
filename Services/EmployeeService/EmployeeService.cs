@@ -14,18 +14,9 @@ using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
 {
-    public class EmployeeService : IEmployeeService
+    public class EmployeeService : BaseService<Employee>, IEmployeeService
     {
-        private readonly IMapper mapper;
-        private readonly IRepository<Employee> repository;
-
-        public EmployeeService(
-            IMapper mapper,
-            IRepository<Employee> repository)
-        {
-            this.mapper = mapper;
-            this.repository = repository;
-        }
+        public EmployeeService(IMapper mapper, IRepository<Employee> repository) : base(mapper, repository) { }
 
         public async Task<SearchResult<EmployeeDto>> GetEmployeesSearchResultAsync(int limit, int page, string search, string sortField, OrderType order)
         {

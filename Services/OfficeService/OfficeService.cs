@@ -13,22 +13,13 @@ using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
 {
-    public class OfficeService : IOfficeService
+    public class OfficeService : BaseService<Office>, IOfficeService
     {
-        private readonly IMapper mapper;
-        private readonly IRepository<Office> repository;
         private readonly IRepository<OfficeNameId> repositoryOfficeNameId;
 
         public OfficeService(
-            IMapper mapper,
-            IRepository<Office> repository,
-            IRepository<OfficeNameId> repositoryOfficeNameId
-            )
-        {
-            this.mapper = mapper;
-            this.repository = repository;
-            this.repositoryOfficeNameId = repositoryOfficeNameId;
-        }
+            IMapper mapper, IRepository<Office> repository, IRepository<OfficeNameId> repositoryOfficeNameId
+            ) : base(mapper, repository) => this.repositoryOfficeNameId = repositoryOfficeNameId;
 
         public async Task<SearchResult<OfficeDto>> GetOfficesSearchResultAsync(int limit, int page, string sortField, OrderType order)
         {

@@ -11,16 +11,9 @@ using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
 {
-    public class AccountService : IAccountService
+    public class AccountService : BaseService<ApplicationUser>, IAccountService
     {
-        private readonly IMapper mapper;
-        private readonly IRepository<ApplicationUser> repository;
-
-        public AccountService(IMapper mapper, IRepository<ApplicationUser> repository)
-        {
-            this.mapper = mapper;
-            this.repository = repository;
-        }
+        public AccountService(IMapper mapper, IRepository<ApplicationUser> repository) : base(mapper, repository) { }
 
         public ApplicationUserDto GetApplicationUserDto(ApplicationUser user) => mapper.Map<ApplicationUserDto>(user);
 

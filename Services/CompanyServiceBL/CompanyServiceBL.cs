@@ -13,17 +13,9 @@ using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
 {
-    public class CompanyServiceBL : ICompanyServiceBL
+    public class CompanyServiceBL : BaseService<CompanyService>, ICompanyServiceBL
     {
-        private readonly IMapper mapper;
-
-        private readonly IRepository<CompanyService> repository;
-
-        public CompanyServiceBL(IMapper mapper, IRepository<CompanyService> repository)
-        {
-            this.mapper = mapper;
-            this.repository = repository;
-        }
+        public CompanyServiceBL(IMapper mapper, IRepository<CompanyService> repository) : base(mapper, repository) { }
 
         public async Task<SearchResult<CompanyServiceDto>> GetCompanyServicesSearchResultAsync(int limit, int page, CompanyServiceStatus companyServiceStatus, OrderType order)
         {

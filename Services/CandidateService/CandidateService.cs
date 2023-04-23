@@ -14,18 +14,9 @@ using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
 {
-    public class CandidateService : ICandidateService
+    public class CandidateService : BaseService<Candidate>, ICandidateService
     {
-        private readonly IMapper mapper;
-        private readonly IRepository<Candidate> repository;
-
-        public CandidateService(
-            IMapper mapper,
-            IRepository<Candidate> repository)
-        {
-            this.mapper = mapper;
-            this.repository = repository;
-        }
+        public CandidateService(IMapper mapper, IRepository<Candidate> repository) : base(mapper, repository) { }
 
         public async Task<SearchResult<CandidateDto>> GetCandidatesSearchResultAsync(
             int limit, int page,

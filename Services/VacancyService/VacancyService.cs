@@ -14,21 +14,15 @@ using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
 {
-    public class VacancyService : IVacancyService
+    public class VacancyService : BaseService<Vacancy>, IVacancyService
     {
-        private readonly IMapper mapper;
-        private readonly IRepository<Vacancy> repository;
         private readonly IRepository<StringValue> repositoryStringValue;
 
         public VacancyService(
             IMapper mapper,
             IRepository<Vacancy> repository,
-            IRepository<StringValue> repositoryStringValue)
-        {
-            this.mapper = mapper;
-            this.repository = repository;
-            this.repositoryStringValue = repositoryStringValue;
-        }
+            IRepository<StringValue> repositoryStringValue) : base(mapper, repository) =>
+                this.repositoryStringValue = repositoryStringValue;
 
         public async Task<SearchResult<VacancyDto>> GetVacanciesSearchResultAsync(int limit, int page, string search, VacancyStatus? vacancyStatus, int? officeId, string sortField, OrderType order)
         {

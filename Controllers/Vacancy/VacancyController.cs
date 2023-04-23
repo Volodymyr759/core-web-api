@@ -87,7 +87,7 @@ namespace CoreWebApi.Controllers
         /// </remarks>
         /// <response code="200">Returns the requested VacancyDto item</response>
         /// <response code="404">If the vacancy with given id not found</response>
-        [HttpGet("{id}")]
+        [HttpGet("{id}")] 
         [Authorize(Roles = "Admin, Registered")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

@@ -11,28 +11,22 @@ using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
 {
-    public class MailSubscriberService : IMailSubscriberService
+    public class MailSubscriberService : BaseService<MailSubscriber>, IMailSubscriberService
     {
-        private readonly IMapper mapper;
-        private readonly IRepository<MailSubscriber> subscriberRepository;
         private readonly IRepository<MailSubscription> subscriptionRepository;
 
         public MailSubscriberService(
             IMapper mapper,
-            IRepository<MailSubscriber> subscriberRepository,
-            IRepository<MailSubscription> subscriptionRepository)
-        {
-            this.mapper = mapper;
-            this.subscriberRepository = subscriberRepository;
+            IRepository<MailSubscriber> repository,
+            IRepository<MailSubscription> subscriptionRepository) : base(mapper, repository) =>
             this.subscriptionRepository = subscriptionRepository;
-        }
 
         public IEnumerable<MailSubscriberDto> GetAllMailSubscribers(int page, string sort, int limit)
         {
             // sorting only by Email
             Func<IQueryable<MailSubscriber>, IOrderedQueryable<MailSubscriber>> orderBy = null;
             orderBy = sort == "asc" ? q => q.OrderBy(s => s.Email) : orderBy = q => q.OrderByDescending(s => s.Email);
-            var subscriberDtos = mapper.Map<IEnumerable<MailSubscriberDto>>(subscriberRepository.GetAll(limit, page, null, orderBy));
+            var subscriberDtos = mapper.Map<IEnumerable<MailSubscriberDto>>(repository.GetAll(limit, page, null, orderBy));
 
             if (((List<MailSubscriberDto>)subscriberDtos).Count > 0)
                 foreach (var ms in subscriberDtos)
@@ -41,26 +35,26 @@ namespace CoreWebApi.Services
             return subscriberDtos;
         }
 
-        public async Task<MailSubscriberDto> GetByIdAsync(int id) => mapper.Map<MailSubscriberDto>(await subscriberRepository.GetAsync(id));
+        public async Task<MailSubscriberDto> GetByIdAsync(int id) => mapper.Map<MailSubscriberDto>(await repository.GetAsync(id));
 
         public async Task<MailSubscriberDto> CreateAsync(MailSubscriberDto mailSubscriberDto)
         {
             var subscriber = mapper.Map<MailSubscriber>(mailSubscriberDto);
 
-            return mapper.Map<MailSubscriberDto>(await subscriberRepository.CreateAsync(subscriber));
+            return mapper.Map<MailSubscriberDto>(await repository.CreateAsync(subscriber));
         }
 
         public async Task UpdateAsync(MailSubscriberDto mailSubscriberDto) =>
-            await subscriberRepository.UpdateAsync(mapper.Map<MailSubscriber>(mailSubscriberDto));
+            await repository.UpdateAsync(mapper.Map<MailSubscriber>(mailSubscriberDto));
 
         public async Task<MailSubscriberDto> PartialUpdateAsync(int id, JsonPatchDocument<object> patchDocument)
         {
-            var mailSubscriber = await subscriberRepository.GetAsync(id);
+            var mailSubscriber = await repository.GetAsync(id);
             patchDocument.ApplyTo(mailSubscriber);
-            return mapper.Map<MailSubscriberDto>(await subscriberRepository.SaveAsync(mailSubscriber));
+            return mapper.Map<MailSubscriberDto>(await repository.SaveAsync(mailSubscriber));
         }
 
-        public async Task DeleteAsync(int id) => await subscriberRepository.DeleteAsync(id);
+        public async Task DeleteAsync(int id) => await repository.DeleteAsync(id);
 
         public async Task<bool> IsExistAsync(int id)
         {
@@ -69,7 +63,7 @@ namespace CoreWebApi.Services
                    new SqlParameter("@id", SqlDbType.Int) { Value = id },
                    new SqlParameter("@returnVal", SqlDbType.Int) {Direction = ParameterDirection.Output}
                 };
-            return await subscriberRepository.IsExistAsync("EXEC @returnVal=sp_checkMailSubscriberById @id, @returnVal", parameters);
+            return await repository.IsExistAsync("EXEC @returnVal=sp_checkMailSubscriberById @id, @returnVal", parameters);
         }
 
         public async Task<bool> IsExistAsync(int mailSubscriptionId, string email)
@@ -80,7 +74,7 @@ namespace CoreWebApi.Services
                    new SqlParameter("@returnVal", SqlDbType.Int) {Direction = ParameterDirection.Output},
                    new SqlParameter("@email", SqlDbType.NVarChar) { Value = email }
                 };
-            return await subscriberRepository.IsExistAsync("EXEC @returnVal=sp_checkMailSubscriberBySubscriptionIdAndEmail @mailSubscriptionId, @returnVal, @email", parameters);
+            return await repository.IsExistAsync("EXEC @returnVal=sp_checkMailSubscriberBySubscriptionIdAndEmail @mailSubscriptionId, @returnVal, @email", parameters);
         }
     }
 }

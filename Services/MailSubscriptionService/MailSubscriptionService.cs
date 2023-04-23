@@ -13,18 +13,9 @@ using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
 {
-    public class MailSubscriptionService : IMailSubscriptionService
+    public class MailSubscriptionService : BaseService<MailSubscription>, IMailSubscriptionService
     {
-        private readonly IMapper mapper;
-        private readonly IRepository<MailSubscription> repository;
-
-        public MailSubscriptionService(
-            IMapper mapper,
-            IRepository<MailSubscription> repository)
-        {
-            this.mapper = mapper;
-            this.repository = repository;
-        }
+        public MailSubscriptionService(IMapper mapper, IRepository<MailSubscription> repository) : base(mapper, repository) { }
 
         public async Task<SearchResult<MailSubscriptionDto>> GetMailSubscriptionsSearchResultAsync(int limit, int page, OrderType order)
         {

@@ -13,16 +13,9 @@ using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
 {
-    public class CountryService : ICountryService
+    public class CountryService : BaseService<Country>, ICountryService
     {
-        private readonly IMapper mapper;
-        private readonly IRepository<Country> repository;
-
-        public CountryService(IMapper mapper, IRepository<Country> repository)
-        {
-            this.mapper = mapper;
-            this.repository = repository;
-        }
+        public CountryService(IMapper mapper, IRepository<Country> repository) : base(mapper, repository) { }
 
         public async Task<SearchResult<CountryDto>> GetCountriesSearchResultAsync(int limit, int page, string sortField, OrderType order)
         {
