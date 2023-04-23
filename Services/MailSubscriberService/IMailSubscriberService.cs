@@ -1,6 +1,4 @@
-﻿using CoreWebApi.Library.SearchResult;
-using Microsoft.AspNetCore.JsonPatch;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace CoreWebApi.Services

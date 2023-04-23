@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
-using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Data.SqlClient;

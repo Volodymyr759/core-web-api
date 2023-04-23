@@ -15,7 +15,15 @@ namespace CoreWebApi.Services
                 {
                     Id = src.Vacancy.Id,
                     Title = src.Vacancy.Title,
-                    IsActive = src.Vacancy.IsActive
+                    Description = src.Vacancy.Description,
+                    Previews = src.Vacancy.Previews,
+                    IsActive = src.Vacancy.IsActive,
+                    OfficeId = src.Vacancy.OfficeId,
+                    OfficeDto = new OfficeDto()
+                    {
+                        Name = src.Vacancy.Office.Name,
+                        Address = src.Vacancy.Office.Address
+                    }
                 }));
 
             CreateMap<CandidateDto, Candidate>();

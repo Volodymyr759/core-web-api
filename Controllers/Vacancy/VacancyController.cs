@@ -1,5 +1,4 @@
 ﻿using CoreWebApi.Library.Enums;
-using CoreWebApi.Library.ResponseError;
 using CoreWebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -14,13 +13,11 @@ namespace CoreWebApi.Controllers
     [Route("api/[controller]/[action]")]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public class VacancyController : ControllerBase
+    public class VacancyController : AppControllerBase
     {
         private readonly IVacancyService vacancyService;
         private readonly IOfficeService officeService;
         private readonly ICandidateService candidateService;
-        private readonly IResponseError responseBadRequestError;
-        private readonly IResponseError responseNotFoundError;
 
         public VacancyController(
             IVacancyService vacancyService,
@@ -30,8 +27,6 @@ namespace CoreWebApi.Controllers
             this.vacancyService = vacancyService;
             this.officeService = officeService;
             this.candidateService = candidateService;
-            responseBadRequestError = ResponseErrorFactory.getBadRequestError("Wrong vacancy data.");
-            responseNotFoundError = ResponseErrorFactory.getNotFoundError("Vacancy Not Found.");
         }
 
         /// <summary>

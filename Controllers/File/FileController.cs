@@ -1,5 +1,4 @@
-﻿using CoreWebApi.Library.ResponseError;
-using CoreWebApi.Services;
+﻿using CoreWebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,16 +14,11 @@ namespace CoreWebApi.Controllers.File
     [Route("api/[controller]/[action]")]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public class FileController : ControllerBase
+    public class FileController : AppControllerBase
     {
         private readonly IFileService fileService;
-        private readonly IResponseError responseBadRequestError;
 
-        public FileController(IFileService fileService)
-        {
-            this.fileService = fileService;
-            responseBadRequestError = ResponseErrorFactory.getBadRequestError("Wrong file data."); ;
-        }
+        public FileController(IFileService fileService) => this.fileService = fileService;
 
         [HttpPost]
         [AllowAnonymous]
@@ -56,6 +50,5 @@ namespace CoreWebApi.Controllers.File
 
             return Created("/api/file/upload", fileModelDto);
         }
-
     }
 }

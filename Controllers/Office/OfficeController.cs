@@ -1,5 +1,4 @@
 ﻿using CoreWebApi.Library.Enums;
-using CoreWebApi.Library.ResponseError;
 using CoreWebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -13,22 +12,20 @@ namespace CoreWebApi.Controllers
     [Produces("application/json")]
     [Route("api/[controller]/[action]")]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public class OfficeController : ControllerBase
+    public class OfficeController : AppControllerBase
     {
         private readonly IOfficeService officeService;
         private readonly ICountryService countryService;
         private readonly IVacancyService vacancyService;
-        private readonly IResponseError responseBadRequestError;
-        private readonly IResponseError responseNotFoundError;
 
-        public OfficeController(IOfficeService officeService,
-            ICountryService countryService, IVacancyService vacancyService)
+        public OfficeController(
+            IOfficeService officeService,
+            ICountryService countryService,
+            IVacancyService vacancyService)
         {
             this.officeService = officeService;
             this.countryService = countryService;
             this.vacancyService = vacancyService;
-            responseBadRequestError = ResponseErrorFactory.getBadRequestError("Wrong office data.");
-            responseNotFoundError = ResponseErrorFactory.getNotFoundError("Office Not Found.");
         }
 
         /// <summary>

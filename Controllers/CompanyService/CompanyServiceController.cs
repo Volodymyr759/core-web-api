@@ -1,5 +1,4 @@
 ﻿using CoreWebApi.Library.Enums;
-using CoreWebApi.Library.ResponseError;
 using CoreWebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -15,18 +14,12 @@ namespace CoreWebApi.Controllers
     [Route("api/[controller]/[action]")]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public class CompanyServiceController : ControllerBase
+    public class CompanyServiceController : AppControllerBase
     {
         private readonly ICompanyServiceBL companyServiceBL;
-        private readonly IResponseError responseBadRequestError;
-        private readonly IResponseError responseNotFoundError;
 
-        public CompanyServiceController(ICompanyServiceBL companyServiceBL)
-        {
+        public CompanyServiceController(ICompanyServiceBL companyServiceBL) =>
             this.companyServiceBL = companyServiceBL;
-            responseBadRequestError = ResponseErrorFactory.getBadRequestError("Wrong company service data.");
-            responseNotFoundError = ResponseErrorFactory.getNotFoundError("Company Service Not Found.");
-        }
 
         /// <summary>
         /// Gets a list of CompanyServiceDto's with values for pagination (page number, limit) and sorting by Title.

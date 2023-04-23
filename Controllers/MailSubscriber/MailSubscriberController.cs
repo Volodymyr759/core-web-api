@@ -1,5 +1,4 @@
-﻿using CoreWebApi.Library.ResponseError;
-using CoreWebApi.Services;
+﻿using CoreWebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
@@ -14,23 +13,20 @@ namespace CoreWebApi.Controllers
     [Produces("application/json")]
     [Route("api/[controller]/[action]")]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public class MailSubscriberController : ControllerBase
+    public class MailSubscriberController : AppControllerBase
     {
         private readonly IMailSubscriberService mailSubscriberService;
         private readonly IEmailSender emailSender;
         private readonly IConfiguration configuration;
-        private readonly IResponseError responseBadRequestError;
-        private readonly IResponseError responseNotFoundError;
 
-        public MailSubscriberController(IMailSubscriberService mailSubscriberService,
+        public MailSubscriberController(
+            IMailSubscriberService mailSubscriberService,
             IEmailSender emailSender,
             IConfiguration configuration)
         {
             this.mailSubscriberService = mailSubscriberService;
             this.emailSender = emailSender;
             this.configuration = configuration;
-            responseBadRequestError = ResponseErrorFactory.getBadRequestError("Wrong mail subscriber data.");
-            responseNotFoundError = ResponseErrorFactory.getNotFoundError("Mail Subscriber Not Found.");
         }
 
         /// <summary>

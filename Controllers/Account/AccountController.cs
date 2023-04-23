@@ -1,5 +1,4 @@
 ﻿using CoreWebApi.Library.Enums;
-using CoreWebApi.Library.ResponseError;
 using CoreWebApi.Models.Account;
 using CoreWebApi.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -20,7 +19,7 @@ namespace CoreWebApi.Controllers
     [Route("api/[controller]/[action]")]
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public class AccountController : ControllerBase
+    public class AccountController : AppControllerBase
     {
         #region Private members
 
@@ -30,9 +29,6 @@ namespace CoreWebApi.Controllers
         private readonly IEmailSender emailSender;
         private readonly IAccountService accountService;
         private readonly ITokenService tokenService;
-        private IResponseError responseBadRequestError;
-        private readonly IResponseError responseNotFoundError;
-        private readonly IResponseError responseServiceUnavailableError;
 
         #endregion
 
@@ -52,9 +48,6 @@ namespace CoreWebApi.Controllers
             this.emailSender = emailSender;
             this.tokenService = tokenService;
             this.accountService = accountService;
-            responseBadRequestError = ResponseErrorFactory.getBadRequestError("");
-            responseNotFoundError = ResponseErrorFactory.getNotFoundError("User Not Found.");
-            responseServiceUnavailableError = ResponseErrorFactory.getServiceUnavailableError("Service Unavailable.");
         }
 
         #endregion

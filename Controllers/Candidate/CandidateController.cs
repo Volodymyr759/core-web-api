@@ -1,5 +1,4 @@
 ﻿using CoreWebApi.Library.Enums;
-using CoreWebApi.Library.ResponseError;
 using CoreWebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -13,19 +12,15 @@ namespace CoreWebApi.Controllers
     [Produces("application/json")]
     [Route("api/[controller]/[action]")]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public class CandidateController : ControllerBase
+    public class CandidateController : AppControllerBase
     {
         private readonly ICandidateService candidateService;
         private readonly IVacancyService vacancyService;
-        private readonly IResponseError responseBadRequestError;
-        private readonly IResponseError responseNotFoundError;
 
         public CandidateController(ICandidateService candidateService, IVacancyService vacancyService)
         {
             this.candidateService = candidateService;
             this.vacancyService = vacancyService;
-            responseBadRequestError = ResponseErrorFactory.getBadRequestError("Wrong candidate data.");
-            responseNotFoundError = ResponseErrorFactory.getNotFoundError("Candidate Not Found.");
         }
 
         /// <summary>

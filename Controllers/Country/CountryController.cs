@@ -1,5 +1,4 @@
 ﻿using CoreWebApi.Library.Enums;
-using CoreWebApi.Library.ResponseError;
 using CoreWebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -13,19 +12,15 @@ namespace CoreWebApi.Controllers
     [Produces("application/json")]
     [Route("api/[controller]/[action]")]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public class CountryController : ControllerBase
+    public class CountryController : AppControllerBase
     {
         private readonly ICountryService countryService;
         private readonly IOfficeService officeService;
-        private readonly IResponseError responseBadRequestError;
-        private readonly IResponseError responseNotFoundError;
 
         public CountryController(ICountryService countryService, IOfficeService officeService)
         {
             this.countryService = countryService;
             this.officeService = officeService;
-            responseBadRequestError = ResponseErrorFactory.getBadRequestError("Wrong country data.");
-            responseNotFoundError = ResponseErrorFactory.getNotFoundError("Country Not Found.");
         }
 
         /// <summary>

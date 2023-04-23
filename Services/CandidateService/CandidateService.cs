@@ -69,12 +69,8 @@ namespace CoreWebApi.Services
             return candidates.FindAll(candidate => candidate.VacancyId == id);
         }
 
-        public async Task<CandidateDto> CreateAsync(CandidateDto candidateDto)
-        {
-            var candidate = mapper.Map<Candidate>(candidateDto);
-
-            return mapper.Map<CandidateDto>(await repository.CreateAsync(candidate));
-        }
+        public async Task<CandidateDto> CreateAsync(CandidateDto candidateDto) =>
+            mapper.Map<CandidateDto>(await repository.CreateAsync(mapper.Map<Candidate>(candidateDto)));
 
         public async Task UpdateAsync(CandidateDto candidateDto) =>
             await repository.UpdateAsync(mapper.Map<Candidate>(candidateDto));

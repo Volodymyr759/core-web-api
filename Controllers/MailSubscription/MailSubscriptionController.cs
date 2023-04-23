@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using CoreWebApi.Library.ResponseError;
 using CoreWebApi.Library.Enums;
 using System.Threading.Tasks;
 using CoreWebApi.Services;
@@ -13,18 +12,12 @@ namespace CoreWebApi.Controllers
     [Produces("application/json")]
     [Route("api/[controller]/[action]")]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public class MailSubscriptionController : ControllerBase
+    public class MailSubscriptionController : AppControllerBase
     {
         private readonly IMailSubscriptionService mailSubscriptionService;
-        private readonly IResponseError responseBadRequestError;
-        private readonly IResponseError responseNotFoundError;
 
-        public MailSubscriptionController(IMailSubscriptionService mailSubscriptionService)
-        {
+        public MailSubscriptionController(IMailSubscriptionService mailSubscriptionService) =>
             this.mailSubscriptionService = mailSubscriptionService;
-            responseBadRequestError = ResponseErrorFactory.getBadRequestError("Wrong mail subscription data.");
-            responseNotFoundError = ResponseErrorFactory.getNotFoundError("Mail Subscription Not Found.");
-        }
 
         /// <summary>
         /// Gets a list of MailSubscriptionDto's with values for pagination (limit, page number) and sorting by Title.

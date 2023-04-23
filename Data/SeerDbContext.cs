@@ -46,6 +46,9 @@ namespace CoreWebApi.Data
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<ApplicationUser>(entity => { entity.ToTable(name: "Users"); });
+
+            //modelBuilder.Entity<Candidate>().Property(p => p.Vacancy.Candidates).ValueGeneratedNever();
+
             modelBuilder.Entity<IdentityRole>(entity => { entity.ToTable(name: "Roles"); });
             modelBuilder.Entity<IdentityUserRole<string>>(entity => { entity.ToTable("UserRoles"); });
             modelBuilder.Entity<IdentityUserClaim<string>>(entity => { entity.ToTable("UserClaims"); });

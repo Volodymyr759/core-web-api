@@ -1,5 +1,4 @@
-﻿using CoreWebApi.Library.ResponseError;
-using CoreWebApi.Library.Enums;
+﻿using CoreWebApi.Library.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,19 +13,15 @@ namespace CoreWebApi.Controllers
     [Route("api/[controller]/[action]")]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public class EmployeeController : ControllerBase
+    public class EmployeeController : AppControllerBase
     {
         private readonly IEmployeeService employeeService;
         private readonly IOfficeService officeService;
-        private readonly IResponseError responseBadRequestError;
-        private readonly IResponseError responseNotFoundError;
 
         public EmployeeController(IEmployeeService employeeService, IOfficeService officeService)
         {
             this.employeeService = employeeService;
             this.officeService = officeService;
-            responseBadRequestError = ResponseErrorFactory.getBadRequestError("Wrong employee data.");
-            responseNotFoundError = ResponseErrorFactory.getNotFoundError("Employee Not Found.");
         }
 
         /// <summary>
