@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
@@ -23,8 +24,8 @@ namespace CoreWebApi.Services
             Func<IQueryable<MailSubscription>, IOrderedQueryable<MailSubscription>> orderBy = null;
             if (order != OrderType.None)
                 orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Title) : orderBy = q => q.OrderByDescending(s => s.Title);
-
-            var mailSubscriptions = await repository.GetAllAsync(null, orderBy);
+            Expression<Func<MailSubscription, object>> include = ms => ms.MailSubscribers;
+            var mailSubscriptions = await repository.GetAllAsync(null, orderBy, include);
 
             return new SearchResult<MailSubscriptionDto>
             {
@@ -38,7 +39,14 @@ namespace CoreWebApi.Services
             };
         }
 
-        public async Task<MailSubscriptionDto> GetByIdAsync(int id) => mapper.Map<MailSubscriptionDto>(await repository.GetAsync(id));
+        public async Task<MailSubscriptionDto> GetByIdAsync(int id)
+        {
+            Expression<Func<MailSubscription, bool>> searchQuery = ms => ms.Id == id;
+            Expression<Func<MailSubscription, object>> include = ms => ms.MailSubscribers;
+            var subscription = await repository.GetAsync(searchQuery, include);
+
+            return mapper.Map<MailSubscriptionDto>(subscription);
+        }
 
         public async Task<MailSubscriptionDto> CreateAsync(MailSubscriptionDto mailSubscriptionDto)
         {

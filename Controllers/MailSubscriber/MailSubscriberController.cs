@@ -1,4 +1,5 @@
-﻿using CoreWebApi.Services;
+﻿using CoreWebApi.Library.Enums;
+using CoreWebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
@@ -32,9 +33,9 @@ namespace CoreWebApi.Controllers
         /// <summary>
         /// Gets a list of MailSubscriberDto's with values for pagination (page number, limit) and sorting by Email.
         /// </summary>
-        /// <param name="page" default="1">requested page</param>
-        /// <param name="sort" default="asc">sort direction: asc or desc</param>
-        /// <param name="limit" default="10">number of items per page</param>
+        /// <param name="page">requested page</param>
+        /// <param name="order">sort direction: asc or desc</param>
+        /// <param name="limit">number of items per page</param>
         /// <returns>Status 200 and list of MailSubscriberDto's</returns>
         /// <remarks>
         /// Sample request:
@@ -45,8 +46,8 @@ namespace CoreWebApi.Controllers
         /// <response code="200">list of MailSubscriberDto's</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult Get(int page = 1, string sort = "asc", int limit = 10) =>
-            Ok(mailSubscriberService.GetAllMailSubscribers(page, sort, limit));
+        public async Task<IActionResult> GetAsync(int page, OrderType order, int limit) =>
+            Ok(await mailSubscriberService.GetMailSubscribersSearchResultAsync(page, order, limit));
 
         /// <summary>
         /// Gets a specific MailSubscriberDto Item.
@@ -90,7 +91,6 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> SubscribeAsync([FromBody] MailSubscriberDto mailSubscriberDto)
         {
-            if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             if (await IsExistAsync(mailSubscriberDto.MailSubscriptionId, mailSubscriberDto.Email) == true)
             {
                 responseBadRequestError.Title = "Email address " + mailSubscriberDto.Email + " already subscribed.";
@@ -123,7 +123,6 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> SendMessageToAdminAsync([FromBody] MailMessageDto message)
         {
-            if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             await emailSender.SendEmailAsync(
                 configuration["EmailSettings:EmailAddress"],
                 message.Subject,

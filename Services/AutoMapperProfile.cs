@@ -52,10 +52,12 @@ namespace CoreWebApi.Services
                 .ForMember(dest => dest.OfficeDto, act => act.MapFrom(src => src.Office));
             CreateMap<EmployeeDto, Employee>();
 
-            CreateMap<MailSubscriber, MailSubscriberDto>().ReverseMap();
+            CreateMap<MailSubscriber, MailSubscriberDto>()
+                .ForMember(dest => dest.MailSubscriptionDto, act => act.MapFrom(src => src.MailSubscription));
+            CreateMap<MailSubscriberDto, MailSubscriber>();
 
             CreateMap<MailSubscription, MailSubscriptionDto>()
-                .ForMember(dest => dest.MailSubscriberDtos, act => act.MapFrom(src => src.MailSubscribers)); ;
+                .ForMember(dest => dest.MailSubscriberDtos, act => act.MapFrom(src => src.MailSubscribers));
             CreateMap<MailSubscriptionDto, MailSubscription>();
 
             CreateMap<Vacancy, VacancyDto>()

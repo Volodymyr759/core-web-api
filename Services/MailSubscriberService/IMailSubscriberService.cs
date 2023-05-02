@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using CoreWebApi.Library.Enums;
+using CoreWebApi.Library.SearchResult;
 using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
 {
     public interface IMailSubscriberService : IBaseService<MailSubscriberDto>
     {
-        IEnumerable<MailSubscriberDto> GetAllMailSubscribers(int page, string sort, int limit);
+        Task<SearchResult<MailSubscriberDto>> GetMailSubscribersSearchResultAsync(int page, OrderType order, int limit);
 
         Task<bool> IsExistAsync(int mailSubscriptionId, string email);
     }

@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
+using CoreWebApi.Library.Enums;
+using CoreWebApi.Library.SearchResult;
 using CoreWebApi.Models;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Data.SqlClient;
@@ -7,35 +9,42 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
 {
     public class MailSubscriberService : BaseService<MailSubscriber>, IMailSubscriberService
     {
-        private readonly IRepository<MailSubscription> subscriptionRepository;
+        public MailSubscriberService(IMapper mapper, IRepository<MailSubscriber> repository) : base(mapper, repository) { }
 
-        public MailSubscriberService(
-            IMapper mapper,
-            IRepository<MailSubscriber> repository,
-            IRepository<MailSubscription> subscriptionRepository) : base(mapper, repository) =>
-            this.subscriptionRepository = subscriptionRepository;
-
-        public IEnumerable<MailSubscriberDto> GetAllMailSubscribers(int page, string sort, int limit)
+        public async Task<SearchResult<MailSubscriberDto>> GetMailSubscribersSearchResultAsync(int page, OrderType order, int limit)
         {
             // sorting only by Email
             Func<IQueryable<MailSubscriber>, IOrderedQueryable<MailSubscriber>> orderBy = null;
-            orderBy = sort == "asc" ? q => q.OrderBy(s => s.Email) : orderBy = q => q.OrderByDescending(s => s.Email);
-            var subscriberDtos = mapper.Map<IEnumerable<MailSubscriberDto>>(repository.GetAll(limit, page, null, orderBy));
+            orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Email) : orderBy = q => q.OrderByDescending(s => s.Email);
+            var mailSubscribers = await repository.GetAllAsync(null, orderBy);
 
-            if (((List<MailSubscriberDto>)subscriberDtos).Count > 0)
-                foreach (var ms in subscriberDtos)
-                    ms.MailSubscriptionDto = mapper.Map<MailSubscriptionDto>(subscriptionRepository.Get(ms.MailSubscriptionId));
-
-            return subscriberDtos;
+            return new SearchResult<MailSubscriberDto>
+            {
+                CurrentPageNumber = page,
+                Order = order,
+                PageSize = limit,
+                PageCount = Convert.ToInt32(Math.Ceiling((double)mailSubscribers.Count() / limit)),
+                SearchCriteria = "",
+                TotalItemCount = mailSubscribers.Count(),
+                ItemList = (List<MailSubscriberDto>)mapper.Map<IEnumerable<MailSubscriberDto>>(mailSubscribers.Skip((page - 1) * limit).Take(limit))
+            };
         }
 
-        public async Task<MailSubscriberDto> GetByIdAsync(int id) => mapper.Map<MailSubscriberDto>(await repository.GetAsync(id));
+        public async Task<MailSubscriberDto> GetByIdAsync(int id)
+        {
+            Expression<Func<MailSubscriber, bool>> searchQuery = ms => ms.Id == id;
+            Expression<Func<MailSubscriber, object>> include = ms => ms.MailSubscription;
+            var subscriber = await repository.GetAsync(searchQuery, include);
+
+            return mapper.Map<MailSubscriberDto>(subscriber);
+        }
 
         public async Task<MailSubscriberDto> CreateAsync(MailSubscriberDto mailSubscriberDto)
         {
@@ -76,5 +85,6 @@ namespace CoreWebApi.Services
                 };
             return await repository.IsExistAsync("EXEC @returnVal=sp_checkMailSubscriberBySubscriptionIdAndEmail @mailSubscriptionId, @returnVal, @email", parameters);
         }
+
     }
 }
