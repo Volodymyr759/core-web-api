@@ -16,6 +16,6 @@ namespace CoreWebApi.Models
         [StringLength(3)]
         public string Code { get; set; }
 
-        public virtual ICollection<Office> Offices { get; set; }
+        public ICollection<Office> Offices { get; set; }
     }
 }

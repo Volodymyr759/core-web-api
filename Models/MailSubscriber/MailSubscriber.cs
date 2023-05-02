@@ -16,6 +16,7 @@ namespace CoreWebApi.Models
 
         [Required]
         public int MailSubscriptionId { get; set; }
-        public virtual MailSubscription MailSubscription { get; set; }
+
+        public MailSubscription MailSubscription { get; set; }
     }
 }

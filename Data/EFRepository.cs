@@ -137,6 +137,22 @@ namespace CoreWebApi.Data
             }
         }
 
+        public async Task<TModel> GetAsync(Expression<Func<TModel, bool>> query = null, Expression<Func<TModel, object>> include = null)
+        {
+            try
+            {
+                IQueryable<TModel> dbSet = _set;
+                if (query != null) dbSet = dbSet.Where(query);
+                if (include != null) dbSet = dbSet.Include(include);
+
+                return await dbSet.FirstOrDefaultAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new RetrieveEntitiesQueryFailedException(typeof(TModel), ex);
+            }
+        }
+
         public async Task<IEnumerable<TModel>> GetAsync(string sqlQuery, SqlParameter[] parameters)
         {
             try
@@ -215,6 +231,27 @@ namespace CoreWebApi.Data
             }
         }
 
+        public async Task<IEnumerable<TModel>> GetAllAsync(
+            Expression<Func<TModel, bool>> query = null,
+            Func<IQueryable<TModel>, IOrderedQueryable<TModel>> orderBy = null,
+            Expression<Func<TModel, object>> include = null)
+        {
+            try
+            {
+                IQueryable<TModel> dbSet = _set;
+
+                if (query != null) dbSet = dbSet.Where(query);
+                if (orderBy != null) dbSet = orderBy(dbSet);
+                if (include != null) dbSet = dbSet.Include(include);
+
+                return await dbSet.ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new RetrieveEntitiesQueryFailedException(typeof(TModel), ex);
+            }
+        }
+
         public TModel Update(TModel model)
         {
             try
@@ -266,5 +303,6 @@ namespace CoreWebApi.Data
 
             return int.Parse(result.ToString()) > 0;
         }
+
     }
 }

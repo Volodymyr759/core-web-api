@@ -26,6 +26,7 @@ namespace CoreWebApi.Models
 
         [Required]
         public int VacancyId { get; set; }
-        public virtual Vacancy Vacancy { get; set; }
+
+        public Vacancy Vacancy { get; set; }
     }
 }

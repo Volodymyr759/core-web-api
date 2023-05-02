@@ -25,6 +25,8 @@ namespace CoreWebApi.Data
 
         Task<TModel> GetAsync(int id);
 
+        Task<TModel> GetAsync(Expression<Func<TModel, bool>> query = null, Expression<Func<TModel, object>> include = null);
+
         /// <summary>
         /// Gets a list of StringValue objects
         /// </summary>
@@ -37,13 +39,16 @@ namespace CoreWebApi.Data
 
         Task<IEnumerable<TModel>> GetAllAsync();
 
-        TModel Update(TModel model);
-
-        Task UpdateAsync(TModel model);
-
         IEnumerable<TModel> GetAll(int limit, int page, Expression<Func<TModel, bool>> query = null, Func<IQueryable<TModel>, IOrderedQueryable<TModel>> orderBy = null);
-        
-        Task<IEnumerable<TModel>> GetAllAsync(Expression<Func<TModel, bool>> query = null, Func<IQueryable<TModel>, IOrderedQueryable<TModel>> orderBy = null);
+
+        Task<IEnumerable<TModel>> GetAllAsync(
+            Expression<Func<TModel, bool>> query = null,
+            Func<IQueryable<TModel>, IOrderedQueryable<TModel>> orderBy = null);
+
+        Task<IEnumerable<TModel>> GetAllAsync(
+            Expression<Func<TModel, bool>> query = null,
+            Func<IQueryable<TModel>, IOrderedQueryable<TModel>> orderBy = null,
+            Expression<Func<TModel, object>> include = null);
 
         /// <summary>
         /// Saves the entity, tracked by EntityFramework
@@ -51,6 +56,10 @@ namespace CoreWebApi.Data
         /// <param name="model">The object, which previously got from the db and is on tracking by Entity Framework</param>
         /// <returns>Saved object</returns>
         Task<TModel> SaveAsync(TModel model);
+
+        TModel Update(TModel model);
+
+        Task UpdateAsync(TModel model);
 
         /// <summary>
         /// Checks in the entity exists, using shot store procedure instead EntityFramework

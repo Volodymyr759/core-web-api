@@ -17,12 +17,21 @@ namespace CoreWebApi.Services
     public class VacancyService : BaseService<Vacancy>, IVacancyService
     {
         private readonly IRepository<StringValue> repositoryStringValue;
+        private readonly IRepository<Office> repositoryOffice;
+        private readonly IRepository<Candidate> repositoryCandidate;
 
         public VacancyService(
             IMapper mapper,
             IRepository<Vacancy> repository,
-            IRepository<StringValue> repositoryStringValue) : base(mapper, repository) =>
-                this.repositoryStringValue = repositoryStringValue;
+            IRepository<StringValue> repositoryStringValue,
+            IRepository<Office> repositoryOffice,
+            IRepository<Candidate> repositoryCandidate) : base(mapper, repository)
+        {
+
+            this.repositoryStringValue = repositoryStringValue;
+            this.repositoryOffice = repositoryOffice;
+            this.repositoryCandidate = repositoryCandidate;
+        }
 
         public async Task<SearchResult<VacancyDto>> GetVacanciesSearchResultAsync(int limit, int page, string search, VacancyStatus? vacancyStatus, int? officeId, string sortField, OrderType order)
         {
@@ -35,12 +44,19 @@ namespace CoreWebApi.Services
             if (order != OrderType.None)
                 orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Title) : orderBy = q => q.OrderByDescending(s => s.Title);
 
-            var vacancies = await repository.GetAllAsync(searchQuery, orderBy);
+            Expression<Func<Vacancy, object>> include = v => v.Office;
+            var vacancies = await repository.GetAllAsync(searchQuery, orderBy, include);
 
+            // Filtering
             if (vacancyStatus == VacancyStatus.Active) vacancies = vacancies.Where(v => v.IsActive == true);
             if (vacancyStatus == VacancyStatus.Disabled) vacancies = vacancies.Where(v => v.IsActive == false);
-
             if (officeId != 0) vacancies = vacancies.Where(v => v.OfficeId == officeId);
+
+            // Attaching candidates
+            var paginatedVacancies = vacancies.Skip((page - 1) * limit).Take(limit);
+            var candidates = await repositoryCandidate.GetAllAsync();
+            foreach (var vacancy in paginatedVacancies)
+                vacancy.Candidates = candidates.Where(c => c.VacancyId == vacancy.Id).ToList();
 
             return new SearchResult<VacancyDto>
             {
@@ -50,25 +66,23 @@ namespace CoreWebApi.Services
                 PageCount = Convert.ToInt32(Math.Ceiling((double)vacancies.Count() / limit)),
                 SearchCriteria = search ?? string.Empty,
                 TotalItemCount = vacancies.Count(),
-                ItemList = (List<VacancyDto>)mapper.Map<IEnumerable<VacancyDto>>(vacancies.Skip((page - 1) * limit).Take(limit))
+                ItemList = (List<VacancyDto>)mapper.Map<IEnumerable<VacancyDto>>(paginatedVacancies)
             };
         }
 
         public async Task<SearchResult<VacancyDto>> GetFavoriteVacanciesSearchResultAsync(int limit, int page, string email, OrderType order)
         {
-            // sorting only by vacancy title for now
-            Func<IQueryable<Vacancy>, IOrderedQueryable<Vacancy>> orderBy = null;
-            if (order != OrderType.None)
-                orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Title) : orderBy = q => q.OrderByDescending(s => s.Title);
+            var favoriteVacancies = await repository.GetAsync("EXEC dbo.[sp_getVacanciesByCandidateEmail] @email",
+                    new SqlParameter[] { new SqlParameter("@email", email) });
+            var paginatedFavoriteVacancies = favoriteVacancies.Skip((page - 1) * limit).Take(limit);
 
-            var vacancies = await repository.GetAllAsync(null, orderBy);
-
-            var favoriteVacancies = new List<Vacancy>();
-
-            foreach (var vacancy in vacancies)
+            // Attaching offices and candidates
+            var offices = await repositoryOffice.GetAllAsync();
+            var candidates = await repositoryCandidate.GetAllAsync();
+            foreach (var vacancy in paginatedFavoriteVacancies)
             {
-                if (vacancy.Candidates.Count > 0 && vacancy.Candidates.Where(c => c.Email == email).FirstOrDefault() != null)
-                    favoriteVacancies.Add(vacancy);
+                vacancy.Office = offices.Where(o => o.Id == vacancy.OfficeId).FirstOrDefault();
+                vacancy.Candidates = candidates.Where(c => c.VacancyId == vacancy.Id).ToList();
             }
 
             return new SearchResult<VacancyDto>
@@ -76,14 +90,25 @@ namespace CoreWebApi.Services
                 CurrentPageNumber = page,
                 Order = order,
                 PageSize = limit,
-                PageCount = Convert.ToInt32(Math.Ceiling((double)vacancies.Count() / limit)),
+                PageCount = Convert.ToInt32(Math.Ceiling((double)favoriteVacancies.Count() / limit)),
                 SearchCriteria = email ?? string.Empty,
                 TotalItemCount = favoriteVacancies.Count(),
-                ItemList = (List<VacancyDto>)mapper.Map<IEnumerable<VacancyDto>>(favoriteVacancies.Skip((page - 1) * limit).Take(limit))
+                ItemList = (List<VacancyDto>)mapper.Map<IEnumerable<VacancyDto>>(paginatedFavoriteVacancies)
             };
         }
 
-        public async Task<VacancyDto> GetByIdAsync(int id) => mapper.Map<VacancyDto>(await repository.GetAsync(id));
+        public async Task<VacancyDto> GetByIdAsync(int id)
+        {
+            Expression<Func<Vacancy, bool>> searchQuery = v => v.Id == id;
+            Expression<Func<Vacancy, object>> include = v => v.Office;
+            var vacancy = await repository.GetAsync(searchQuery, include);
+
+            // Attaching candidates
+            Expression<Func<Candidate, bool>> query = c => c.VacancyId == vacancy.Id;
+            vacancy.Candidates = (await repositoryCandidate.GetAllAsync(query, null)).ToList();
+
+            return mapper.Map<VacancyDto>(vacancy);
+        }
 
         public async Task<IEnumerable<StringValue>> SearchVacanciesTitlesAsync(string searchValue, int officeId)
         {

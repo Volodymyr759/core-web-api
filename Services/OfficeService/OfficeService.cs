@@ -46,7 +46,7 @@ namespace CoreWebApi.Services
         {
             var officesNameIds = (List<OfficeNameIdDto>)mapper.Map<IEnumerable<OfficeNameIdDto>>(await repositoryOfficeNameId.GetAllAsync());
 
-            return officesNameIds.OrderBy(o => o.Name).ToList<OfficeNameIdDto>();
+            return officesNameIds.OrderBy(o => o.Name).ToList();
         }
 
         public async Task<OfficeDto> GetByIdAsync(int id) => mapper.Map<OfficeDto>(await repository.GetAsync(id));

@@ -26,6 +26,6 @@ namespace CoreWebApi.Models
         public int OfficeId { get; set; }
 
         [ForeignKey("OfficeId")]
-        public virtual Office Office { get; set; }
+        public Office Office { get; set; }
     }
 }

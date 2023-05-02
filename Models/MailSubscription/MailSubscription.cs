@@ -15,6 +15,6 @@ namespace CoreWebApi.Models
         [Required(ErrorMessage = "Content is required.")]
         public string Content { get; set; }
 
-        public virtual ICollection<MailSubscriber> MailSubscribers { get; set; }
+        public ICollection<MailSubscriber> MailSubscribers { get; set; }
     }
 }
