@@ -1,4 +1,4 @@
-﻿using CoreWebApi.Library.Enums;
+﻿using CoreWebApi.Library;
 using CoreWebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -46,8 +46,8 @@ namespace CoreWebApi.Controllers
         /// <response code="200">list of MailSubscriberDto's</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAsync(int page, OrderType order, int limit) =>
-            Ok(await mailSubscriberService.GetMailSubscribersSearchResultAsync(page, order, limit));
+        public async Task<IActionResult> GetAsync(int limit, int page, OrderType order) =>
+            Ok(await mailSubscriberService.GetAsync(limit, page, order));
 
         /// <summary>
         /// Gets a specific MailSubscriberDto Item.
@@ -59,9 +59,9 @@ namespace CoreWebApi.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
+        public async Task<IActionResult> GetAsync([FromRoute] int id)
         {
-            var mailSubscriberDto = await mailSubscriberService.GetByIdAsync(id);
+            var mailSubscriberDto = await mailSubscriberService.GetAsync(id);
             if (mailSubscriberDto == null) return NotFound(responseNotFoundError);
 
             return Ok(mailSubscriberDto);

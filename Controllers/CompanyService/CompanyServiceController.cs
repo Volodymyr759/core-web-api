@@ -1,4 +1,4 @@
-﻿using CoreWebApi.Library.Enums;
+﻿using CoreWebApi.Library;
 using CoreWebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -39,7 +39,7 @@ namespace CoreWebApi.Controllers
         [HttpGet, AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAsync(int limit, int page, CompanyServiceStatus companyServiceStatus, OrderType order) =>
-            Ok(await companyServiceBL.GetCompanyServicesSearchResultAsync(limit, page, companyServiceStatus, order));
+            Ok(await companyServiceBL.GetAsync(limit, page, companyServiceStatus, order));
 
         /// <summary>
         /// Gets a specific CompanySeviceDto Item.
@@ -57,9 +57,9 @@ namespace CoreWebApi.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
+        public async Task<IActionResult> GetAsync([FromRoute] int id)
         {
-            var companySeviceDto = await companyServiceBL.GetByIdAsync(id);
+            var companySeviceDto = await companyServiceBL.GetAsync(id);
             if (companySeviceDto == null) return NotFound(responseNotFoundError);
 
             return Ok(companySeviceDto);
@@ -92,6 +92,7 @@ namespace CoreWebApi.Controllers
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             return Created("api/companyservice/create", await companyServiceBL.CreateAsync(companyServiceDto));
         }
+
 
         /// <summary>
         /// Updates an existing CompanyService item.

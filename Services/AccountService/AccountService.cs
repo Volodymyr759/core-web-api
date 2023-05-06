@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
-using CoreWebApi.Library.SearchResult;
+using CoreWebApi.Library;
 using CoreWebApi.Models.Account;
 using Microsoft.AspNetCore.JsonPatch;
 using System;
@@ -11,13 +11,20 @@ using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
 {
-    public class AccountService : BaseService<ApplicationUser>, IAccountService
+    public class AccountService : IAccountService
     {
-        public AccountService(IMapper mapper, IRepository<ApplicationUser> repository) : base(mapper, repository) { }
+        private readonly IMapper mapper;
+        private readonly IRepository<ApplicationUser> repository;
+
+        public AccountService(IMapper mapper, IRepository<ApplicationUser> repository)
+        {
+            this.mapper = mapper;
+            this.repository = repository;
+        }
 
         public ApplicationUserDto GetApplicationUserDto(ApplicationUser user) => mapper.Map<ApplicationUserDto>(user);
 
-        public SearchResult<ApplicationUserDto> GetUsersSearchResultAsync(int limit, int page, string search, IEnumerable<ApplicationUser> users)
+        public ISearchResult<ApplicationUserDto> GetUsersSearchResultAsync(int limit, int page, string search, IEnumerable<ApplicationUser> users)
         {
             if (!string.IsNullOrEmpty(search)) users = users.Where(u => u.UserName.Contains(search)).ToList();
 

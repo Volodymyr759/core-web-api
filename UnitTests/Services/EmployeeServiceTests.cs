@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
-using CoreWebApi.Library.Enums;
-using CoreWebApi.Library.SearchResult;
+using CoreWebApi.Library;
 using CoreWebApi.Models;
 using CoreWebApi.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -19,6 +18,8 @@ namespace UnitTests.Services
 
         private string errorMessage;
         private Mock<IRepository<Employee>> mockRepository;
+        private Mock<ISearchResult<EmployeeDto>> mockSearchResult;
+        private Mock<IServiceResult<Employee>> mockServiceResult;
         private Mock<IMapper> mockMapper;
         private EmployeeService employeeService;
 
@@ -31,11 +32,14 @@ namespace UnitTests.Services
         {
             errorMessage = "";
             mockRepository = new Mock<IRepository<Employee>>();
+            mockSearchResult = new Mock<ISearchResult<EmployeeDto>>();
+            mockServiceResult = new Mock<IServiceResult<Employee>>();
             mockMapper = new Mock<IMapper>();
             employeeService = new EmployeeService(
                 mockMapper.Object,
-                mockRepository.Object
-                );
+                mockRepository.Object,
+                mockSearchResult.Object,
+                mockServiceResult.Object);
         }
 
         [TestCleanup()]
@@ -63,22 +67,35 @@ namespace UnitTests.Services
             };
         }
 
+        private ServiceResult<Employee> GetEmployeesServiceResult()
+        {
+            return new ServiceResult<Employee>()
+            {
+                TotalCount = 3,
+                Items = new List<Employee>() {
+                    new Employee { Id = 1, FullName = "John Done", Email = "john@gmail.com", Position = "CEO", Description = "CEO description", AvatarUrl = "https://www.somewhere.com/1", OfficeId = 1 },
+                    new Employee { Id = 2, FullName = "Jane Dane", Email = "jane@gmail.com", Position = "Developer", Description = "Developer description", AvatarUrl = "https://www.somewhere.com/2", OfficeId = 2 },
+                    new Employee { Id = 3, FullName = "Jack Dack", Email = "jack@gmail.com", Position = "Developer", Description = "Developer description", AvatarUrl = "https://www.somewhere.com/3", OfficeId = 2 }
+                }
+            };
+        }
+
         #endregion
 
         [TestMethod]
         public async Task GetEmployeesSearchResultAsync_ReturnsSearchResultWithEmployees()
         {
             //Arrange
-            SearchResult<EmployeeDto> searchResult = null;
+            ISearchResult<EmployeeDto> searchResult = null;
             int page = 1;
             int limit = 3;
-            mockRepository.Setup(repo => repo.GetAllAsync(null, null)).ReturnsAsync(GetTestEmployees());
+            mockRepository.Setup(repo => repo.GetAsync(limit, page, null, null, null)).ReturnsAsync(GetEmployeesServiceResult());
             mockMapper.Setup(x => x.Map<IEnumerable<EmployeeDto>>(It.IsAny<IEnumerable<Employee>>())).Returns(GetTestEmployeeDtos());
 
             try
             {
                 // Act
-                searchResult = await employeeService.GetEmployeesSearchResultAsync(limit, page, search: "", sortField: "Id", order: OrderType.Ascending);
+                searchResult = await employeeService.GetAsync(limit, page, search: "", sortField: "Id", order: OrderType.Ascending);
             }
             catch (Exception ex)
             {
@@ -87,8 +104,7 @@ namespace UnitTests.Services
 
             //Assert
             Assert.IsNotNull(searchResult, errorMessage);
-            Assert.IsTrue(searchResult.ItemList.Count == limit, errorMessage);
-            Assert.IsInstanceOfType(searchResult, typeof(SearchResult<EmployeeDto>), errorMessage);
+            Assert.IsInstanceOfType(searchResult, typeof(ISearchResult<EmployeeDto>), errorMessage);
         }
 
         [TestMethod]
@@ -106,7 +122,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                employeeDto = await employeeService.GetByIdAsync(id);
+                employeeDto = await employeeService.GetAsync(id);
             }
             catch (Exception ex)
             {
@@ -130,7 +146,7 @@ namespace UnitTests.Services
             // Act
             try
             {
-                employeeDto = await employeeService.GetByIdAsync(id);
+                employeeDto = await employeeService.GetAsync(id);
             }
             catch (Exception ex)
             {

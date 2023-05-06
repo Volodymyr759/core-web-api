@@ -25,6 +25,7 @@ namespace CoreWebApi.Services
 
         [Required]
         public int VacancyId { get; set; }
+
         public VacancyDto VacancyDto { get; set; }
     }
 }

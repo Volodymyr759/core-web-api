@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
-using CoreWebApi.Library.Enums;
-using CoreWebApi.Library.SearchResult;
+using CoreWebApi.Library;
 using CoreWebApi.Models;
 using CoreWebApi.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -18,9 +17,13 @@ namespace UnitTests.Services
         #region Private Members
 
         private string errorMessage;
+        private Mock<IMapper> mockMapper;
         private Mock<IRepository<Vacancy>> mockRepository;
         private Mock<IRepository<StringValue>> mockRepositoryStringValue;
-        private Mock<IMapper> mockMapper;
+        private Mock<IRepository<Office>> mockRepositoryOffice;
+        private Mock<IRepository<Candidate>> mockRepositoryCandidate;
+        private Mock<ISearchResult<VacancyDto>> mockSearchResult;
+        private Mock<IServiceResult<Vacancy>> mockServiceResult;
         private VacancyService vacancyService;
 
         #endregion
@@ -31,13 +34,21 @@ namespace UnitTests.Services
         public void VacancyServiceTestsInitialize()
         {
             errorMessage = "";
+            mockMapper = new Mock<IMapper>();
             mockRepository = new Mock<IRepository<Vacancy>>();
             mockRepositoryStringValue = new Mock<IRepository<StringValue>>();
-            mockMapper = new Mock<IMapper>();
+            mockRepositoryOffice = new Mock<IRepository<Office>>();
+            mockRepositoryCandidate = new Mock<IRepository<Candidate>>();
+            mockSearchResult = new Mock<ISearchResult<VacancyDto>>();
+            mockServiceResult = new Mock<IServiceResult<Vacancy>>();
             vacancyService = new VacancyService(
                 mockMapper.Object,
                 mockRepository.Object,
-                mockRepositoryStringValue.Object);
+                mockRepositoryStringValue.Object,
+                mockRepositoryOffice.Object,
+                mockRepositoryCandidate.Object,
+                mockSearchResult.Object,
+                mockServiceResult.Object);
         }
 
         [TestCleanup()]
@@ -60,8 +71,22 @@ namespace UnitTests.Services
             return new List<VacancyDto>()
             {
                 new VacancyDto { Id = 1, Title = ".Net Developer", Description = "Test description 1", Previews = 1, IsActive = true, OfficeId = 1 },
-                new VacancyDto { Id = 2, Title = "Junior JavaScrip Frontend Developer", Description = "Test description 2", Previews = 0, IsActive = true, OfficeId = 1 },
+                new VacancyDto { Id = 2, Title = "Junior JavaScrip Frontend Developer Dto", Description = "Test description 2", Previews = 0, IsActive = true, OfficeId = 1 },
                 new VacancyDto { Id = 3, Title = "Senior JavaScrip Frontend Developer", Description = "Test description 3", Previews = 0, IsActive = true, OfficeId = 1 }
+            };
+        }
+
+        private ServiceResult<Vacancy> GetVacanciesServiceResult()
+        {
+            return new ServiceResult<Vacancy>()
+            {
+                TotalCount = 3,
+                Items = new List<Vacancy>
+                {
+                    new Vacancy { Id = 1, Title = ".Net Developer", Description = "Test description 1", Previews = 1, IsActive = true, OfficeId = 1 },
+                    new Vacancy { Id = 2, Title = "Junior JavaScrip Frontend Developer", Description = "Test description 2", Previews = 0, IsActive = true, OfficeId = 1 },
+                    new Vacancy { Id = 3, Title = "Senior JavaScrip Frontend Developer", Description = "Test description 3", Previews = 0, IsActive = true, OfficeId = 1 }
+                }
             };
         }
 
@@ -71,16 +96,16 @@ namespace UnitTests.Services
         public async Task GetVacanciesSearchResultAsync_ReturnsSearchResultWithVacancies()
         {
             //Arrange
-            SearchResult<VacancyDto> searchResult = null;
+            ISearchResult<VacancyDto> searchResult = null;
             int page = 1;
             int limit = 3;
-            mockRepository.Setup(repo => repo.GetAllAsync(null, null)).ReturnsAsync(GetTestVacancies());
+            mockRepository.Setup(repo => repo.GetAsync(limit, page, null, null, null)).ReturnsAsync(GetVacanciesServiceResult());
             mockMapper.Setup(x => x.Map<IEnumerable<VacancyDto>>(It.IsAny<IEnumerable<Vacancy>>())).Returns(GetTestVacancyDtos());
 
             try
             {
                 // Act
-                searchResult = await vacancyService.GetVacanciesSearchResultAsync(limit, page, search: "", null, null, sortField: "Id", order: OrderType.Ascending);
+                searchResult = await vacancyService.GetAsync(limit, page, search: "", null, null, sortField: "Id", order: OrderType.Ascending);
             }
             catch (Exception ex)
             {
@@ -89,34 +114,7 @@ namespace UnitTests.Services
 
             //Assert
             Assert.IsNotNull(searchResult, errorMessage);
-            Assert.IsTrue(searchResult.ItemList.Count == limit, errorMessage);
-            Assert.IsInstanceOfType(searchResult, typeof(SearchResult<VacancyDto>), errorMessage);
-        }
-
-        [TestMethod]
-        public async Task GetVacancyById_ReturnsVacancyDtoByCorrectId()
-        {
-            //Arrange
-            int id = 1;// correct id
-            mockRepository.Setup(r => r.GetAsync(id)).ReturnsAsync(GetTestVacancies().Find(c => c.Id == id));
-            mockMapper.Setup(x => x.Map<VacancyDto>(It.IsAny<Vacancy>())).Returns(GetTestVacancyDtos().Find(c => c.Id == id));
-
-            VacancyDto vacancyDto = null;
-
-            try
-            {
-                // Act
-                vacancyDto = await vacancyService.GetByIdAsync(id);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + " | " + ex.StackTrace;
-            }
-
-            //Assert
-            Assert.IsNotNull(vacancyDto, errorMessage);
-            Assert.IsInstanceOfType(vacancyDto, typeof(VacancyDto), errorMessage);
-            mockRepository.Verify(r => r.GetAsync(id));
+            Assert.IsInstanceOfType(searchResult, typeof(ISearchResult<VacancyDto>), errorMessage);
         }
 
         [TestMethod]
@@ -130,7 +128,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                vacancyDto = await vacancyService.GetByIdAsync(id);
+                vacancyDto = await vacancyService.GetAsync(id);
             }
             catch (Exception ex)
             {
@@ -139,7 +137,6 @@ namespace UnitTests.Services
 
             //Assert
             Assert.IsNull(vacancyDto, errorMessage);
-            mockRepository.Verify(r => r.GetAsync(id));
         }
 
         [TestMethod]

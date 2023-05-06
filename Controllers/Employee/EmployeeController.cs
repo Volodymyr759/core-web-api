@@ -1,9 +1,9 @@
-﻿using CoreWebApi.Library.Enums;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using CoreWebApi.Services;
+using CoreWebApi.Library;
 
 namespace CoreWebApi.Controllers
 {
@@ -43,7 +43,7 @@ namespace CoreWebApi.Controllers
         [HttpGet, AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAsync(int limit, int page, string search, string sortField, OrderType order) =>
-            Ok(await employeeService.GetEmployeesSearchResultAsync(limit, page, search ?? "", sortField ?? "FullName", order));
+            Ok(await employeeService.GetAsync(limit, page, search ?? "", sortField ?? "FullName", order));
 
         /// <summary>
         /// Gets a specific EmployeeDto Item.
@@ -55,9 +55,9 @@ namespace CoreWebApi.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
+        public async Task<IActionResult> GetAsync([FromRoute] int id)
         {
-            var employeeDto = await employeeService.GetByIdAsync(id);
+            var employeeDto = await employeeService.GetAsync(id);
             if (employeeDto == null) return NotFound(responseNotFoundError);
 
             return Ok(employeeDto);
@@ -91,7 +91,7 @@ namespace CoreWebApi.Controllers
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             var createdEmployee = await employeeService.CreateAsync(employeeDto);
             // Attaching linked office
-            createdEmployee.OfficeDto = await officeService.GetByIdAsync(employeeDto.OfficeId);
+            createdEmployee.OfficeDto = await officeService.GetAsync(employeeDto.OfficeId);
 
             return Created("/api/Employee/create", createdEmployee);
         }
@@ -130,7 +130,7 @@ namespace CoreWebApi.Controllers
             // IT it the same situation as for VacancyController.Update - Entity Framework already tracks the value of employeeDto.Id,
             // so it's impossible to attach officeDto using another request to EF with the same id.
             // It needs to attach linked officeDto using officeService
-            if (employeeDto.OfficeDto == null) employeeDto.OfficeDto = await officeService.GetByIdAsync(employeeDto.OfficeId);
+            if (employeeDto.OfficeDto == null) employeeDto.OfficeDto = await officeService.GetAsync(employeeDto.OfficeId);
 
             return Ok(employeeDto);
         }

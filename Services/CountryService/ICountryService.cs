@@ -1,11 +1,10 @@
-﻿using CoreWebApi.Library.Enums;
-using CoreWebApi.Library.SearchResult;
+﻿using CoreWebApi.Library;
 using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
 {
     public interface ICountryService : IBaseService<CountryDto>
     {
-        Task<SearchResult<CountryDto>> GetCountriesSearchResultAsync(int limit, int page, string sortField, OrderType order);
+        Task<ISearchResult<CountryDto>> GetAsync(int limit, int page, string sortField, OrderType order);
     }
 }

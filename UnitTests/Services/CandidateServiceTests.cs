@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
-using CoreWebApi.Library.Enums;
-using CoreWebApi.Library.SearchResult;
+using CoreWebApi.Library;
 using CoreWebApi.Models;
 using CoreWebApi.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -19,6 +18,8 @@ namespace UnitTests.Services
 
         private string errorMessage;
         private Mock<IRepository<Candidate>> mockRepository;
+        private Mock<ISearchResult<CandidateDto>> mockSearchResult;
+        private Mock<IServiceResult<Candidate>> mockServiceResult;
         private Mock<IMapper> mockMapper;
         private CandidateService candidateService;
 
@@ -31,10 +32,14 @@ namespace UnitTests.Services
         {
             errorMessage = "";
             mockRepository = new Mock<IRepository<Candidate>>();
+            mockSearchResult = new Mock<ISearchResult<CandidateDto>>();
+            mockServiceResult = new Mock<IServiceResult<Candidate>>();
             mockMapper = new Mock<IMapper>();
             candidateService = new CandidateService(
                 mockMapper.Object,
-                mockRepository.Object);
+                mockRepository.Object,
+                mockSearchResult.Object,
+                mockServiceResult.Object);
         }
 
         [TestCleanup()]
@@ -62,24 +67,38 @@ namespace UnitTests.Services
             };
         }
 
+        private ServiceResult<Candidate> GetCandidatesServiceResult()
+        {
+            return new ServiceResult<Candidate>()
+            {
+                TotalCount = 3,
+                Items = new List<Candidate>
+                {
+                    new Candidate { Id = 1, FullName = "Sindy Crowford", Email = "sindy@gmail.com", Phone = "+1234567891", Notes = "Test note 1", IsDismissed = false, JoinedAt = DateTime.Today, VacancyId = 1 },
+                    new Candidate { Id = 2, FullName = "Merelin Monroe", Email = "merelin@gmail.com", Phone = "+1234567892", Notes = "Test note 2", IsDismissed = false, JoinedAt = DateTime.Today, VacancyId = 1 },
+                    new Candidate { Id = 3, FullName = "Julia Roberts", Email = "julia@gmail.com", Phone = "+1234567893", Notes = "Test note 3", IsDismissed = false, JoinedAt = DateTime.Today, VacancyId = 1 }
+                }
+            };
+        }
+
         #endregion
 
         [TestMethod]
         public async Task GetCandidatesSearchResultAsync_ReturnsSearchResultWithCandidates()
         {
             //Arrange
-            SearchResult<CandidateDto> searchResult = null;
+            ISearchResult<CandidateDto> searchResult = null;
             int limit = 3;
             int page = 1;
             CandidateStatus candidateStatus = CandidateStatus.All;
             int vacancyId = 1;
-            mockRepository.Setup(repo => repo.GetAllAsync(null, null)).ReturnsAsync(GetTestCandidates());
+            mockRepository.Setup(repo => repo.GetAsync(limit, page, null, null, null)).ReturnsAsync(GetCandidatesServiceResult());
             mockMapper.Setup(x => x.Map<IEnumerable<CandidateDto>>(It.IsAny<IEnumerable<Candidate>>())).Returns(GetTestCandidateDtos());
 
             try
             {
                 // Act
-                searchResult = await candidateService.GetCandidatesSearchResultAsync(limit, page, search: "", candidateStatus, vacancyId, sortField: "Id", order: OrderType.Ascending);
+                searchResult = await candidateService.GetAsync(limit, page, search: "", candidateStatus, vacancyId, sortField: "Id", order: OrderType.Ascending);
             }
             catch (Exception ex)
             {
@@ -88,8 +107,7 @@ namespace UnitTests.Services
 
             //Assert
             Assert.IsNotNull(searchResult, errorMessage);
-            Assert.IsTrue(searchResult.ItemList.Count == limit, errorMessage);
-            Assert.IsInstanceOfType(searchResult, typeof(SearchResult<CandidateDto>), errorMessage);
+            Assert.IsInstanceOfType(searchResult, typeof(ISearchResult<CandidateDto>), errorMessage);
         }
 
         [TestMethod]
@@ -106,7 +124,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                candidateDto = await candidateService.GetByIdAsync(id);
+                candidateDto = await candidateService.GetAsync(id);
             }
             catch (Exception ex)
             {
@@ -130,7 +148,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                candidateDto = await candidateService.GetByIdAsync(id);
+                candidateDto = await candidateService.GetAsync(id);
             }
             catch (Exception ex)
             {

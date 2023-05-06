@@ -40,7 +40,7 @@ namespace UnitTests.Controllers
 
         private CandidateDto GetTestCandidateDtoById(int id)
         {
-            return new CandidateDto { Id = 1, FullName = "Sindy Crowford", Email = "sindy@gmail.com", Phone = "+1234567891", Notes = "Test note 1", IsDismissed = false, JoinedAt = DateTime.Today, VacancyId = 1 };
+            return new CandidateDto { Id = id, FullName = "Sindy Crowford", Email = "sindy@gmail.com", Phone = "+1234567891", Notes = "Test note 1", IsDismissed = false, JoinedAt = DateTime.Today, VacancyId = 3 };
         }
 
         private IEnumerable<CandidateDto> GetTestCandidateDtos()
@@ -61,13 +61,13 @@ namespace UnitTests.Controllers
         {
             //Arrange
             int id = 1;// correct id
-            mockCandidateService.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(GetTestCandidateDtoById(id));
+            mockCandidateService.Setup(r => r.GetAsync(id)).ReturnsAsync(GetTestCandidateDtoById(id));
             OkObjectResult result = null;
 
             try
             {
                 // Act
-                result = await candidateController.GetByIdAsync(id) as OkObjectResult;
+                result = await candidateController.GetAsync(id) as OkObjectResult;
             }
             catch (Exception ex)
             {
@@ -79,7 +79,7 @@ namespace UnitTests.Controllers
             Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(CandidateDto), errorMessage);
-            mockCandidateService.Verify(r => r.GetByIdAsync(id));
+            mockCandidateService.Verify(r => r.GetAsync(id));
         }
 
         [TestMethod]
@@ -87,13 +87,13 @@ namespace UnitTests.Controllers
         {
             //Arrange
             int id = int.MaxValue - 1;// wrong id
-            mockCandidateService.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(value: null);
+            mockCandidateService.Setup(r => r.GetAsync(id)).ReturnsAsync(value: null);
             NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = await candidateController.GetByIdAsync(id) as NotFoundObjectResult;
+                result = await candidateController.GetAsync(id) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -103,7 +103,7 @@ namespace UnitTests.Controllers
             //Assert
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
-            mockCandidateService.Verify(r => r.GetByIdAsync(id));
+            mockCandidateService.Verify(r => r.GetAsync(id));
         }
 
         [TestMethod]

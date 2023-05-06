@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using CoreWebApi.Library;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -21,21 +22,6 @@ namespace CoreWebApi.Data
             _set = _context.Set<TModel>();
         }
 
-        public TModel Create(TModel model)
-        {
-            try
-            {
-                _set.Add(model);
-                _context.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                throw new CreateEntityFailedException(typeof(TModel), ex);
-            }
-
-            return model;
-        }
-
         public async Task<TModel> CreateAsync(TModel model)
         {
             try
@@ -49,51 +35,6 @@ namespace CoreWebApi.Data
             }
 
             return model;
-        }
-
-        public void Delete(TModel model)
-        {
-            try
-            {
-                _set.Remove(model);
-                _context.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                throw new DeleteEntityFailedException(typeof(TModel), ex);
-            }
-        }
-
-        public TModel Delete(int id)
-        {
-            TModel model = _set.Find(id);
-            try
-            {
-                if (model != null)
-                {
-                    _set.Remove(model);
-                    _context.SaveChanges();
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new DeleteEntityFailedException(typeof(TModel), ex);
-            }
-
-            return model;
-        }
-
-        public async Task DeleteAsync(TModel model)
-        {
-            try
-            {
-                _set.Remove(model);
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                throw new DeleteEntityFailedException(typeof(TModel), ex);
-            }
         }
 
         public async Task DeleteAsync(int id)
@@ -113,18 +54,6 @@ namespace CoreWebApi.Data
             }
         }
 
-        public TModel Get(int id)
-        {
-            try
-            {
-                return _set.Find(id);
-            }
-            catch (Exception ex)
-            {
-                throw new RetrieveEntityFailedException<TModel>(id.ToString(), ex);
-            }
-        }
-
         public async Task<TModel> GetAsync(int id)
         {
             try
@@ -137,13 +66,14 @@ namespace CoreWebApi.Data
             }
         }
 
-        public async Task<TModel> GetAsync(Expression<Func<TModel, bool>> query = null, Expression<Func<TModel, object>> include = null)
+        public async Task<TModel> GetAsync(Expression<Func<TModel, bool>> query = null, params Expression<Func<TModel, object>>[] navigationProperties)
         {
             try
             {
                 IQueryable<TModel> dbSet = _set;
                 if (query != null) dbSet = dbSet.Where(query);
-                if (include != null) dbSet = dbSet.Include(include);
+                foreach (Expression<Func<TModel, object>> property in navigationProperties)
+                    dbSet = dbSet.Include<TModel, object>(property);
 
                 return await dbSet.FirstOrDefaultAsync();
             }
@@ -167,105 +97,29 @@ namespace CoreWebApi.Data
             }
         }
 
-        public IEnumerable<TModel> GetAll()
+        public async Task<IServiceResult<TModel>> GetAsync(int limit = 0, int page = 1, List<Expression<Func<TModel, bool>>> filters = null, Func<IQueryable<TModel>, IOrderedQueryable<TModel>> orderBy = null, params Expression<Func<TModel, object>>[] navigationProperties)
         {
+            var serviceResult = new ServiceResult<TModel>() { };
+            IQueryable<TModel> dbSet = _set;
             try
             {
-                return _set.AsNoTracking().ToList();
-            }
-            catch (Exception ex)
-            {
-                throw new RetrieveEntitiesQueryFailedException(typeof(TModel), ex);
-            }
-        }
-
-        public IEnumerable<TModel> GetAll(
-            int limit,
-            int page,
-            Expression<Func<TModel, bool>> query = null,
-            Func<IQueryable<TModel>, IOrderedQueryable<TModel>> orderBy = null)
-        {
-            try
-            {
-                IQueryable<TModel> dbSet = _set;
-
-                if (query != null) dbSet = dbSet.Where(query);
+                if (filters?.Count > 0) foreach (var filter in filters) dbSet = dbSet.Where(filter);
+                if (navigationProperties != null)
+                {
+                    foreach (Expression<Func<TModel, object>> property in navigationProperties)
+                        dbSet = dbSet.Include(property);
+                }
                 if (orderBy != null) dbSet = orderBy(dbSet);
-                dbSet = dbSet.Skip((page - 1) * limit).Take(limit);
+                serviceResult.TotalCount = dbSet.Count();
+                if (limit > 0) dbSet = dbSet.Skip((page - 1) * limit).Take(limit);
+                serviceResult.Items = await dbSet.ToListAsync();
 
-                return dbSet.ToList();
+                return serviceResult;
             }
             catch (Exception ex)
             {
                 throw new RetrieveEntitiesQueryFailedException(typeof(TModel), ex);
             }
-        }
-
-        public async Task<IEnumerable<TModel>> GetAllAsync()
-        {
-            try
-            {
-                IQueryable<TModel> dbSet = _set;
-                return await dbSet.ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                throw new RetrieveEntitiesQueryFailedException(typeof(TModel), ex);
-            }
-        }
-
-        public async Task<IEnumerable<TModel>> GetAllAsync(Expression<Func<TModel, bool>> query = null, Func<IQueryable<TModel>, IOrderedQueryable<TModel>> orderBy = null)
-        {
-            try
-            {
-                IQueryable<TModel> dbSet = _set;
-
-                if (query != null) dbSet = dbSet.Where(query);
-                if (orderBy != null) dbSet = orderBy(dbSet);
-
-                return await dbSet.ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                throw new RetrieveEntitiesQueryFailedException(typeof(TModel), ex);
-            }
-        }
-
-        public async Task<IEnumerable<TModel>> GetAllAsync(
-            Expression<Func<TModel, bool>> query = null,
-            Func<IQueryable<TModel>, IOrderedQueryable<TModel>> orderBy = null,
-            Expression<Func<TModel, object>> include = null)
-        {
-            try
-            {
-                IQueryable<TModel> dbSet = _set;
-
-                if (query != null) dbSet = dbSet.Where(query);
-                if (orderBy != null) dbSet = orderBy(dbSet);
-                if (include != null) dbSet = dbSet.Include(include);
-
-                return await dbSet.ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                throw new RetrieveEntitiesQueryFailedException(typeof(TModel), ex);
-            }
-        }
-
-        public TModel Update(TModel model)
-        {
-            try
-            {
-                _set.Attach(model);
-                _context.Entry(model).State = EntityState.Modified;
-                _context.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                throw new UpdateEntityFailedException(typeof(TModel), ex);
-            }
-
-            return model;
         }
 
         public async Task UpdateAsync(TModel model)
@@ -303,6 +157,5 @@ namespace CoreWebApi.Data
 
             return int.Parse(result.ToString()) > 0;
         }
-
     }
 }

@@ -22,6 +22,7 @@ namespace CoreWebApi.Services
 
         [Required]
         public int OfficeId { get; set; }
+
         public OfficeDto OfficeDto { get; set; }
     }
 }

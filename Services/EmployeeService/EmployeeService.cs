@@ -1,9 +1,7 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
-using CoreWebApi.Library.Enums;
-using CoreWebApi.Library.SearchResult;
+using CoreWebApi.Library;
 using CoreWebApi.Models;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
@@ -14,50 +12,29 @@ using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
 {
-    public class EmployeeService : BaseService<Employee>, IEmployeeService
+    public class EmployeeService : AppBaseService<Employee, EmployeeDto>, IEmployeeService
     {
-        public EmployeeService(IMapper mapper, IRepository<Employee> repository) : base(mapper, repository) { }
+        public EmployeeService(
+            IMapper mapper,
+            IRepository<Employee> repository,
+            ISearchResult<EmployeeDto> searchResult,
+            IServiceResult<Employee> serviceResult) : base(mapper, repository, searchResult, serviceResult) { }
 
-        public async Task<SearchResult<EmployeeDto>> GetEmployeesSearchResultAsync(int limit, int page, string search, string sortField, OrderType order)
+        public async Task<ISearchResult<EmployeeDto>> GetAsync(int limit, int page, string search, string sortField, OrderType order)
         {
-            // search by FullName
-            Expression<Func<Employee, bool>> searchQuery = null;
-            if (!string.IsNullOrEmpty(search)) searchQuery = t => t.FullName.Contains(search);
+            // filtering
+            var filters = new List<Expression<Func<Employee, bool>>>();
+            if (!string.IsNullOrEmpty(search)) filters.Add(t => t.FullName.Contains(search));
 
-            // sorting only by FullName
+            // sorting
             Func<IQueryable<Employee>, IOrderedQueryable<Employee>> orderBy = null;
             if (order != OrderType.None)
                 orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.FullName) : orderBy = q => q.OrderByDescending(s => s.FullName);
 
-            var employees = await repository.GetAllAsync(searchQuery, orderBy);
-
-            return new SearchResult<EmployeeDto>
-            {
-                CurrentPageNumber = page,
-                Order = order,
-                PageSize = limit,
-                PageCount = Convert.ToInt32(Math.Ceiling((double)employees.Count() / limit)),
-                SearchCriteria = search,
-                TotalItemCount = employees.Count(),
-                ItemList = (List<EmployeeDto>)mapper.Map<IEnumerable<EmployeeDto>>(employees.Skip((page - 1) * limit).Take(limit))
-            };
+            return await Search(limit: limit, page: page, search: search, filters: filters, order: order, orderBy: orderBy);
         }
 
-        public async Task<EmployeeDto> GetByIdAsync(int id) => mapper.Map<EmployeeDto>(await repository.GetAsync(id));
-
-        public async Task<EmployeeDto> CreateAsync(EmployeeDto employeeDto)
-        {
-            var employee = mapper.Map<Employee>(employeeDto);
-
-            return mapper.Map<EmployeeDto>(await repository.CreateAsync(employee));
-        }
-
-        public async Task UpdateAsync(EmployeeDto employeeDto) =>
-            await repository.UpdateAsync(mapper.Map<Employee>(employeeDto));
-
-        public async Task DeleteAsync(int id) => await repository.DeleteAsync(id);
-
-        public async Task<bool> IsExistAsync(int id)
+        public override async Task<bool> IsExistAsync(int id)
         {
             SqlParameter[] parameters =
                 {
@@ -65,12 +42,7 @@ namespace CoreWebApi.Services
                    new SqlParameter("@returnVal", SqlDbType.Int) {Direction = ParameterDirection.Output}
                 };
 
-            return await repository.IsExistAsync("EXEC @returnVal=sp_checkEmployeeById @id, @returnVal", parameters);
-        }
-
-        public Task<EmployeeDto> PartialUpdateAsync(int id, JsonPatchDocument<object> patchDocument)
-        {
-            throw new NotImplementedException();
+            return await Repository.IsExistAsync("EXEC @returnVal=sp_checkEmployeeById @id, @returnVal", parameters);
         }
     }
 }

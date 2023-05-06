@@ -1,4 +1,4 @@
-﻿namespace CoreWebApi.Library.ResponseError
+﻿namespace CoreWebApi.Library
 {
     public class ResponseErrorFactory
     {

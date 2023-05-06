@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using CoreWebApi.Library.Enums;
 using System.Threading.Tasks;
 using CoreWebApi.Services;
+using CoreWebApi.Library;
 
 namespace CoreWebApi.Controllers
 {
@@ -37,7 +37,7 @@ namespace CoreWebApi.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAsync(int limit, int page, OrderType order) =>
-            Ok(await mailSubscriptionService.GetMailSubscriptionsSearchResultAsync(limit, page, order));
+            Ok(await mailSubscriptionService.GetAsync(limit, page, order));
 
         /// <summary>
         /// Gets a specific MailSubscriptionDto Item.
@@ -49,9 +49,9 @@ namespace CoreWebApi.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
+        public async Task<IActionResult> GetAsync([FromRoute] int id)
         {
-            var mailSubscriptionDto = await mailSubscriptionService.GetByIdAsync(id);
+            var mailSubscriptionDto = await mailSubscriptionService.GetAsync(id);
             if (mailSubscriptionDto == null) return NotFound(responseNotFoundError);
 
             return Ok(mailSubscriptionDto);
@@ -76,8 +76,12 @@ namespace CoreWebApi.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> CreateAsync([FromBody] MailSubscriptionDto mailSubscriptionDto) =>
-            Created("/api/mailsubscription/create", await mailSubscriptionService.CreateAsync(mailSubscriptionDto));
+        public async Task<IActionResult> CreateAsync([FromBody] MailSubscriptionDto mailSubscriptionDto)
+        {
+            if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
+            return Created("/api/mailsubscription/create", await mailSubscriptionService.CreateAsync(mailSubscriptionDto));
+        }
+
 
         /// <summary>
         /// Updates an existing MailSubscription item.
@@ -103,6 +107,7 @@ namespace CoreWebApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdateAsync([FromBody] MailSubscriptionDto mailSubscriptionDto)
         {
+            if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             if (await IsExistAsync(mailSubscriptionDto.Id) == false) return NotFound(responseNotFoundError);
             await mailSubscriptionService.UpdateAsync(mailSubscriptionDto);
 

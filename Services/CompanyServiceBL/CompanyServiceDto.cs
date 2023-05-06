@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace CoreWebApi.Services
 {
@@ -17,6 +16,6 @@ namespace CoreWebApi.Services
         [Required(ErrorMessage = "Image url is required.")]
         public string ImageUrl { get; set; }
 
-        public Boolean IsActive { get; set; } = false;
+        public bool IsActive { get; set; } = false;
     }
 }

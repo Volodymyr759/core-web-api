@@ -1,11 +1,10 @@
-﻿using CoreWebApi.Library.Enums;
-using CoreWebApi.Library.SearchResult;
+﻿using CoreWebApi.Library;
 using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
 {
     public interface ICompanyServiceBL : IBaseService<CompanyServiceDto>
     {
-        Task<SearchResult<CompanyServiceDto>> GetCompanyServicesSearchResultAsync(int limit, int page, CompanyServiceStatus companyServiceStatus, OrderType order);
+        Task<ISearchResult<CompanyServiceDto>> GetAsync(int limit, int page, CompanyServiceStatus companyServiceStatus, OrderType order);
     }
 }

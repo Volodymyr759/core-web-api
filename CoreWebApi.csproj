@@ -40,6 +40,7 @@
 
   <ItemGroup>
     <Compile Remove="Services\AccountService\EmailConfirmationTokenProvider.cs" />
+    <Compile Remove="Services\Common\BaseService.cs" />
   </ItemGroup>
 
   <ItemGroup>

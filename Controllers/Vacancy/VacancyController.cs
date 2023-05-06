@@ -1,4 +1,4 @@
-﻿using CoreWebApi.Library.Enums;
+﻿using CoreWebApi.Library;
 using CoreWebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -51,7 +51,7 @@ namespace CoreWebApi.Controllers
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAsync(int limit, int page, string search, VacancyStatus vacancyStatus, int? officeId, string sortField, OrderType order) =>
-            Ok(await vacancyService.GetVacanciesSearchResultAsync(limit, page, search, vacancyStatus, officeId ?? 0, sortField, order));
+            Ok(await vacancyService.GetAsync(limit, page, search ?? "", vacancyStatus, officeId ?? 0, sortField, order));
 
         /// <summary>
         /// Gets a list of favorite (filtered by candidate email) VacancyDto's with pagination params.
@@ -87,13 +87,13 @@ namespace CoreWebApi.Controllers
         /// </remarks>
         /// <response code="200">Returns the requested VacancyDto item</response>
         /// <response code="404">If the vacancy with given id not found</response>
-        [HttpGet("{id}")] 
+        [HttpGet("{id}")]
         [Authorize(Roles = "Admin, Registered")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
+        public async Task<IActionResult> GetAsync([FromRoute] int id)
         {
-            var vacancyDto = await vacancyService.GetByIdAsync(id);
+            var vacancyDto = await vacancyService.GetAsync(id);
             if (vacancyDto == null) return NotFound(responseNotFoundError);
 
             return Ok(vacancyDto);
@@ -145,7 +145,7 @@ namespace CoreWebApi.Controllers
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             var createdVacancy = await vacancyService.CreateAsync(vacancyDto);
             // Attaching linked office
-            createdVacancy.OfficeDto = await officeService.GetByIdAsync(vacancyDto.OfficeId);
+            createdVacancy.OfficeDto = await officeService.GetAsync(vacancyDto.OfficeId);
 
             return Created("/api/vacancy/create", createdVacancy);
         }
@@ -184,7 +184,7 @@ namespace CoreWebApi.Controllers
             // Entity Framework already tracks the value of vacancyDto.Id, so it's impossible to 
             // attach officeDto and Candidates using another request to EF using the same id.
             // It needs to attach linked models using specified services - officeService and candidateService
-            if (vacancyDto.OfficeDto == null) vacancyDto.OfficeDto = await officeService.GetByIdAsync(vacancyDto.OfficeId);
+            if (vacancyDto.OfficeDto == null) vacancyDto.OfficeDto = await officeService.GetAsync(vacancyDto.OfficeId);
             if (vacancyDto.Candidates == null) vacancyDto.Candidates = await candidateService.GetCandidatesByVacancyIdAsync(vacancyDto.Id);
 
             return Ok(vacancyDto);

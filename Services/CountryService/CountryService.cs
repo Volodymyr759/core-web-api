@@ -1,58 +1,34 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
-using CoreWebApi.Library.Enums;
-using CoreWebApi.Library.SearchResult;
+using CoreWebApi.Library;
 using CoreWebApi.Models;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Data.SqlClient;
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
 {
-    public class CountryService : BaseService<Country>, ICountryService
+    public class CountryService : AppBaseService<Country, CountryDto>, ICountryService
     {
-        public CountryService(IMapper mapper, IRepository<Country> repository) : base(mapper, repository) { }
+        public CountryService(
+            IMapper mapper,
+            IRepository<Country> repository,
+            ISearchResult<CountryDto> searchResult,
+            IServiceResult<Country> serviceResult) : base(mapper, repository, searchResult, serviceResult) { }
 
-        public async Task<SearchResult<CountryDto>> GetCountriesSearchResultAsync(int limit, int page, string sortField, OrderType order)
+        public async Task<ISearchResult<CountryDto>> GetAsync(int limit, int page, string sortField, OrderType order)
         {
-            // sorting only by Name
+            // sorting
             Func<IQueryable<Country>, IOrderedQueryable<Country>> orderBy = null;
             if (order != OrderType.None)
                 orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Name) : orderBy = q => q.OrderByDescending(s => s.Name);
 
-            var countries = await repository.GetAllAsync(null, orderBy);
-
-            return new SearchResult<CountryDto>
-            {
-                CurrentPageNumber = page,
-                Order = order,
-                PageSize = limit,
-                PageCount = Convert.ToInt32(Math.Ceiling((double)countries.Count() / limit)),
-                SearchCriteria = "",
-                TotalItemCount = countries.Count(),
-                ItemList = (List<CountryDto>)mapper.Map<IEnumerable<CountryDto>>(countries.Skip((page - 1) * limit).Take(limit))
-            };
+            return await Search(limit: limit, page: page, order: order, orderBy: orderBy);
         }
 
-        public async Task<CountryDto> GetByIdAsync(int id) => mapper.Map<CountryDto>(await repository.GetAsync(id));
-
-        public async Task<CountryDto> CreateAsync(CountryDto countryDto)
-        {
-            var country = mapper.Map<Country>(countryDto);
-
-            return mapper.Map<CountryDto>(await repository.CreateAsync(country));
-        }
-
-        public async Task UpdateAsync(CountryDto countryDto) =>
-            await repository.UpdateAsync(mapper.Map<Country>(countryDto));
-
-        public async Task DeleteAsync(int id) => await repository.DeleteAsync(id);
-
-        public async Task<bool> IsExistAsync(int id)
+        public override async Task<bool> IsExistAsync(int id)
         {
             SqlParameter[] parameters =
                 {
@@ -60,12 +36,7 @@ namespace CoreWebApi.Services
                    new SqlParameter("@returnVal", SqlDbType.Int) {Direction = ParameterDirection.Output}
                 };
 
-            return await repository.IsExistAsync("EXEC @returnVal=sp_checkCountryById @id, @returnVal", parameters);
-        }
-
-        public Task<CountryDto> PartialUpdateAsync(int id, JsonPatchDocument<object> patchDocument)
-        {
-            throw new NotImplementedException();
+            return await Repository.IsExistAsync("EXEC @returnVal=sp_checkCountryById @id, @returnVal", parameters);
         }
     }
 }

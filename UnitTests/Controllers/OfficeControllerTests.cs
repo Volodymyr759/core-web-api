@@ -66,13 +66,13 @@ namespace UnitTests.Controllers
         {
             //Arrange
             int id = 1;// correct id
-            mockOfficeService.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(GetTestOfficeDtoById(id));
+            mockOfficeService.Setup(r => r.GetAsync(id)).ReturnsAsync(GetTestOfficeDtoById(id));
             OkObjectResult result = null;
 
             try
             {
                 // Act
-                result = await officeController.GetByIdAsync(id) as OkObjectResult;
+                result = await officeController.GetAsync(id) as OkObjectResult;
             }
             catch (Exception ex)
             {
@@ -84,7 +84,7 @@ namespace UnitTests.Controllers
             Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(OfficeDto), errorMessage);
-            mockOfficeService.Verify(r => r.GetByIdAsync(id));
+            mockOfficeService.Verify(r => r.GetAsync(id));
         }
 
         [TestMethod]
@@ -92,13 +92,13 @@ namespace UnitTests.Controllers
         {
             //Arrange
             int id = int.MaxValue - 1;// wrong id
-            mockOfficeService.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(value: null);
+            mockOfficeService.Setup(r => r.GetAsync(id)).ReturnsAsync(value: null);
             NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = await officeController.GetByIdAsync(id) as NotFoundObjectResult;
+                result = await officeController.GetAsync(id) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -108,7 +108,7 @@ namespace UnitTests.Controllers
             //Assert
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
-            mockOfficeService.Verify(r => r.GetByIdAsync(id));
+            mockOfficeService.Verify(r => r.GetAsync(id));
         }
 
         [TestMethod]

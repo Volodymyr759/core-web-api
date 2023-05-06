@@ -1,5 +1,4 @@
-﻿using CoreWebApi.Library.Enums;
-using CoreWebApi.Library.SearchResult;
+﻿using CoreWebApi.Library;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -7,7 +6,7 @@ namespace CoreWebApi.Services
 {
     public interface ICandidateService : IBaseService<CandidateDto>
     {
-        Task<SearchResult<CandidateDto>> GetCandidatesSearchResultAsync(
+        Task<ISearchResult<CandidateDto>> GetAsync(
             int limit,
             int page,
             string search,

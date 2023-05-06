@@ -1,13 +1,13 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
-using CoreWebApi.Library.Enums;
-using CoreWebApi.Library.SearchResult;
+using CoreWebApi.Library;
 using CoreWebApi.Models;
 using CoreWebApi.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace UnitTests.Services
@@ -18,11 +18,10 @@ namespace UnitTests.Services
         #region Private Members
 
         private string errorMessage;
-
         private Mock<IRepository<Country>> mockRepository;
-
+        private Mock<ISearchResult<CountryDto>> mockSearchResult;
+        private Mock<IServiceResult<Country>> mockServiceResult;
         private Mock<IMapper> mockMapper;
-
         private CountryService countryService;
 
         #endregion
@@ -34,8 +33,14 @@ namespace UnitTests.Services
         {
             errorMessage = "";
             mockRepository = new Mock<IRepository<Country>>();
+            mockSearchResult = new Mock<ISearchResult<CountryDto>>();
+            mockServiceResult = new Mock<IServiceResult<Country>>();
             mockMapper = new Mock<IMapper>();
-            countryService = new CountryService(mockMapper.Object, mockRepository.Object);
+            countryService = new CountryService(
+                mockMapper.Object,
+                mockRepository.Object,
+                mockSearchResult.Object,
+                mockServiceResult.Object);
         }
 
         [TestCleanup()]
@@ -62,24 +67,40 @@ namespace UnitTests.Services
             };
         }
 
+        private ServiceResult<Country> GetCountriesServiceResult()
+        {
+            return new ServiceResult<Country>()
+            {
+                TotalCount = 3,
+                Items = new List<Country>() {
+                    new Country { Id = 1, Name = "Australia", Code = "AUS" },
+                    new Country { Id = 2, Name = "Ukraine", Code = "UKR" },
+                    new Country { Id = 3, Name = "United States of America", Code = "USA" }
+                }
+            };
+        }
+
         #endregion
 
         [TestMethod]
         public async Task GetCoutriesSearchResultAsync_ReturnsSearchResultWithCoutries()
         {
             //Arrange
-            SearchResult<CountryDto> searchResult = null;
+            ISearchResult<CountryDto> searchResult = null;
             int limit = 3;
             int page = 1;
             string sortField = "";
             OrderType order = OrderType.Ascending;
-            mockRepository.Setup(repo => repo.GetAllAsync(null, null)).ReturnsAsync(GetTestCountries());
+            Func<IQueryable<Country>, IOrderedQueryable<Country>> orderBy = q => q.OrderBy(s => s.Name);
+            mockRepository.Setup(repo => repo.GetAsync(limit, page, null, orderBy, null)).ReturnsAsync(GetCountriesServiceResult());
+            mockServiceResult.Setup(x => x.TotalCount).Returns(3);
+            mockServiceResult.Setup(x => x.Items).Returns(GetTestCountries());
             mockMapper.Setup(x => x.Map<IEnumerable<CountryDto>>(It.IsAny<IEnumerable<Country>>())).Returns(GetTestCountryDtos());
 
             try
             {
                 // Act
-                searchResult = await countryService.GetCountriesSearchResultAsync(limit, page, sortField, order);
+                searchResult = await countryService.GetAsync(limit, page, sortField, order);
             }
             catch (Exception ex)
             {
@@ -88,8 +109,7 @@ namespace UnitTests.Services
 
             //Assert
             Assert.IsNotNull(searchResult, errorMessage);
-            Assert.IsTrue(searchResult.ItemList.Count == limit, errorMessage);
-            Assert.IsInstanceOfType(searchResult, typeof(SearchResult<CountryDto>), errorMessage);
+            Assert.IsInstanceOfType(searchResult, typeof(ISearchResult<CountryDto>), errorMessage);
         }
 
         [TestMethod]
@@ -105,7 +125,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                countryDto = await countryService.GetByIdAsync(id);
+                countryDto = await countryService.GetAsync(id);
             }
             catch (Exception ex)
             {
@@ -129,7 +149,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                countryDto = await countryService.GetByIdAsync(id);
+                countryDto = await countryService.GetAsync(id);
             }
             catch (Exception ex)
             {

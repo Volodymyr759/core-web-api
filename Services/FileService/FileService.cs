@@ -8,9 +8,16 @@ using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
 {
-    public class FileService : BaseService<FileModel>, IFileService
+    public class FileService : IFileService
     {
-        public FileService(IRepository<FileModel> repository, IMapper mapper) : base(mapper, repository) { }
+        private readonly IMapper mapper;
+        private readonly IRepository<FileModel> repository;
+
+        public FileService(IRepository<FileModel> repository, IMapper mapper)
+        {
+            this.mapper = mapper;
+            this.repository = repository;
+        }
 
         public async Task<FileModelDto> CreateAsync(FileModelDto fileModelDto)
         {

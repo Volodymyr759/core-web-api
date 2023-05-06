@@ -1,67 +1,41 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
-using CoreWebApi.Library.Enums;
-using CoreWebApi.Library.SearchResult;
+using CoreWebApi.Library;
 using CoreWebApi.Models;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
 {
-    public class CompanyServiceBL : BaseService<CompanyService>, ICompanyServiceBL
+    public class CompanyServiceBL : AppBaseService<CompanyService, CompanyServiceDto>, ICompanyServiceBL
     {
-        public CompanyServiceBL(IMapper mapper, IRepository<CompanyService> repository) : base(mapper, repository) { }
+        public CompanyServiceBL(
+            IMapper mapper,
+            IRepository<CompanyService> repository,
+            ISearchResult<CompanyServiceDto> searchResult,
+            IServiceResult<CompanyService> serviceResult) : base(mapper, repository, searchResult, serviceResult) { }
 
-        public async Task<SearchResult<CompanyServiceDto>> GetCompanyServicesSearchResultAsync(int limit, int page, CompanyServiceStatus companyServiceStatus, OrderType order)
+        public async Task<ISearchResult<CompanyServiceDto>> GetAsync(int limit, int page, CompanyServiceStatus companyServiceStatus, OrderType order)
         {
-            Func<IQueryable<CompanyService>, IOrderedQueryable<CompanyService>> orderBy = null;// sorting only by Title
+            // filtering
+            var filters = new List<Expression<Func<CompanyService, bool>>>();
+            if (companyServiceStatus == CompanyServiceStatus.Active) filters.Add(v => v.IsActive == true);
+            if (companyServiceStatus == CompanyServiceStatus.Disabled) filters.Add(v => v.IsActive == false);
+
+            // sorting
+            Func<IQueryable<CompanyService>, IOrderedQueryable<CompanyService>> orderBy = null;
             if (order != OrderType.None)
                 orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Title) : orderBy = q => q.OrderByDescending(s => s.Title);
 
-            var services = await repository.GetAllAsync(null, orderBy);
-
-            if (companyServiceStatus == CompanyServiceStatus.Active) services = services.Where(s => s.IsActive == true);
-            if (companyServiceStatus == CompanyServiceStatus.Disabled) services = services.Where(s => s.IsActive == false);
-
-            return new SearchResult<CompanyServiceDto>
-            {
-                CurrentPageNumber = page,
-                Order = order,
-                PageSize = limit,
-                PageCount = Convert.ToInt32(Math.Ceiling((double)services.Count() / limit)),
-                SearchCriteria = string.Empty,
-                TotalItemCount = services.Count(),
-                ItemList = (List<CompanyServiceDto>)mapper.Map<IEnumerable<CompanyServiceDto>>(services.Skip((page - 1) * limit).Take(limit))
-            };
+            return await Search(limit: limit, page: page, filters: filters, order: order, orderBy: orderBy);
         }
 
-        public async Task<CompanyServiceDto> GetByIdAsync(int id) => mapper.Map<CompanyServiceDto>(await repository.GetAsync(id));
-
-        public async Task<CompanyServiceDto> CreateAsync(CompanyServiceDto companyServiceDto)
-        {
-            var companyService = mapper.Map<CompanyService>(companyServiceDto);
-
-            return mapper.Map<CompanyServiceDto>(await repository.CreateAsync(companyService));
-        }
-
-        public async Task UpdateAsync(CompanyServiceDto companyServiceDto) =>
-            await repository.UpdateAsync(mapper.Map<CompanyService>(companyServiceDto));
-
-        public async Task<CompanyServiceDto> PartialUpdateAsync(int id, JsonPatchDocument<object> patchDocument)
-        {
-            var service = await repository.GetAsync(id);
-            patchDocument.ApplyTo(service);
-            return mapper.Map<CompanyServiceDto>(await repository.SaveAsync(service));
-        }
-
-        public async Task DeleteAsync(int id) => await repository.DeleteAsync(id);
-
-        public async Task<bool> IsExistAsync(int id)
+        public override async Task<bool> IsExistAsync(int id)
         {
             SqlParameter[] parameters =
                 {
@@ -69,7 +43,7 @@ namespace CoreWebApi.Services
                    new SqlParameter("@returnVal", SqlDbType.Int) {Direction = ParameterDirection.Output}
                 };
 
-            return await repository.IsExistAsync("EXEC @returnVal=sp_checkCompanyServiceById @id, @returnVal", parameters);
+            return await Repository.IsExistAsync("EXEC @returnVal=sp_checkCompanyServiceById @id, @returnVal", parameters);
         }
     }
 }

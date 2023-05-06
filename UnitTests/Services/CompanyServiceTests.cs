@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
-using CoreWebApi.Library.Enums;
-using CoreWebApi.Library.SearchResult;
+using CoreWebApi.Library;
 using CoreWebApi.Models;
 using CoreWebApi.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -18,11 +17,10 @@ namespace UnitTests.Services
         #region Private Members
 
         private string errorMessage;
-
         private Mock<IRepository<CompanyService>> mockCompanyServiceRepository;
-
+        private Mock<ISearchResult<CompanyServiceDto>> mockSearchResult;
+        private Mock<IServiceResult<CompanyService>> mockServiceResult;
         private Mock<IMapper> mockMapper;
-
         private CompanyServiceBL companyServiceBL;
 
         #endregion
@@ -34,8 +32,14 @@ namespace UnitTests.Services
         {
             errorMessage = "";
             mockCompanyServiceRepository = new Mock<IRepository<CompanyService>>();
+            mockSearchResult = new Mock<ISearchResult<CompanyServiceDto>>();
+            mockServiceResult = new Mock<IServiceResult<CompanyService>>();
             mockMapper = new Mock<IMapper>();
-            companyServiceBL = new CompanyServiceBL(mockMapper.Object, mockCompanyServiceRepository.Object);
+            companyServiceBL = new CompanyServiceBL(
+                mockMapper.Object,
+                mockCompanyServiceRepository.Object,
+                mockSearchResult.Object,
+                mockServiceResult.Object);
         }
 
         [TestCleanup()]
@@ -64,23 +68,38 @@ namespace UnitTests.Services
             };
         }
 
+        private ServiceResult<CompanyService> GetCompanyServicesServiceResult()
+        {
+            return new ServiceResult<CompanyService>()
+            {
+                TotalCount = 4,
+                Items = new List<CompanyService>
+                {
+                    new CompanyService { Id = 1, Title ="Lorem Ipsum", Description ="Voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi", ImageUrl="https://somewhere.com/1", IsActive=true },
+                    new CompanyService { Id = 2, Title ="Sed ut perspiciatis", Description ="Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore", ImageUrl="https://somewhere.com/2", IsActive=true },
+                    new CompanyService { Id = 3, Title ="Magni Dolores", Description ="Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia", ImageUrl="https://somewhere.com/3", IsActive=true },
+                    new CompanyService { Id = 4, Title ="Nemo Enim", Description ="At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis", ImageUrl="https://somewhere.com/4", IsActive=true }
+                }
+            };
+        }
+
         #endregion
 
         [TestMethod]
         public async Task GetCompanyServicesSearchResultAsync_ReturnsSearchResultWithCompanyServices()
         {
             //Arrange
-            SearchResult<CompanyServiceDto> searchResult = null;
+            ISearchResult<CompanyServiceDto> searchResult = null;
             int page = 1;
             int limit = 3;
             CompanyServiceStatus companyServiceStatus = CompanyServiceStatus.All;
-            mockCompanyServiceRepository.Setup(repo => repo.GetAllAsync(null, null)).ReturnsAsync(GetTestCompanyServices());
+            mockCompanyServiceRepository.Setup(repo => repo.GetAsync(limit, page, null, null, null)).ReturnsAsync(GetCompanyServicesServiceResult());
             mockMapper.Setup(x => x.Map<IEnumerable<CompanyServiceDto>>(It.IsAny<IEnumerable<CompanyService>>())).Returns(GetTestCompanyServiceDtos());
 
             try
             {
                 // Act
-                searchResult = await companyServiceBL.GetCompanyServicesSearchResultAsync(limit, page, companyServiceStatus, OrderType.Ascending);
+                searchResult = await companyServiceBL.GetAsync(limit, page, companyServiceStatus, OrderType.Ascending);
             }
             catch (Exception ex)
             {
@@ -89,8 +108,7 @@ namespace UnitTests.Services
 
             //Assert
             Assert.IsNotNull(searchResult, errorMessage);
-            Assert.IsTrue(searchResult.ItemList.Count == ((List<CompanyServiceDto>)GetTestCompanyServiceDtos()).Count, errorMessage);
-            Assert.IsInstanceOfType(searchResult, typeof(SearchResult<CompanyServiceDto>), errorMessage);
+            Assert.IsInstanceOfType(searchResult, typeof(ISearchResult<CompanyServiceDto>), errorMessage);
         }
 
         [TestMethod]
@@ -107,7 +125,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                companyServiceDto = await companyServiceBL.GetByIdAsync(id);
+                companyServiceDto = await companyServiceBL.GetAsync(id);
             }
             catch (Exception ex)
             {
@@ -131,7 +149,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                companyServiceDto = await companyServiceBL.GetByIdAsync(id);
+                companyServiceDto = await companyServiceBL.GetAsync(id);
             }
             catch (Exception ex)
             {

@@ -1,4 +1,4 @@
-﻿namespace CoreWebApi.Library.Enums
+﻿namespace CoreWebApi.Library
 {
     public enum OrderType
     {

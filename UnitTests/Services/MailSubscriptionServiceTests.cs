@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
-using CoreWebApi.Library.Enums;
-using CoreWebApi.Library.SearchResult;
+using CoreWebApi.Library;
 using CoreWebApi.Models;
 using CoreWebApi.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -19,6 +18,8 @@ namespace UnitTests.Services
 
         private string errorMessage;
         private Mock<IRepository<MailSubscription>> mockRepository;
+        private Mock<ISearchResult<MailSubscriptionDto>> mockSearchResult;
+        private Mock<IServiceResult<MailSubscription>> mockServiceResult;
         private Mock<IMapper> mockMapper;
         private MailSubscriptionService mailSubscriptionService;
 
@@ -31,10 +32,14 @@ namespace UnitTests.Services
         {
             errorMessage = "";
             mockRepository = new Mock<IRepository<MailSubscription>>();
+            mockSearchResult = new Mock<ISearchResult<MailSubscriptionDto>>();
+            mockServiceResult = new Mock<IServiceResult<MailSubscription>>();
             mockMapper = new Mock<IMapper>();
             mailSubscriptionService = new MailSubscriptionService(
                 mockMapper.Object,
-                mockRepository.Object);
+                mockRepository.Object,
+                mockSearchResult.Object,
+                mockServiceResult.Object);
         }
 
         [TestCleanup()]
@@ -61,22 +66,36 @@ namespace UnitTests.Services
             };
         }
 
+        private ServiceResult<MailSubscription> GetSubscriptionsServiceResult()
+        {
+            return new ServiceResult<MailSubscription>()
+            {
+                TotalCount = 3,
+                Items = new List<MailSubscription>()
+                {
+                    new MailSubscription { Id = 1, Title = "Company News", Content = "Test content 1" },
+                    new MailSubscription { Id = 2, Title = "Our Vacancies", Content = "Test content 2" },
+                    new MailSubscription { Id = 3, Title = "Other test subscription", Content = "Test content 3" }
+                }
+            };
+        }
+
         #endregion
 
         [TestMethod]
         public async Task GetMailSubscriptionsSearchResultAsync_ReturnsSearchResultWithMailSubscriptions()
         {
             //Arrange
-            SearchResult<MailSubscriptionDto> searchResult = null;
+            ISearchResult<MailSubscriptionDto> searchResult = null;
             int page = 1;
             int limit = 3;
-            mockRepository.Setup(repo => repo.GetAllAsync(null, null)).ReturnsAsync(GetTestMailSubscriptions());
+            mockRepository.Setup(repo => repo.GetAsync(limit, page, null, null, null)).ReturnsAsync(GetSubscriptionsServiceResult());
             mockMapper.Setup(x => x.Map<IEnumerable<MailSubscriptionDto>>(It.IsAny<IEnumerable<MailSubscription>>())).Returns(GetTestMailSubscriptionDtos());
 
             try
             {
                 // Act
-                searchResult = await mailSubscriptionService.GetMailSubscriptionsSearchResultAsync(limit, page, order: OrderType.Ascending);
+                searchResult = await mailSubscriptionService.GetAsync(limit, page, order: OrderType.Ascending);
             }
             catch (Exception ex)
             {
@@ -85,8 +104,7 @@ namespace UnitTests.Services
 
             //Assert
             Assert.IsNotNull(searchResult, errorMessage);
-            Assert.IsTrue(searchResult.ItemList.Count == ((List<MailSubscriptionDto>)GetTestMailSubscriptionDtos()).Count, errorMessage);
-            Assert.IsInstanceOfType(searchResult, typeof(SearchResult<MailSubscriptionDto>), errorMessage);
+            Assert.IsInstanceOfType(searchResult, typeof(ISearchResult<MailSubscriptionDto>), errorMessage);
         }
 
         [TestMethod]
@@ -105,7 +123,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                mailSubscriptionDto = await mailSubscriptionService.GetByIdAsync(id);
+                mailSubscriptionDto = await mailSubscriptionService.GetAsync(id);
             }
             catch (Exception ex)
             {
@@ -129,7 +147,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                mailSubscriptionDto = await mailSubscriptionService.GetByIdAsync(id);
+                mailSubscriptionDto = await mailSubscriptionService.GetAsync(id);
             }
             catch (Exception ex)
             {

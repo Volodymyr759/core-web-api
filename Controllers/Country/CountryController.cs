@@ -1,4 +1,4 @@
-﻿using CoreWebApi.Library.Enums;
+﻿using CoreWebApi.Library;
 using CoreWebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -42,7 +42,7 @@ namespace CoreWebApi.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAsync(int limit, int page, string sortField, OrderType order) =>
-            Ok(await countryService.GetCountriesSearchResultAsync(limit, page, sortField, order));
+            Ok(await countryService.GetAsync(limit, page, sortField, order));
 
         /// <summary>
         /// Gets a specific CountryDto Item.
@@ -54,9 +54,9 @@ namespace CoreWebApi.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
+        public async Task<IActionResult> GetAsync([FromRoute] int id)
         {
-            var companySeviceDto = await countryService.GetByIdAsync(id);
+            var companySeviceDto = await countryService.GetAsync(id);
             if (companySeviceDto == null) return NotFound(responseNotFoundError);
 
             return Ok(companySeviceDto);
@@ -84,9 +84,9 @@ namespace CoreWebApi.Controllers
         public async Task<IActionResult> CreateAsync([FromBody] CountryDto countryDto)
         {
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
-
             return Created("/api/country/create", await countryService.CreateAsync(countryDto));
         }
+
 
         /// <summary>
         /// Updates an existing Country item.
@@ -115,8 +115,6 @@ namespace CoreWebApi.Controllers
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             if (await IsExistAsync(countryDto.Id) == false) return NotFound(responseNotFoundError);
             await countryService.UpdateAsync(countryDto);
-            // Attaching linked offices
-            countryDto.OfficeDtos = await officeService.GetOfficesByCountryId(countryDto.Id);
 
             return Ok(countryDto);
         }

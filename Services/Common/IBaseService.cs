@@ -3,28 +3,28 @@ using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
 {
-    public interface IBaseService<T> where T : class
+    public interface IBaseService<D> where D : class
     {
         /// <summary>
         /// Gets object of type T from repository using int identifier
         /// </summary>
         /// <param name="id"></param>
         /// <returns>Instance of type T</returns>
-        Task<T> GetByIdAsync(int id);
+        Task<D> GetAsync(int id);
 
         /// <summary>
         /// Creates object of type T in a database using repository
         /// </summary>
         /// <param name="modelDto"></param>
         /// <returns>Object of type T</returns>
-        Task<T> CreateAsync(T modelDto);
+        Task<D> CreateAsync(D modelDto);
 
         /// <summary>
-        /// Updates object of type T in a database using repository
+        /// Updates object of type D in a database using repository
         /// </summary>
         /// <param name="modelDto"></param>
         /// <returns></returns>
-        Task UpdateAsync(T modelDto);
+        Task UpdateAsync(D modelDto);
 
         /// <summary>
         /// Updates partly object of type T (or array) in a database
@@ -32,10 +32,10 @@ namespace CoreWebApi.Services
         /// <param name="id"></param>
         /// <param name="patchDocument"></param>
         /// <returns></returns>
-        Task<T> PartialUpdateAsync(int id, JsonPatchDocument<object> patchDocument);
+        Task<D> PartialUpdateAsync(int id, JsonPatchDocument<object> patchDocument);
 
         /// <summary>
-        /// Deletes object of type T in a database from repository
+        /// Deletes object of type T from a database using repository
         /// </summary>
         /// <param name="id"></param>
         /// <returns>void</returns>

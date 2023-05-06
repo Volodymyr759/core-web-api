@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
+using CoreWebApi.Library;
 using CoreWebApi.Models;
 using CoreWebApi.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -17,8 +18,9 @@ namespace UnitTests.Services
 
         private string errorMessage;
         private Mock<IRepository<MailSubscriber>> mockMailSubscriberRepository;
-        private Mock<IRepository<MailSubscription>> mockMailSubscriptionRepository;
         private Mock<IMapper> mockMapper;
+        private Mock<ISearchResult<MailSubscriberDto>> mockSearchResult;
+        private Mock<IServiceResult<MailSubscriber>> mockServiceResult;
         private MailSubscriberService mailSubscriberService;
 
         #endregion
@@ -30,12 +32,14 @@ namespace UnitTests.Services
         {
             errorMessage = "";
             mockMailSubscriberRepository = new Mock<IRepository<MailSubscriber>>();
-            mockMailSubscriptionRepository = new Mock<IRepository<MailSubscription>>();
+            mockSearchResult = new Mock<ISearchResult<MailSubscriberDto>>();
+            mockServiceResult = new Mock<IServiceResult<MailSubscriber>>();
             mockMapper = new Mock<IMapper>();
             mailSubscriberService = new MailSubscriberService(
                 mockMapper.Object,
                 mockMailSubscriberRepository.Object,
-                mockMailSubscriptionRepository.Object);
+                mockSearchResult.Object,
+                mockServiceResult.Object);
         }
 
         [TestCleanup()]
@@ -53,7 +57,7 @@ namespace UnitTests.Services
             };
         }
 
-        private List<MailSubscriberDto> GetTestMailSubscriberDtos()
+        private List<MailSubscriberDto> GetListTestMailSubscriberDtos()
         {
             return new List<MailSubscriberDto>() {
                 new MailSubscriberDto {
@@ -69,22 +73,56 @@ namespace UnitTests.Services
             };
         }
 
+        private SearchResult<MailSubscriberDto> GetTestMailSubscriberDtos()
+        {
+            var subsribers = new List<MailSubscriberDto>() {
+                new MailSubscriberDto { Id = 1, Email = "test1@gmail.com", IsSubscribed = true, MailSubscriptionId = 1 },
+                new MailSubscriberDto { Id = 2, Email = "test2@gmail.com", IsSubscribed = true, MailSubscriptionId = 1 },
+                new MailSubscriberDto { Id = 3, Email = "test31@gmail.com", IsSubscribed = true, MailSubscriptionId = 1 }
+            };
+
+            return new SearchResult<MailSubscriberDto>
+            {
+                CurrentPageNumber = 1,
+                Order = OrderType.Ascending,
+                PageSize = 10,
+                PageCount = 1,
+                SearchCriteria = "",
+                TotalItemCount = 21,
+                ItemList = subsribers
+            };
+        }
+
+        private ServiceResult<MailSubscriber> GetSubscribersServiceResult()
+        {
+            return new ServiceResult<MailSubscriber>()
+            {
+                TotalCount = 3,
+                Items = new List<MailSubscriber>()
+                {
+                    new MailSubscriber { Id = 1, Email = "test1@gmail.com", IsSubscribed = true, MailSubscriptionId = 1 },
+                    new MailSubscriber { Id = 2, Email = "test2@gmail.com", IsSubscribed = true, MailSubscriptionId = 1 },
+                    new MailSubscriber { Id = 3, Email = "test31@gmail.com", IsSubscribed = true, MailSubscriptionId = 1 }
+                }
+            };
+        }
+
         #endregion
 
         [TestMethod]
-        public void GetAllMailSubscribers_ReturnsListOfMailSubscribers()
+        public async Task GetAsync_ReturnsListOfMailSubscribers()
         {
             //Arrange
-            IEnumerable<MailSubscriberDto> mailSubscriberDtos = null;
+            ISearchResult<MailSubscriberDto> mailSubscriberDtos = null;
             int page = 1;
             int limit = 3;
-            mockMailSubscriberRepository.Setup(repo => repo.GetAll()).Returns(GetTestMailSubscribers());
-            mockMapper.Setup(x => x.Map<IEnumerable<MailSubscriberDto>>(It.IsAny<IEnumerable<MailSubscriber>>())).Returns(GetTestMailSubscriberDtos());
+            mockMailSubscriberRepository.Setup(repo => repo.GetAsync(limit, page, null, null, null)).ReturnsAsync(GetSubscribersServiceResult());
+            mockMapper.Setup(x => x.Map<IEnumerable<MailSubscriberDto>>(It.IsAny<IEnumerable<MailSubscriber>>())).Returns(GetListTestMailSubscriberDtos());
 
             try
             {
                 // Act
-                mailSubscriberDtos = mailSubscriberService.GetAllMailSubscribers(page, "asc", limit);
+                mailSubscriberDtos = await mailSubscriberService.GetAsync(limit, page, OrderType.Ascending);
             }
             catch (Exception ex)
             {
@@ -93,8 +131,7 @@ namespace UnitTests.Services
 
             //Assert
             Assert.IsNotNull(mailSubscriberDtos, errorMessage);
-            Assert.IsTrue(((List<MailSubscriberDto>)mailSubscriberDtos).Count == limit, errorMessage);
-            Assert.IsInstanceOfType(mailSubscriberDtos, typeof(IEnumerable<MailSubscriberDto>), errorMessage);
+            Assert.IsInstanceOfType(mailSubscriberDtos, typeof(ISearchResult<MailSubscriberDto>), errorMessage);
         }
 
         [TestMethod]
@@ -105,14 +142,14 @@ namespace UnitTests.Services
             var existingMailSubscriber = GetTestMailSubscribers().Find(c => c.Id == id);
             mockMailSubscriberRepository.Setup(r => r.GetAsync(id)).ReturnsAsync(existingMailSubscriber);
             mockMapper.Setup(x => x.Map<MailSubscriberDto>(It.IsAny<MailSubscriber>()))
-                .Returns(GetTestMailSubscriberDtos().Find(c => c.Id == id));
+                .Returns(GetListTestMailSubscriberDtos().Find(c => c.Id == id));
             mockMapper.Setup(x => x.Map<MailSubscriptionDto>(It.IsAny<MailSubscription>())).Returns(new MailSubscriptionDto());
             MailSubscriberDto mailSubscriberDto = null;
 
             try
             {
                 // Act
-                mailSubscriberDto = await mailSubscriberService.GetByIdAsync(id);
+                mailSubscriberDto = await mailSubscriberService.GetAsync(id);
             }
             catch (Exception ex)
             {
@@ -123,7 +160,6 @@ namespace UnitTests.Services
             Assert.IsNotNull(mailSubscriberDto, errorMessage);
             Assert.IsInstanceOfType(mailSubscriberDto, typeof(MailSubscriberDto), errorMessage);
             Assert.IsNotNull(mailSubscriberDto.MailSubscriptionDto, errorMessage);
-            mockMailSubscriberRepository.Verify(r => r.GetAsync(id));
         }
 
         [TestMethod]
@@ -137,7 +173,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                mailSubscriberDto = await mailSubscriberService.GetByIdAsync(id);
+                mailSubscriberDto = await mailSubscriberService.GetAsync(id);
             }
             catch (Exception ex)
             {
@@ -146,7 +182,6 @@ namespace UnitTests.Services
 
             //Assert
             Assert.IsNull(mailSubscriberDto, errorMessage);
-            mockMailSubscriberRepository.Verify(r => r.GetAsync(id));
         }
 
         [TestMethod]

@@ -1,9 +1,7 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
-using CoreWebApi.Library.Enums;
-using CoreWebApi.Library.SearchResult;
+using CoreWebApi.Library;
 using CoreWebApi.Models;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
@@ -14,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
 {
-    public class VacancyService : BaseService<Vacancy>, IVacancyService
+    public class VacancyService : AppBaseService<Vacancy, VacancyDto>, IVacancyService
     {
         private readonly IRepository<StringValue> repositoryStringValue;
         private readonly IRepository<Office> repositoryOffice;
@@ -25,7 +23,9 @@ namespace CoreWebApi.Services
             IRepository<Vacancy> repository,
             IRepository<StringValue> repositoryStringValue,
             IRepository<Office> repositoryOffice,
-            IRepository<Candidate> repositoryCandidate) : base(mapper, repository)
+            IRepository<Candidate> repositoryCandidate,
+            ISearchResult<VacancyDto> searchResult,
+            IServiceResult<Vacancy> serviceResult) : base(mapper, repository, searchResult, serviceResult)
         {
 
             this.repositoryStringValue = repositoryStringValue;
@@ -33,56 +33,42 @@ namespace CoreWebApi.Services
             this.repositoryCandidate = repositoryCandidate;
         }
 
-        public async Task<SearchResult<VacancyDto>> GetVacanciesSearchResultAsync(int limit, int page, string search, VacancyStatus? vacancyStatus, int? officeId, string sortField, OrderType order)
+        public async Task<ISearchResult<VacancyDto>> GetAsync(int limit, int page, string search, VacancyStatus? vacancyStatus, int? officeId, string sortField, OrderType order)
         {
-            // search by Title
-            Expression<Func<Vacancy, bool>> searchQuery = null;
-            if (!string.IsNullOrEmpty(search)) searchQuery = t => t.Title.Contains(search);
+            // filtering
+            var filters = new List<Expression<Func<Vacancy, bool>>>();
+            if (!string.IsNullOrEmpty(search)) filters.Add(t => t.Title.Contains(search));
+            if (vacancyStatus == VacancyStatus.Active) filters.Add(v => v.IsActive == true);
+            if (vacancyStatus == VacancyStatus.Disabled) filters.Add(v => v.IsActive == false);
+            if (officeId != 0) filters.Add(v => v.OfficeId == officeId);
 
-            // sorting by vacancy title
+            // sorting
             Func<IQueryable<Vacancy>, IOrderedQueryable<Vacancy>> orderBy = null;
             if (order != OrderType.None)
                 orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Title) : orderBy = q => q.OrderByDescending(s => s.Title);
 
-            Expression<Func<Vacancy, object>> include = v => v.Office;
-            var vacancies = await repository.GetAllAsync(searchQuery, orderBy, include);
+            // adding navigation properties
+            Expression<Func<Vacancy, object>> includeOffice = v => v.Office;
+            Expression<Func<Vacancy, object>> includeCandidates = v => v.Candidates;
+            Expression<Func<Vacancy, object>>[] navigationProperties =
+                new Expression<Func<Vacancy, object>>[] { includeOffice, includeCandidates };
 
-            // Filtering
-            if (vacancyStatus == VacancyStatus.Active) vacancies = vacancies.Where(v => v.IsActive == true);
-            if (vacancyStatus == VacancyStatus.Disabled) vacancies = vacancies.Where(v => v.IsActive == false);
-            if (officeId != 0) vacancies = vacancies.Where(v => v.OfficeId == officeId);
-
-            // Attaching candidates
-            var paginatedVacancies = vacancies.Skip((page - 1) * limit).Take(limit);
-            var candidates = await repositoryCandidate.GetAllAsync();
-            foreach (var vacancy in paginatedVacancies)
-                vacancy.Candidates = candidates.Where(c => c.VacancyId == vacancy.Id).ToList();
-
-            return new SearchResult<VacancyDto>
-            {
-                CurrentPageNumber = page,
-                Order = order,
-                PageSize = limit,
-                PageCount = Convert.ToInt32(Math.Ceiling((double)vacancies.Count() / limit)),
-                SearchCriteria = search ?? string.Empty,
-                TotalItemCount = vacancies.Count(),
-                ItemList = (List<VacancyDto>)mapper.Map<IEnumerable<VacancyDto>>(paginatedVacancies)
-            };
+            return await Search(limit: limit, page: page, search: search, filters: filters, order: order, orderBy: orderBy, navigationProperties: navigationProperties);
         }
 
-        public async Task<SearchResult<VacancyDto>> GetFavoriteVacanciesSearchResultAsync(int limit, int page, string email, OrderType order)
+        public async Task<ISearchResult<VacancyDto>> GetFavoriteVacanciesSearchResultAsync(int limit, int page, string email, OrderType order)
         {
-            var favoriteVacancies = await repository.GetAsync("EXEC dbo.[sp_getVacanciesByCandidateEmail] @email",
+            var favoriteVacancies = await Repository.GetAsync("EXEC dbo.[sp_getVacanciesByCandidateEmail] @email",
                     new SqlParameter[] { new SqlParameter("@email", email) });
             var paginatedFavoriteVacancies = favoriteVacancies.Skip((page - 1) * limit).Take(limit);
 
             // Attaching offices and candidates
-            var offices = await repositoryOffice.GetAllAsync();
-            var candidates = await repositoryCandidate.GetAllAsync();
+            var officesData = await repositoryOffice.GetAsync(limit: 0, page: 1);
+            var candidatesData = await repositoryCandidate.GetAsync(limit: 0, page: 1);
             foreach (var vacancy in paginatedFavoriteVacancies)
             {
-                vacancy.Office = offices.Where(o => o.Id == vacancy.OfficeId).FirstOrDefault();
-                vacancy.Candidates = candidates.Where(c => c.VacancyId == vacancy.Id).ToList();
+                vacancy.Office = officesData.Items.Where(o => o.Id == vacancy.OfficeId).FirstOrDefault();
+                vacancy.Candidates = candidatesData.Items.Where(c => c.VacancyId == vacancy.Id).ToList();
             }
 
             return new SearchResult<VacancyDto>
@@ -93,21 +79,20 @@ namespace CoreWebApi.Services
                 PageCount = Convert.ToInt32(Math.Ceiling((double)favoriteVacancies.Count() / limit)),
                 SearchCriteria = email ?? string.Empty,
                 TotalItemCount = favoriteVacancies.Count(),
-                ItemList = (List<VacancyDto>)mapper.Map<IEnumerable<VacancyDto>>(paginatedFavoriteVacancies)
+                ItemList = (List<VacancyDto>)Mapper.Map<IEnumerable<VacancyDto>>(paginatedFavoriteVacancies)
             };
         }
 
-        public async Task<VacancyDto> GetByIdAsync(int id)
+        new public async Task<VacancyDto> GetAsync(int id)
         {
-            Expression<Func<Vacancy, bool>> searchQuery = v => v.Id == id;
-            Expression<Func<Vacancy, object>> include = v => v.Office;
-            var vacancy = await repository.GetAsync(searchQuery, include);
+            Expression<Func<Vacancy, bool>> query = v => v.Id == id;
+            Expression<Func<Vacancy, object>> includeOffice = v => v.Office;
+            Expression<Func<Vacancy, object>> includeCandidates = v => v.Candidates;
+            Expression<Func<Vacancy, object>>[] navigationProperties =
+                new Expression<Func<Vacancy, object>>[] { includeOffice, includeCandidates };
+            var vacancy = await Repository.GetAsync(query, navigationProperties);
 
-            // Attaching candidates
-            Expression<Func<Candidate, bool>> query = c => c.VacancyId == vacancy.Id;
-            vacancy.Candidates = (await repositoryCandidate.GetAllAsync(query, null)).ToList();
-
-            return mapper.Map<VacancyDto>(vacancy);
+            return Mapper.Map<VacancyDto>(vacancy);
         }
 
         public async Task<IEnumerable<StringValue>> SearchVacanciesTitlesAsync(string searchValue, int officeId)
@@ -120,33 +105,16 @@ namespace CoreWebApi.Services
             return vacanciesTitles;
         }
 
-        public async Task<List<VacancyDto>> GetVacanciesByOfficeIdAsync(int officeId)
+        public async Task<IEnumerable<VacancyDto>> GetVacanciesByOfficeIdAsync(int officeId)
         {
-            var vacancies = mapper.Map<IEnumerable<VacancyDto>>(await repository.GetAllAsync()).ToList();
+            var filters = new List<Expression<Func<Vacancy, bool>>> { v => v.OfficeId == officeId };
+            Func<IQueryable<Vacancy>, IOrderedQueryable<Vacancy>> orderBy = q => q.OrderBy(v => v.Title);
+            var data = await Repository.GetAsync(filters: filters, orderBy: orderBy);
 
-            return vacancies.FindAll(v => v.OfficeId == officeId);
+            return Mapper.Map<IEnumerable<VacancyDto>>(data.Items).ToList();
         }
 
-        public async Task<VacancyDto> CreateAsync(VacancyDto vacancyDto)
-        {
-            var vacancy = mapper.Map<Vacancy>(vacancyDto);
-
-            return mapper.Map<VacancyDto>(await repository.CreateAsync(vacancy));
-        }
-
-        public async Task UpdateAsync(VacancyDto vacancyDto) =>
-            await repository.UpdateAsync(mapper.Map<Vacancy>(vacancyDto));
-
-        public async Task DeleteAsync(int id) => await repository.DeleteAsync(id);
-
-        public async Task<VacancyDto> PartialUpdateAsync(int id, JsonPatchDocument<object> patchDocument)
-        {
-            var vacancy = await repository.GetAsync(id);
-            patchDocument.ApplyTo(vacancy);
-            return mapper.Map<VacancyDto>(await repository.SaveAsync(vacancy));
-        }
-
-        public async Task<bool> IsExistAsync(int id)
+        public override async Task<bool> IsExistAsync(int id)
         {
             SqlParameter[] parameters =
                 {
@@ -154,8 +122,7 @@ namespace CoreWebApi.Services
                    new SqlParameter("@returnVal", SqlDbType.Int) {Direction = ParameterDirection.Output}
                 };
 
-            return await repository.IsExistAsync("EXEC @returnVal=sp_checkVacancyById @id, @returnVal", parameters);
+            return await Repository.IsExistAsync("EXEC @returnVal=sp_checkVacancyById @id, @returnVal", parameters);
         }
-
     }
 }

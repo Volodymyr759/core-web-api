@@ -1,4 +1,4 @@
-﻿using CoreWebApi.Library.ResponseError;
+﻿using CoreWebApi.Library;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CoreWebApi.Controllers

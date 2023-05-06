@@ -1,4 +1,5 @@
 using CoreWebApi.Data;
+using CoreWebApi.Library;
 using CoreWebApi.Models.Account;
 using CoreWebApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -38,6 +39,8 @@ namespace CoreWebApi
                     options.EnableSensitiveDataLogging();
                 });
             services.AddScoped(typeof(IRepository<>), typeof(EFRepository<>));
+            services.AddScoped(typeof(ISearchResult<>), typeof(SearchResult<>));
+            services.AddScoped(typeof(IServiceResult<>), typeof(ServiceResult<>));
 
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 

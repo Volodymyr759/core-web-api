@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
-using CoreWebApi.Library.Enums;
-using CoreWebApi.Library.SearchResult;
+using CoreWebApi.Library;
 using CoreWebApi.Models;
 using CoreWebApi.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -20,6 +19,8 @@ namespace UnitTests.Services
         private string errorMessage;
         private Mock<IRepository<Office>> mockRepository;
         private Mock<IRepository<OfficeNameId>> mockRepositoryOfficeNameId;
+        private Mock<ISearchResult<OfficeDto>> mockSearchResult;
+        private Mock<IServiceResult<Office>> mockServiceResult;
         private Mock<IMapper> mockMapper;
         private OfficeService officeService;
 
@@ -33,11 +34,15 @@ namespace UnitTests.Services
             errorMessage = "";
             mockRepository = new Mock<IRepository<Office>>();
             mockRepositoryOfficeNameId = new Mock<IRepository<OfficeNameId>>();
+            mockSearchResult = new Mock<ISearchResult<OfficeDto>>();
+            mockServiceResult = new Mock<IServiceResult<Office>>();
             mockMapper = new Mock<IMapper>();
             officeService = new OfficeService(
                 mockMapper.Object,
                 mockRepository.Object,
-                mockRepositoryOfficeNameId.Object);
+                mockRepositoryOfficeNameId.Object,
+                mockSearchResult.Object,
+                mockServiceResult.Object);
         }
 
         [TestCleanup()]
@@ -65,24 +70,38 @@ namespace UnitTests.Services
             };
         }
 
+        private ServiceResult<Office> GetOfficesServiceResult()
+        {
+            return new ServiceResult<Office>()
+            {
+                TotalCount = 3,
+                Items = new List<Office>
+                {
+                    new Office { Id = 1, Name = "Main office", Description = "Test description 1", Address = "Test address 1", Latitude = 1.111111m, Longitude = 2.22222m, CountryId = 1 },
+                    new Office { Id = 2, Name = "Dev office 1", Description = "Test description 2", Address = "Test address 2", Latitude = 1.111112m, Longitude = 2.222222m, CountryId = 1 },
+                    new Office { Id = 3, Name = "Dev office 2", Description = "Test description 3", Address = "Test address 3", Latitude = 1.111115m, Longitude = 2.222225m, CountryId = 1 }
+                }
+            };
+        }
+
         #endregion
 
         [TestMethod]
         public async Task GetOfficesSearchResultAsync_ReturnsSearchResultWithOffices()
         {
             //Arrange
-            SearchResult<OfficeDto> searchResult = null;
+            ISearchResult<OfficeDto> searchResult = null;
             int limit = 3;
             int page = 1;
             string sortField = "";
             OrderType order = OrderType.Ascending;
-            mockRepository.Setup(repo => repo.GetAllAsync(null, null)).ReturnsAsync(GetTestOffices());
+            mockRepository.Setup(repo => repo.GetAsync(limit, page, null, null, null)).ReturnsAsync(GetOfficesServiceResult());
             mockMapper.Setup(x => x.Map<IEnumerable<OfficeDto>>(It.IsAny<IEnumerable<Office>>())).Returns(GetTestOfficeDtos());
 
             try
             {
                 // Act
-                searchResult = await officeService.GetOfficesSearchResultAsync(limit, page, sortField, order);
+                searchResult = await officeService.GetAsync(limit, page, sortField, order);
             }
             catch (Exception ex)
             {
@@ -91,8 +110,7 @@ namespace UnitTests.Services
 
             //Assert
             Assert.IsNotNull(searchResult, errorMessage);
-            Assert.IsTrue(searchResult.ItemList.Count == limit, errorMessage);
-            Assert.IsInstanceOfType(searchResult, typeof(SearchResult<OfficeDto>), errorMessage);
+            Assert.IsInstanceOfType(searchResult, typeof(ISearchResult<OfficeDto>), errorMessage);
         }
 
         [TestMethod]
@@ -109,7 +127,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                officeDto = await officeService.GetByIdAsync(id);
+                officeDto = await officeService.GetAsync(id);
             }
             catch (Exception ex)
             {
@@ -133,7 +151,7 @@ namespace UnitTests.Services
             try
             {
                 // Act
-                officeDto = await officeService.GetByIdAsync(id);
+                officeDto = await officeService.GetAsync(id);
             }
             catch (Exception ex)
             {

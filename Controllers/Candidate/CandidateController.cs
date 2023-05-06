@@ -1,4 +1,4 @@
-﻿using CoreWebApi.Library.Enums;
+﻿using CoreWebApi.Library;
 using CoreWebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -45,7 +45,7 @@ namespace CoreWebApi.Controllers
         [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAsync(int limit, int page, string search, CandidateStatus candidateStatus, int? vacancyId, string sortField, OrderType order) =>
-            Ok(await candidateService.GetCandidatesSearchResultAsync(limit, page, search, candidateStatus, vacancyId, sortField, order));
+            Ok(await candidateService.GetAsync(limit, page, search, candidateStatus, vacancyId, sortField, order));
 
         /// <summary>
         /// Gets a specific CandidateDto Item.
@@ -57,9 +57,9 @@ namespace CoreWebApi.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
+        public async Task<IActionResult> GetAsync([FromRoute] int id)
         {
-            var candidateDto = await candidateService.GetByIdAsync(id);
+            var candidateDto = await candidateService.GetAsync(id);
             if (candidateDto == null) return NotFound(responseNotFoundError);
 
             return Ok(candidateDto);
@@ -131,8 +131,7 @@ namespace CoreWebApi.Controllers
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             if (await IsExistAsync(candidateDto.Id) == false) return NotFound(responseNotFoundError);
             await candidateService.UpdateAsync(candidateDto);
-            // Attaching linked vacancy
-            if (candidateDto.VacancyDto == null) candidateDto.VacancyDto = await vacancyService.GetByIdAsync(candidateDto.VacancyId);
+            if (candidateDto.VacancyDto == null) candidateDto.VacancyDto = await vacancyService.GetAsync(candidateDto.VacancyId);
 
             return Ok(candidateDto);
         }

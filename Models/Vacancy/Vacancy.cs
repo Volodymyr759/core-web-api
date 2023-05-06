@@ -19,7 +19,7 @@ namespace CoreWebApi.Models
 
         public bool IsActive { get; set; } = true;
 
-        public ICollection<Candidate> Candidates { get; set; }
+        public IEnumerable<Candidate> Candidates { get; set; }
 
         [Required]
         public int OfficeId { get; set; }

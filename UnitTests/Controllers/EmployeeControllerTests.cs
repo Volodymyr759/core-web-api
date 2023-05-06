@@ -61,13 +61,13 @@ namespace UnitTests.Controllers
         {
             //Arrange
             int id = 1;// correct id
-            mockEmployeeService.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(GetTestEmployeeDtoById(id));
+            mockEmployeeService.Setup(r => r.GetAsync(id)).ReturnsAsync(GetTestEmployeeDtoById(id));
             OkObjectResult result = null;
 
             try
             {
                 // Act
-                result = await employeeController.GetByIdAsync(id) as OkObjectResult;
+                result = await employeeController.GetAsync(id) as OkObjectResult;
             }
             catch (Exception ex)
             {
@@ -79,7 +79,7 @@ namespace UnitTests.Controllers
             Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(EmployeeDto), errorMessage);
-            mockEmployeeService.Verify(r => r.GetByIdAsync(id));
+            mockEmployeeService.Verify(r => r.GetAsync(id));
         }
 
         [TestMethod]
@@ -87,13 +87,13 @@ namespace UnitTests.Controllers
         {
             //Arrange
             int id = int.MaxValue - 1;// wrong id
-            mockEmployeeService.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(value: null);
+            mockEmployeeService.Setup(r => r.GetAsync(id)).ReturnsAsync(value: null);
             NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = await employeeController.GetByIdAsync(id) as NotFoundObjectResult;
+                result = await employeeController.GetAsync(id) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -103,7 +103,7 @@ namespace UnitTests.Controllers
             //Assert
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
-            mockEmployeeService.Verify(r => r.GetByIdAsync(id));
+            mockEmployeeService.Verify(r => r.GetAsync(id));
         }
 
         [TestMethod]

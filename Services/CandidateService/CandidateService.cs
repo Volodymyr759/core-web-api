@@ -1,9 +1,7 @@
 ﻿using AutoMapper;
 using CoreWebApi.Data;
-using CoreWebApi.Library.Enums;
-using CoreWebApi.Library.SearchResult;
+using CoreWebApi.Library;
 using CoreWebApi.Models;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
@@ -14,69 +12,52 @@ using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
 {
-    public class CandidateService : BaseService<Candidate>, ICandidateService
+    public class CandidateService : AppBaseService<Candidate, CandidateDto>, ICandidateService
     {
-        public CandidateService(IMapper mapper, IRepository<Candidate> repository) : base(mapper, repository) { }
+        public CandidateService(
+            IMapper mapper,
+            IRepository<Candidate> repository,
+            ISearchResult<CandidateDto> searchResult,
+            IServiceResult<Candidate> serviceResult) : base(mapper, repository, searchResult, serviceResult) { }
 
-        public async Task<SearchResult<CandidateDto>> GetCandidatesSearchResultAsync(
-            int limit, int page,
-            string search, CandidateStatus candidateStatus, int? vacancyId,
-            string sortField, OrderType order)
+        public async Task<ISearchResult<CandidateDto>> GetAsync(
+            int limit,
+            int page,
+            string search,
+            CandidateStatus candidateStatus,
+            int? vacancyId,
+            string sortField,
+            OrderType order)
         {
-            // search by FullName
-            Expression<Func<Candidate, bool>> searchQuery = null;
-            if (!string.IsNullOrEmpty(search)) searchQuery = t => t.FullName.Contains(search);
+            // filtering
+            var filters = new List<Expression<Func<Candidate, bool>>>();
+            if (!string.IsNullOrEmpty(search)) filters.Add(t => t.FullName.Contains(search));
+            if (candidateStatus == CandidateStatus.Active) filters.Add(c => c.IsDismissed == false);
+            if (candidateStatus == CandidateStatus.Dismissed) filters.Add(c => c.IsDismissed == true);
+            if (vacancyId != null) filters.Add(c => c.VacancyId == vacancyId);
 
-            // sorting FullNames
+            // sorting
             Func<IQueryable<Candidate>, IOrderedQueryable<Candidate>> orderBy = null;
             if (order != OrderType.None)
                 orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.FullName) : orderBy = q => q.OrderByDescending(s => s.FullName);
 
-            var candidates = await repository.GetAllAsync(searchQuery, orderBy);
-
-            if (candidateStatus != CandidateStatus.All)
-                candidates = candidateStatus == CandidateStatus.Active ? candidates.Where(c => c.IsDismissed == false) : candidates.Where(c => c.IsDismissed == true);
-
-            if (vacancyId != null) candidates = candidates.Where(c => c.VacancyId == vacancyId);
-
-            return new SearchResult<CandidateDto>
-            {
-                CurrentPageNumber = page,
-                Order = order,
-                PageSize = limit,
-                PageCount = Convert.ToInt32(Math.Ceiling((double)candidates.Count() / limit)),
-                SearchCriteria = string.Empty,
-                TotalItemCount = candidates.Count(),
-                ItemList = (List<CandidateDto>)mapper.Map<IEnumerable<CandidateDto>>(candidates.Skip((page - 1) * limit).Take(limit))
-            };
+            return await Search(limit: limit, page: page, search: search, filters: filters, order: order, orderBy: orderBy);
         }
-
-        public async Task<CandidateDto> GetByIdAsync(int id) => mapper.Map<CandidateDto>(await repository.GetAsync(id));
 
         public async Task<List<CandidateDto>> GetCandidatesByVacancyIdAsync(int id)
         {
-            var candidates = mapper.Map<IEnumerable<CandidateDto>>(await repository.GetAllAsync()).ToList();
+            // filtering
+            var filters = new List<Expression<Func<Candidate, bool>>> { c => c.VacancyId == id };
 
-            return candidates.FindAll(candidate => candidate.VacancyId == id);
+            // sorting
+            Func<IQueryable<Candidate>, IOrderedQueryable<Candidate>> orderBy = q => q.OrderBy(s => s.FullName);
+
+            var data = await Repository.GetAsync(filters: filters, orderBy: orderBy);
+
+            return Mapper.Map<IEnumerable<CandidateDto>>(data.Items).ToList();
         }
 
-        public async Task<CandidateDto> CreateAsync(CandidateDto candidateDto) =>
-            mapper.Map<CandidateDto>(await repository.CreateAsync(mapper.Map<Candidate>(candidateDto)));
-
-        public async Task UpdateAsync(CandidateDto candidateDto) =>
-            await repository.UpdateAsync(mapper.Map<Candidate>(candidateDto));
-
-        public async Task<CandidateDto> PartialUpdateAsync(int id, JsonPatchDocument<object> patchDocument)
-        {
-            var candidate = await repository.GetAsync(id);
-            patchDocument.ApplyTo(candidate);
-
-            return mapper.Map<CandidateDto>(await repository.SaveAsync(candidate));
-        }
-
-        public async Task DeleteAsync(int id) => await repository.DeleteAsync(id);
-
-        public async Task<bool> IsExistAsync(int id)
+        public override async Task<bool> IsExistAsync(int id)
         {
             SqlParameter[] parameters =
                 {
@@ -84,7 +65,7 @@ namespace CoreWebApi.Services
                    new SqlParameter("@returnVal", SqlDbType.Int) {Direction = ParameterDirection.Output}
                 };
 
-            return await repository.IsExistAsync("EXEC @returnVal=sp_checkCandidateById @id, @returnVal", parameters);
+            return await Repository.IsExistAsync("EXEC @returnVal=sp_checkCandidateById @id, @returnVal", parameters);
         }
     }
 }

@@ -59,13 +59,13 @@ namespace UnitTests.Controllers
         {
             //Arrange
             int id = 1;// correct id
-            mockMailSubscriptionServise.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(GetTestMailSubscriptionDtoById(id));
+            mockMailSubscriptionServise.Setup(r => r.GetAsync(id)).ReturnsAsync(GetTestMailSubscriptionDtoById(id));
             OkObjectResult result = null;
 
             try
             {
                 // Act
-                result = await mailSubscriptionController.GetByIdAsync(id) as OkObjectResult;
+                result = await mailSubscriptionController.GetAsync(id) as OkObjectResult;
             }
             catch (Exception ex)
             {
@@ -77,7 +77,7 @@ namespace UnitTests.Controllers
             Assert.IsInstanceOfType(result, typeof(OkObjectResult), errorMessage);
             Assert.IsNotNull(result.Value, errorMessage);
             Assert.IsInstanceOfType(result.Value, typeof(MailSubscriptionDto), errorMessage);
-            mockMailSubscriptionServise.Verify(r => r.GetByIdAsync(id));
+            mockMailSubscriptionServise.Verify(r => r.GetAsync(id));
         }
 
         [TestMethod]
@@ -85,13 +85,13 @@ namespace UnitTests.Controllers
         {
             //Arrange
             int id = int.MaxValue - 1;// wrong id
-            mockMailSubscriptionServise.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(value: null);
+            mockMailSubscriptionServise.Setup(r => r.GetAsync(id)).ReturnsAsync(value: null);
             NotFoundObjectResult result = null;
 
             try
             {
                 // Act
-                result = await mailSubscriptionController.GetByIdAsync(id) as NotFoundObjectResult;
+                result = await mailSubscriptionController.GetAsync(id) as NotFoundObjectResult;
             }
             catch (Exception ex)
             {
@@ -101,7 +101,7 @@ namespace UnitTests.Controllers
             //Assert
             Assert.IsNotNull(result, errorMessage);
             Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult), errorMessage);
-            mockMailSubscriptionServise.Verify(r => r.GetByIdAsync(id));
+            mockMailSubscriptionServise.Verify(r => r.GetAsync(id));
         }
 
         [TestMethod]

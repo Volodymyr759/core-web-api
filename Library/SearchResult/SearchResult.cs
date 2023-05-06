@@ -1,13 +1,12 @@
-﻿using CoreWebApi.Library.Enums;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace CoreWebApi.Library.SearchResult
+namespace CoreWebApi.Library
 {
-    public class SearchResult<T>
+    public class SearchResult<TModel> : ISearchResult<TModel> where TModel : class
     {
-        public List<T> ItemList { get; set; }
-
         public int CurrentPageNumber { get; set; }
+
+        public IEnumerable<TModel> ItemList { get; set; }
 
         public OrderType? Order { get; set; }
 

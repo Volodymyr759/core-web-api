@@ -1,4 +1,4 @@
-﻿using CoreWebApi.Library.Enums;
+﻿using CoreWebApi.Library;
 using CoreWebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -47,7 +47,7 @@ namespace CoreWebApi.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAsync(int limit, int page, string sortField, OrderType order) =>
-            Ok(await officeService.GetOfficesSearchResultAsync(limit, page, sortField, order));
+            Ok(await officeService.GetAsync(limit, page, sortField, order));
 
         /// <summary>
         /// Gets a list of OfficeNameIdDto's for public pages.
@@ -75,9 +75,9 @@ namespace CoreWebApi.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
+        public async Task<IActionResult> GetAsync([FromRoute] int id)
         {
-            var officeDto = await officeService.GetByIdAsync(id);
+            var officeDto = await officeService.GetAsync(id);
             if (officeDto == null) return NotFound(responseNotFoundError);
 
             return Ok(officeDto);
@@ -111,7 +111,7 @@ namespace CoreWebApi.Controllers
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             var createdOffice = await officeService.CreateAsync(officeDto);
             // Attaching linked country
-            createdOffice.CountryDto = await countryService.GetByIdAsync(officeDto.CountryId);
+            createdOffice.CountryDto = await countryService.GetAsync(officeDto.CountryId);
 
             return Created("/api/office/create", createdOffice);
         }
@@ -148,7 +148,7 @@ namespace CoreWebApi.Controllers
             if (await IsExistAsync(officeDto.Id) == false) return NotFound(responseNotFoundError);
             await officeService.UpdateAsync(officeDto);
             // attach CountryDto and VacancyDtos[] to updated office
-            if (officeDto.CountryDto == null) officeDto.CountryDto = await countryService.GetByIdAsync(officeDto.CountryId);
+            if (officeDto.CountryDto == null) officeDto.CountryDto = await countryService.GetAsync(officeDto.CountryId);
             if (officeDto.VacancyDtos == null) officeDto.VacancyDtos = await vacancyService.GetVacanciesByOfficeIdAsync(officeDto.Id);
 
             return Ok(officeDto);
