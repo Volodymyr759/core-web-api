@@ -31,7 +31,13 @@ namespace CoreWebApi.Services
             if (order != OrderType.None)
                 orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.FullName) : orderBy = q => q.OrderByDescending(s => s.FullName);
 
-            return await Search(limit: limit, page: page, search: search, filters: filters, order: order, orderBy: orderBy);
+            // adding navigation properties
+            Expression<Func<Employee, object>> includeOffice = e => e.Office;
+            Expression<Func<Employee, object>>[] navProperties =
+                new Expression<Func<Employee, object>>[] { includeOffice };
+
+            return await Search(limit: limit, page: page,
+                search: search, filters: filters, order: order, orderBy: orderBy, navigationProperties: navProperties);
         }
 
         public override async Task<bool> IsExistAsync(int id)

@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace CoreWebApi.Services
@@ -31,8 +32,13 @@ namespace CoreWebApi.Services
             Func<IQueryable<Office>, IOrderedQueryable<Office>> orderBy = null;
             if (order != OrderType.None)
                 orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Name) : orderBy = q => q.OrderByDescending(s => s.Name);
+            // adding navigation properties
+            Expression<Func<Office, object>> includeCountry = o => o.Country;
+            Expression<Func<Office, object>> includeVacancies = o => o.Vacancies;
+            Expression<Func<Office, object>>[] navigationProperties =
+                new Expression<Func<Office, object>>[] { includeCountry, includeVacancies };
 
-            return await Search(limit: limit, page: page, order: order, orderBy: orderBy);
+            return await Search(limit: limit, page: page, order: order, orderBy: orderBy, navigationProperties: navigationProperties);
         }
 
         public async Task<List<OfficeNameIdDto>> GetOfficeIdNamesAsync()
