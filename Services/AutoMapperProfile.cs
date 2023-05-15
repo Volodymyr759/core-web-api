@@ -11,20 +11,7 @@ namespace CoreWebApi.Services
             CreateMap<ApplicationUser, ApplicationUserDto>();
 
             CreateMap<Candidate, CandidateDto>()
-                .ForMember(dest => dest.VacancyDto, act => act.MapFrom(src => new VacancyDto()
-                {
-                    Id = src.Vacancy.Id,
-                    Title = src.Vacancy.Title,
-                    Description = src.Vacancy.Description,
-                    Previews = src.Vacancy.Previews,
-                    IsActive = src.Vacancy.IsActive,
-                    OfficeId = src.Vacancy.OfficeId,
-                    OfficeDto = new OfficeDto()
-                    {
-                        Name = src.Vacancy.Office.Name,
-                        Address = src.Vacancy.Office.Address
-                    }
-                }));
+                .ForMember(dest => dest.VacancyDto, act => act.MapFrom(src => src.Vacancy));
 
             CreateMap<CandidateDto, Candidate>();
 

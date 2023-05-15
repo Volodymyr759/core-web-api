@@ -24,17 +24,23 @@ namespace CoreWebApi.Services
 
         public ApplicationUserDto GetApplicationUserDto(ApplicationUser user) => mapper.Map<ApplicationUserDto>(user);
 
-        public ISearchResult<ApplicationUserDto> GetUsersSearchResultAsync(int limit, int page, string search, IEnumerable<ApplicationUser> users)
+        public ISearchResult<ApplicationUserDto> GetUsersSearchResultAsync(int limit, int page, string search,
+            IEnumerable<ApplicationUser> users, string sortField, OrderType order)
         {
             if (!string.IsNullOrEmpty(search)) users = users.Where(u => u.UserName.Contains(search)).ToList();
 
-            // Sorting by Email for now, because UserName can be changed easier by user
-            users = users.OrderBy(u => u.Email);
+            // Sorting by UserName, PhoneNumber or EmailConfirmed
+            users = sortField switch
+            {
+                "PhoneNumber" => order == OrderType.Ascending ? users.OrderBy(u => u.PhoneNumber) : users = users.OrderByDescending(u => u.PhoneNumber),
+                "EmailConfirmed" => order == OrderType.Ascending ? users.OrderBy(u => u.EmailConfirmed) : users = users.OrderByDescending(u => u.EmailConfirmed),
+                _ => order == OrderType.Ascending ? users.OrderBy(u => u.UserName) : users = users.OrderByDescending(u => u.UserName),
+            };
 
             return new SearchResult<ApplicationUserDto>
             {
                 CurrentPageNumber = page,
-                Order = null,
+                Order = order,
                 PageSize = limit,
                 PageCount = Convert.ToInt32(Math.Ceiling((double)users.Count() / limit)),
                 SearchCriteria = string.Empty,

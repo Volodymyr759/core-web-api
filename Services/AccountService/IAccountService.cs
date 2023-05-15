@@ -8,7 +8,8 @@ namespace CoreWebApi.Services
 {
     public interface IAccountService
     {
-        ISearchResult<ApplicationUserDto> GetUsersSearchResultAsync(int limit, int page, string search, IEnumerable<ApplicationUser> users);
+        ISearchResult<ApplicationUserDto> GetUsersSearchResultAsync(int limit, int page, string search,
+            IEnumerable<ApplicationUser> users, string sortField, OrderType order);
         ApplicationUserDto GetApplicationUserDto(ApplicationUser user);
         Task<ApplicationUserDto> PartialUpdateAsync(ApplicationUser user, JsonPatchDocument<object> patchDocument);
         Task<ApplicationUserDto> PartialUpdateAsync(ApplicationUser user);

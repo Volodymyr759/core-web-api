@@ -43,12 +43,12 @@ namespace CoreWebApi.Services
         {
             ServiceResult = await Repository.GetAsync(limit, page, filters, orderBy, navigationProperties ?? null);
 
-            SearchResult.PageSize = limit;
+            SearchResult.PageSize = limit > 0 ? limit : ServiceResult.Items.Count();
             SearchResult.CurrentPageNumber = page;
             SearchResult.SearchCriteria = search;
             SearchResult.Order = order;
             SearchResult.ItemList = ServiceResult == null ? null : Mapper.Map<IEnumerable<Dto>>(ServiceResult.Items);
-            SearchResult.PageCount = ServiceResult == null ? 0 : Convert.ToInt32(Math.Ceiling((double)ServiceResult.TotalCount / limit));
+            SearchResult.PageCount = ServiceResult == null ? 0 : limit == 0 ? 1 : Convert.ToInt32(Math.Ceiling((double)ServiceResult.TotalCount / limit));
             SearchResult.TotalItemCount = ServiceResult == null ? 0 : (int)(ServiceResult.TotalCount);
 
             return SearchResult;

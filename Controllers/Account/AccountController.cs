@@ -306,6 +306,8 @@ namespace CoreWebApi.Controllers
         /// <param name="limit">Number of items per page</param>
         /// <param name="page">Requested page</param>
         /// <param name="search">Part of Email for searching</param>
+        /// <param name="sortField">Field name for sorting, available fields: UserName, PhoneNumber and EmailConfirmed</param>
+        /// <param name="order" default="asc">sort direction: 0 - Ascending or 1 - Descending, 2 - None</param>
         /// <returns>Status 200 and list of ApplicationUserDto's</returns>
         /// <remarks>
         /// Sample request:
@@ -317,8 +319,8 @@ namespace CoreWebApi.Controllers
         [HttpGet]
         [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult Get(int limit, int page, string search) =>
-            Ok(accountService.GetUsersSearchResultAsync(limit, page, search, userManager.Users));
+        public IActionResult Get(int limit, int page, string search, string sortField, OrderType order) =>
+            Ok(accountService.GetUsersSearchResultAsync(limit, page, search, userManager.Users, sortField, order));
 
         /// <summary>
         /// Gets all existing user's roles from db. 

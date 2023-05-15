@@ -51,7 +51,12 @@ namespace CoreWebApi.Services
                 };
             }
 
-            return await Search(limit: limit, page: page, search: search, filters: filters, order: order, orderBy: orderBy);
+            // adding navigation properties
+            Expression<Func<Candidate, object>> includeVacancy = c => c.Vacancy;
+            Expression<Func<Candidate, object>>[] navProperties =
+                new Expression<Func<Candidate, object>>[] { includeVacancy };
+
+            return await Search(limit: limit, page: page, search: search, filters: filters, order: order, orderBy: orderBy, navigationProperties: navProperties);
         }
 
         public async Task<List<CandidateDto>> GetCandidatesByVacancyIdAsync(int id)
