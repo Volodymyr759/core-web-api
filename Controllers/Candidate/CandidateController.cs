@@ -31,7 +31,7 @@ namespace CoreWebApi.Controllers
         /// <param name="search">Part of FullName for searching</param>
         /// <param name="candidateStatus">Filter for isDismissed property: 0 - Active, 1 - Dismissed, 2 - All</param>
         /// <param name="vacancyId">Filter for candidates by VacancyId</param>
-        /// <param name="sortField">Field name for sorting</param>
+        /// <param name="sortField">Field name for sorting, available fields: FullName, Email, Phone, Notes, Is Dismissed or Joined At</param>
         /// <param name="order">sort direction: 0 - Ascending or 1 - Descending, 2 - None</param>
         /// <returns>Status 200 and list of CandidateDto's</returns>
         /// <remarks>

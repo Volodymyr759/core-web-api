@@ -37,7 +37,7 @@ namespace CoreWebApi.Controllers
         /// <param name="search">part of Title for searching</param>
         /// <param name="vacancyStatus">Filter for isActive property: 0 - Active, 1 - Disabled, 2 - All</param>
         /// <param name="officeId">Filter for vacancies by OfficeId</param>
-        /// <param name="sortField">Field name for sorting</param>
+        /// <param name="sortField">Field name for sorting, available fields: Title, Previews</param>
         /// <param name="order">sort direction: 0 - Ascending, 1 - Descending or 2 - None</param>
         /// <returns>Status 200 and list of VacancyDto's</returns>
         /// <remarks>

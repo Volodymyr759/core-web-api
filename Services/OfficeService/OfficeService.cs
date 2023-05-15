@@ -28,10 +28,19 @@ namespace CoreWebApi.Services
 
         public async Task<ISearchResult<OfficeDto>> GetAsync(int limit, int page, string sortField, OrderType order)
         {
-            // sorting
+            // sorting by Name, Description, Address
             Func<IQueryable<Office>, IOrderedQueryable<Office>> orderBy = null;
+            //if (order != OrderType.None)
+            //    orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Name) : orderBy = q => q.OrderByDescending(s => s.Name);
             if (order != OrderType.None)
-                orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Name) : orderBy = q => q.OrderByDescending(s => s.Name);
+            {
+                orderBy = sortField switch
+                {
+                    "Description" => order == OrderType.Ascending ? q => q.OrderBy(s => s.Description) : orderBy = q => q.OrderByDescending(s => s.Description),
+                    "Address" => order == OrderType.Ascending ? q => q.OrderBy(s => s.Address) : orderBy = q => q.OrderByDescending(s => s.Address),
+                    _ => order == OrderType.Ascending ? q => q.OrderBy(s => s.Name) : orderBy = q => q.OrderByDescending(s => s.Name),
+                };
+            }
             // adding navigation properties
             Expression<Func<Office, object>> includeCountry = o => o.Country;
             Expression<Func<Office, object>> includeVacancies = o => o.Vacancies;

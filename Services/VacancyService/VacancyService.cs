@@ -42,11 +42,16 @@ namespace CoreWebApi.Services
             if (vacancyStatus == VacancyStatus.Disabled) filters.Add(v => v.IsActive == false);
             if (officeId != 0) filters.Add(v => v.OfficeId == officeId);
 
-            // sorting
+            // sorting by Title or Previews
             Func<IQueryable<Vacancy>, IOrderedQueryable<Vacancy>> orderBy = null;
             if (order != OrderType.None)
-                orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Title) : orderBy = q => q.OrderByDescending(s => s.Title);
-
+            {
+                orderBy = sortField switch
+                {
+                    "Previews" => order == OrderType.Ascending ? q => q.OrderBy(v => v.Previews) : orderBy = q => q.OrderByDescending(v => v.Previews),
+                    _ => order == OrderType.Ascending ? q => q.OrderBy(v => v.Title) : orderBy = q => q.OrderByDescending(v => v.Title),
+                };
+            }
             // adding navigation properties
             Expression<Func<Vacancy, object>> includeOffice = v => v.Office;
             Expression<Func<Vacancy, object>> includeCandidates = v => v.Candidates;

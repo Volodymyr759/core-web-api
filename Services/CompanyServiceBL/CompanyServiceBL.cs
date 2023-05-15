@@ -20,7 +20,7 @@ namespace CoreWebApi.Services
             ISearchResult<CompanyServiceDto> searchResult,
             IServiceResult<CompanyService> serviceResult) : base(mapper, repository, searchResult, serviceResult) { }
 
-        public async Task<ISearchResult<CompanyServiceDto>> GetAsync(int limit, int page, CompanyServiceStatus companyServiceStatus, OrderType order)
+        public async Task<ISearchResult<CompanyServiceDto>> GetAsync(int limit, int page, CompanyServiceStatus companyServiceStatus, string sortField, OrderType order)
         {
             // filtering
             var filters = new List<Expression<Func<CompanyService, bool>>>();
@@ -30,7 +30,13 @@ namespace CoreWebApi.Services
             // sorting
             Func<IQueryable<CompanyService>, IOrderedQueryable<CompanyService>> orderBy = null;
             if (order != OrderType.None)
-                orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Title) : orderBy = q => q.OrderByDescending(s => s.Title);
+            {
+                orderBy = sortField switch
+                {
+                    "Description" => order == OrderType.Ascending ? q => q.OrderBy(s => s.Description) : orderBy = q => q.OrderByDescending(s => s.Description),
+                    _ => order == OrderType.Ascending ? q => q.OrderBy(s => s.Title) : orderBy = q => q.OrderByDescending(s => s.Title),
+                };
+            }
 
             return await Search(limit: limit, page: page, filters: filters, order: order, orderBy: orderBy);
         }

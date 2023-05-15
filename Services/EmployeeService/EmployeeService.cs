@@ -26,10 +26,17 @@ namespace CoreWebApi.Services
             var filters = new List<Expression<Func<Employee, bool>>>();
             if (!string.IsNullOrEmpty(search)) filters.Add(t => t.FullName.Contains(search));
 
-            // sorting
+            // sorting by FullName, Position or Description
             Func<IQueryable<Employee>, IOrderedQueryable<Employee>> orderBy = null;
             if (order != OrderType.None)
-                orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.FullName) : orderBy = q => q.OrderByDescending(s => s.FullName);
+            {
+                orderBy = sortField switch
+                {
+                    "Position" => order == OrderType.Ascending ? q => q.OrderBy(e => e.Position) : orderBy = q => q.OrderByDescending(e => e.Position),
+                    "Description" => order == OrderType.Ascending ? q => q.OrderBy(e => e.Description) : orderBy = q => q.OrderByDescending(e => e.Description),
+                    _ => order == OrderType.Ascending ? q => q.OrderBy(e => e.FullName) : orderBy = q => q.OrderByDescending(e => e.FullName),
+                };
+            }
 
             // adding navigation properties
             Expression<Func<Employee, object>> includeOffice = e => e.Office;

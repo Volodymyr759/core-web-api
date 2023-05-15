@@ -36,10 +36,20 @@ namespace CoreWebApi.Services
             if (candidateStatus == CandidateStatus.Dismissed) filters.Add(c => c.IsDismissed == true);
             if (vacancyId != null) filters.Add(c => c.VacancyId == vacancyId);
 
-            // sorting
+            // sorting by FullName, Email, Phone, Notes, IsDismissed or JoinedAt
             Func<IQueryable<Candidate>, IOrderedQueryable<Candidate>> orderBy = null;
             if (order != OrderType.None)
-                orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.FullName) : orderBy = q => q.OrderByDescending(s => s.FullName);
+            {
+                orderBy = sortField switch
+                {
+                    "Email" => order == OrderType.Ascending ? q => q.OrderBy(c => c.Email) : orderBy = q => q.OrderByDescending(c => c.Email),
+                    "Phone" => order == OrderType.Ascending ? q => q.OrderBy(c => c.Phone) : orderBy = q => q.OrderByDescending(c => c.Phone),
+                    "Notes" => order == OrderType.Ascending ? q => q.OrderBy(c => c.Notes) : orderBy = q => q.OrderByDescending(c => c.Notes),
+                    "IsDismissed" => order == OrderType.Ascending ? q => q.OrderBy(c => c.IsDismissed) : orderBy = q => q.OrderByDescending(c => c.IsDismissed),
+                    "JoinedAt" => order == OrderType.Ascending ? q => q.OrderBy(c => c.JoinedAt) : orderBy = q => q.OrderByDescending(c => c.JoinedAt),
+                    _ => order == OrderType.Ascending ? q => q.OrderBy(c => c.FullName) : orderBy = q => q.OrderByDescending(c => c.FullName),
+                };
+            }
 
             return await Search(limit: limit, page: page, search: search, filters: filters, order: order, orderBy: orderBy);
         }
