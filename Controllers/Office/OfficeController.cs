@@ -16,16 +16,13 @@ namespace CoreWebApi.Controllers
     {
         private readonly IOfficeService officeService;
         private readonly ICountryService countryService;
-        private readonly IVacancyService vacancyService;
 
         public OfficeController(
             IOfficeService officeService,
-            ICountryService countryService,
-            IVacancyService vacancyService)
+            ICountryService countryService)
         {
             this.officeService = officeService;
             this.countryService = countryService;
-            this.vacancyService = vacancyService;
         }
 
         /// <summary>
@@ -147,9 +144,6 @@ namespace CoreWebApi.Controllers
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             if (await IsExistAsync(officeDto.Id) == false) return NotFound(responseNotFoundError);
             await officeService.UpdateAsync(officeDto);
-            // attach CountryDto and VacancyDtos[] to updated office
-            if (officeDto.CountryDto == null) officeDto.CountryDto = await countryService.GetAsync(officeDto.CountryId);
-            if (officeDto.VacancyDtos == null) officeDto.VacancyDtos = await vacancyService.GetVacanciesByOfficeIdAsync(officeDto.Id);
 
             return Ok(officeDto);
         }

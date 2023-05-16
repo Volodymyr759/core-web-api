@@ -15,13 +15,8 @@ namespace CoreWebApi.Controllers
     public class CandidateController : AppControllerBase
     {
         private readonly ICandidateService candidateService;
-        private readonly IVacancyService vacancyService;
 
-        public CandidateController(ICandidateService candidateService, IVacancyService vacancyService)
-        {
-            this.candidateService = candidateService;
-            this.vacancyService = vacancyService;
-        }
+        public CandidateController(ICandidateService candidateService) => this.candidateService = candidateService;
 
         /// <summary>
         /// Gets a list of CandidateDto's with pagination params and values for search and sorting.
@@ -131,7 +126,6 @@ namespace CoreWebApi.Controllers
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             if (await IsExistAsync(candidateDto.Id) == false) return NotFound(responseNotFoundError);
             await candidateService.UpdateAsync(candidateDto);
-            if (candidateDto.VacancyDto == null) candidateDto.VacancyDto = await vacancyService.GetAsync(candidateDto.VacancyId);
 
             return Ok(candidateDto);
         }

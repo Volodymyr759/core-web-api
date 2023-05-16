@@ -183,8 +183,7 @@ namespace CoreWebApi.Controllers
             await vacancyService.UpdateAsync(vacancyDto);
             // Entity Framework already tracks the value of vacancyDto.Id, so it's impossible to 
             // attach officeDto and Candidates using another request to EF using the same id.
-            // It needs to attach linked models using specified services - officeService and candidateService
-            if (vacancyDto.OfficeDto == null) vacancyDto.OfficeDto = await officeService.GetAsync(vacancyDto.OfficeId);
+            // It needs to attach linked models using specified services - here candidateService
             if (vacancyDto.Candidates == null) vacancyDto.Candidates = await candidateService.GetCandidatesByVacancyIdAsync(vacancyDto.Id);
 
             return Ok(vacancyDto);

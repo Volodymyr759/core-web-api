@@ -128,10 +128,6 @@ namespace CoreWebApi.Controllers
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
             if (await IsExistAsync(employeeDto.Id) == false) return NotFound(responseNotFoundError);
             await employeeService.UpdateAsync(employeeDto);
-            // IT it the same situation as for VacancyController.Update - Entity Framework already tracks the value of employeeDto.Id,
-            // so it's impossible to attach officeDto using another request to EF with the same id.
-            // It needs to attach linked officeDto using officeService
-            if (employeeDto.OfficeDto == null) employeeDto.OfficeDto = await officeService.GetAsync(employeeDto.OfficeId);
 
             return Ok(employeeDto);
         }

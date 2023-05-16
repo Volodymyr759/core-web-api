@@ -15,13 +15,8 @@ namespace CoreWebApi.Controllers
     public class CountryController : AppControllerBase
     {
         private readonly ICountryService countryService;
-        private readonly IOfficeService officeService;
 
-        public CountryController(ICountryService countryService, IOfficeService officeService)
-        {
-            this.countryService = countryService;
-            this.officeService = officeService;
-        }
+        public CountryController(ICountryService countryService) => this.countryService = countryService;
 
         /// <summary>
         /// Gets a list of CountryDto's with values for pagination (page number, limit) and sorting by Name.
