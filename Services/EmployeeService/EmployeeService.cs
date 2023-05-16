@@ -20,11 +20,12 @@ namespace CoreWebApi.Services
             ISearchResult<EmployeeDto> searchResult,
             IServiceResult<Employee> serviceResult) : base(mapper, repository, searchResult, serviceResult) { }
 
-        public async Task<ISearchResult<EmployeeDto>> GetAsync(int limit, int page, string search, string sortField, OrderType order)
+        public async Task<ISearchResult<EmployeeDto>> GetAsync(int limit, int page, string search, int? officeId, string sortField, OrderType order)
         {
             // filtering
             var filters = new List<Expression<Func<Employee, bool>>>();
-            if (!string.IsNullOrEmpty(search)) filters.Add(t => t.FullName.Contains(search));
+            if (!string.IsNullOrEmpty(search)) filters.Add(e => e.FullName.Contains(search));
+            if (officeId != 0) filters.Add(e => e.OfficeId == officeId);
 
             // sorting by FullName, Position or Description
             Func<IQueryable<Employee>, IOrderedQueryable<Employee>> orderBy = null;

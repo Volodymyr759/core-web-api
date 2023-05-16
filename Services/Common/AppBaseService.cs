@@ -33,7 +33,7 @@ namespace CoreWebApi.Services
         }
 
         public async Task<ISearchResult<Dto>> Search(
-            int limit = 0,
+            int limit = 0, // '0' means all rows
             int page = 1,
             string search = "",
             List<Expression<Func<TModel, bool>>> filters = null,

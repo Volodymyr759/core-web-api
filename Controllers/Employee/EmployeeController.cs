@@ -30,6 +30,7 @@ namespace CoreWebApi.Controllers
         /// <param name="limit">Number of items per page</param>
         /// <param name="page">Requested page</param>
         /// <param name="search">Part of full name for searching</param>
+        /// <param name="officeId">>Filter for employees by officeId</param>
         /// <param name="sortField">Field name for sorting, available fields: FullName, Position and Description</param>
         /// <param name="order">Sort direction: 0 - Ascending or 1 - Descending, 2 - None</param>
         /// <returns>Status 200 and list of EmployeeDto's</returns>
@@ -42,8 +43,8 @@ namespace CoreWebApi.Controllers
         /// <response code="200">list of EmployeeDto's</response>
         [HttpGet, AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAsync(int limit, int page, string search, string sortField, OrderType order) =>
-            Ok(await employeeService.GetAsync(limit, page, search ?? "", sortField ?? "FullName", order));
+        public async Task<IActionResult> GetAsync(int limit, int page, string search, int? officeId, string sortField, OrderType order) =>
+            Ok(await employeeService.GetAsync(limit, page, search ?? "", officeId ?? 0, sortField ?? "FullName", order));
 
         /// <summary>
         /// Gets a specific EmployeeDto Item.
