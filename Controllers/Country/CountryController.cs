@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace CoreWebApi.Controllers
 {
     [ApiController]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin, Demo")]
     [Produces("application/json")]
     [Route("api/[controller]/[action]")]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -102,6 +102,7 @@ namespace CoreWebApi.Controllers
         /// <response code="400">If the argument is not valid</response>
         /// <response code="404">If the country with given id not found</response>
         [HttpPut]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -122,6 +123,7 @@ namespace CoreWebApi.Controllers
         /// <response code="200">Returns the deleted CountryDto item</response>
         /// <response code="404">If the country with given id not found</response>
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteAsync([FromRoute] int id)

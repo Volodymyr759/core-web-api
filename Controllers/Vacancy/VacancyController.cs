@@ -69,7 +69,7 @@ namespace CoreWebApi.Controllers
         /// </remarks>
         /// <response code="200">list of VacancyDto's</response>
         [HttpGet]
-        [Authorize(Roles = "Admin, Registered")]
+        [Authorize(Roles = "Admin, Registered, Demo")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetFavoriteAsync(int limit, int page, string email, OrderType order) =>
             Ok(await vacancyService.GetFavoriteVacanciesSearchResultAsync(limit, page, email, order));
@@ -88,7 +88,7 @@ namespace CoreWebApi.Controllers
         /// <response code="200">Returns the requested VacancyDto item</response>
         /// <response code="404">If the vacancy with given id not found</response>
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin, Registered")]
+        [Authorize(Roles = "Admin, Registered, Demo")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetAsync([FromRoute] int id)
@@ -137,7 +137,7 @@ namespace CoreWebApi.Controllers
         /// <response code="201">Returns the newly created VacancyDto item</response>
         /// <response code="400">If the argument is not valid</response>
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Demo")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateAsync([FromBody] VacancyDto vacancyDto)
