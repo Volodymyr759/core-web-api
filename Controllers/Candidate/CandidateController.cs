@@ -15,8 +15,13 @@ namespace CoreWebApi.Controllers
     public class CandidateController : AppControllerBase
     {
         private readonly ICandidateService candidateService;
+        private readonly IVacancyService vacancyService;
 
-        public CandidateController(ICandidateService candidateService) => this.candidateService = candidateService;
+        public CandidateController(ICandidateService candidateService, IVacancyService vacancyService)
+        {
+            this.candidateService = candidateService;
+            this.vacancyService = vacancyService;
+        }
 
         /// <summary>
         /// Gets a list of CandidateDto's with pagination params and values for search and sorting.
@@ -90,7 +95,10 @@ namespace CoreWebApi.Controllers
         public async Task<IActionResult> CreateAsync([FromBody] CandidateDto candidateDto)
         {
             if (!ModelState.IsValid) return BadRequest(responseBadRequestError);
-            return Created("/api/candidate/create", await candidateService.CreateAsync(candidateDto));
+            var createdCandidate = await candidateService.CreateAsync(candidateDto);
+            createdCandidate.VacancyDto = await vacancyService.GetAsync(candidateDto.VacancyId);
+
+            return Created("/api/candidate/create", createdCandidate);
         }
 
         /// <summary>
