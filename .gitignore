@@ -1,10 +1,11 @@
 ﻿bin
 obj
 packages
-.suo
+*.suo
 *.dtbcache.*
 appsettings.json
 Uploads
 DB_Schema.drawio
 wwwroot
 PublishProfiles
+/Controllers/MailSubscriber/MailSubscriberController.cs
