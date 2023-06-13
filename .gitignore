@@ -8,4 +8,4 @@ Uploads
 DB_Schema.drawio
 wwwroot
 PublishProfiles
-/Controllers/MailSubscriber/MailSubscriberController.cs
+/Controllers/MailSubscriber/Web.config
