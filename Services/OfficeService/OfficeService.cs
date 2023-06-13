@@ -30,8 +30,6 @@ namespace CoreWebApi.Services
         {
             // sorting by Name, Description, Address
             Func<IQueryable<Office>, IOrderedQueryable<Office>> orderBy = null;
-            //if (order != OrderType.None)
-            //    orderBy = order == OrderType.Ascending ? q => q.OrderBy(s => s.Name) : orderBy = q => q.OrderByDescending(s => s.Name);
             if (order != OrderType.None)
             {
                 orderBy = sortField switch
