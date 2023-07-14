@@ -491,8 +491,21 @@ namespace CoreWebApi.Controllers
                 responseBadRequestError.Title = "Invalid password.";
                 return BadRequest(responseBadRequestError);
             }
-            var authModel = await CreateAuthModelAsync(user, loginUserDto.Remember ? 60 * 24 : 15);
-            await SaveTokensAsync(user, authModel.Tokens);
+
+            // User can use different browsers and when user is logged in once - possible to send existing tokens:
+            // if refresh-token exists and !expired: yes - send existing tokens, no - create a new tokens pair.
+            AuthModel authModel;
+            var existingRefreshToken = await userManager.GetAuthenticationTokenAsync(user, "DoFormApi", TokenType.Refresh.ToString());
+            if (!string.IsNullOrEmpty(existingRefreshToken) && !tokenService.IsTokenExpired(existingRefreshToken))
+            {
+                var existingAccessToken = await userManager.GetAuthenticationTokenAsync(user, "DoFormApi", TokenType.Access.ToString());
+                authModel = await CreateAuthModelAsync(user, existingAccessToken, existingRefreshToken);
+            }
+            else
+            {
+                authModel = await CreateAuthModelAsync(user, loginUserDto.Remember ? 60 * 24 : 15);
+                await SaveTokensAsync(user, authModel.Tokens);
+            }
 
             return Ok(authModel);
         }
@@ -725,6 +738,28 @@ namespace CoreWebApi.Controllers
                 {
                     AccessToken = tokenService.GenerateAccessToken(tokenClaims, rememberPeriod),
                     RefreshToken = tokenService.GenerateAccessToken(tokenClaims, 60 * 24 * 14)
+                }
+            };
+        }
+
+        private async Task<AuthModel> CreateAuthModelAsync(ApplicationUser user, string accessToken, string refreshToken)
+        {
+            var roles = await userManager.GetRolesAsync(user);
+            var tokenClaims = new List<Claim>
+                {
+                    new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                };
+            foreach (var role in roles) tokenClaims.Add(new Claim("role", role));
+
+            return new AuthModel()
+            {
+                User = accountService.GetApplicationUserDto(user),
+                Roles = roles,
+                Tokens = new TokenModel()
+                {
+                    AccessToken = accessToken,
+                    RefreshToken = refreshToken
                 }
             };
         }

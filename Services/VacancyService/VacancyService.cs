@@ -91,10 +91,8 @@ namespace CoreWebApi.Services
         new public async Task<VacancyDto> GetAsync(int id)
         {
             Expression<Func<Vacancy, bool>> query = v => v.Id == id;
-            Expression<Func<Vacancy, object>> includeOffice = v => v.Office;
-            Expression<Func<Vacancy, object>> includeCandidates = v => v.Candidates;
             Expression<Func<Vacancy, object>>[] navigationProperties =
-                new Expression<Func<Vacancy, object>>[] { includeOffice, includeCandidates };
+                new Expression<Func<Vacancy, object>>[] { v => v.Office, v => v.Candidates };
             var vacancy = await Repository.GetAsync(query, navigationProperties);
 
             return Mapper.Map<VacancyDto>(vacancy);
